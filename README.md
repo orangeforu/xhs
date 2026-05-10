@@ -49,19 +49,22 @@ cp .env.example .env
 ### 使用
 
 ```bash
-# 列出所有选题
-python pipeline.py --list
+# 启动交互式菜单（推荐）
+python start.py
 
-# 生成单篇笔记
-python pipeline.py --index 0
-python pipeline.py --topic "怎么判断男朋友是不是真的爱你？"
+# 或使用 Makefile
+make start
+```
 
-# 批量生成
-python pipeline.py --batch
-python pipeline.py --batch --max 3
+交互式菜单提供：查看选题池 → 生成笔记 → 批量生成 → 审核工作台，全程引导操作。
 
-# 启动审核工作台
-streamlit run app.py
+也可以直接使用 CLI：
+
+```bash
+python pipeline.py --list                           # 列出选题
+python pipeline.py --index 0                        # 按编号生成
+python pipeline.py --batch --max 3                  # 批量生成
+streamlit run app.py                                # 审核工作台
 ```
 
 ## 项目结构

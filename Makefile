@@ -1,7 +1,10 @@
-.PHONY: install run list batch dashboard clean
+.PHONY: install start run list batch dashboard clean
 
 install:
 	pip install -r requirements.txt
+
+start:
+	python start.py
 
 list:
 	python pipeline.py --list

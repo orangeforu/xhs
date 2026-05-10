@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment
+.env
+.env.local
+
+# IDE
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Legacy drafts
+output_note_*.md
+docs/draft_note_*.md
+
+# Assets generated during runtime (optional)
+# Uncomment if you don't want to commit generated covers
+# assets/cover_*.png

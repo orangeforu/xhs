@@ -1,0 +1,313 @@
+{
+  "version": "2026-05",
+  "topics": [
+    {
+      "id": 1,
+      "topic": "怎么判断男朋友是不是真的爱你？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "用具体行为清单代替抽象'感觉'",
+      "keywords": [
+        "男朋友",
+        "真爱",
+        "细节",
+        "恋爱"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "generated",
+      "generated_at": "2026-05-10T06:29:53.604109+00:00",
+      "output_dir": "docs/怎么判断男朋友是不是真的爱你"
+    },
+    {
+      "id": 2,
+      "topic": "什么叫'情绪稳定'？",
+      "title_formula": "概念解读式",
+      "target_interaction": "收藏驱动",
+      "angle": "拆解'情绪稳定'的3个日常表现",
+      "keywords": [
+        "情绪稳定",
+        "情绪管理",
+        "恋爱",
+        "相处"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "generated",
+      "generated_at": "2026-05-10T12:00:00",
+      "output_dir": "docs/什么叫情绪稳定"
+    },
+    {
+      "id": 3,
+      "topic": "约会时男生哪些细节说明他人品很好？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "场景化：吃饭、坐车、吵架时的反应",
+      "keywords": [
+        "约会",
+        "人品",
+        "细节",
+        "男生"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "generated",
+      "generated_at": "2026-05-10T12:00:00",
+      "output_dir": "docs/约会时男生哪些细节说明他人品很好"
+    },
+    {
+      "id": 4,
+      "topic": "为什么说'为你好'是最温柔的绑架？",
+      "title_formula": "观点冲击式",
+      "target_interaction": "讨论驱动",
+      "angle": "原生家庭和亲密关系中的边界感",
+      "keywords": [
+        "为你好",
+        "边界感",
+        "原生家庭",
+        "控制"
+      ],
+      "pillar": "女性成长困境",
+      "status": "generated",
+      "generated_at": "2026-05-10T12:00:00",
+      "output_dir": "docs/为什么说为你好是最温柔的绑架"
+    },
+    {
+      "id": 5,
+      "topic": "如何做到'温柔但有边界'？",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "具体话术 + 场景演练",
+      "keywords": [
+        "温柔",
+        "边界",
+        "话术",
+        "沟通"
+      ],
+      "pillar": "自我提升/生活方式",
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "topic": "女生太懂事，恋爱真的会输吗？",
+      "title_formula": "问句式",
+      "target_interaction": "讨论驱动",
+      "angle": "正反案例对比",
+      "keywords": [
+        "懂事",
+        "恋爱",
+        "女生",
+        "付出"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 7,
+      "topic": "吵架后先低头的人，真的输了吗？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "引入'输赢思维'的反思",
+      "keywords": [
+        "吵架",
+        "低头",
+        "输赢",
+        "恋爱"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 8,
+      "topic": "什么叫'有效关心'？",
+      "title_formula": "概念解读式",
+      "target_interaction": "分享驱动",
+      "angle": "对比'无效关心'的4个场景",
+      "keywords": [
+        "有效关心",
+        "关心",
+        "恋爱",
+        "沟通"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 9,
+      "topic": "怎么看出一个人在敷衍你？",
+      "title_formula": "问句式",
+      "target_interaction": "共鸣驱动",
+      "angle": "微信聊天、约会、承诺兑现的细节",
+      "keywords": [
+        "敷衍",
+        "微信",
+        "约会",
+        "承诺"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 10,
+      "topic": "谈恋爱后，还需要独立空间吗？",
+      "title_formula": "问句式",
+      "target_interaction": "讨论驱动",
+      "angle": "亲密与边界的平衡",
+      "keywords": [
+        "独立空间",
+        "恋爱",
+        "边界",
+        "亲密"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 11,
+      "topic": "那些走到最后的情侣，都做对了什么？",
+      "title_formula": "观点冲击式",
+      "target_interaction": "收藏驱动",
+      "angle": "总结3-4个可复用的相处模式",
+      "keywords": [
+        "情侣",
+        "相处",
+        "恋爱",
+        "长久"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 12,
+      "topic": "男朋友哪些话听起来甜，其实很伤人？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "具体话术 + 背后的心理机制",
+      "keywords": [
+        "男朋友",
+        "话术",
+        "伤人",
+        "心理"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 13,
+      "topic": "30岁不结婚，真的那么可怕吗？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "不煽动、不劝婚，呈现多元选择",
+      "keywords": [
+        "30岁",
+        "结婚",
+        "恐婚",
+        "选择"
+      ],
+      "pillar": "女性成长困境",
+      "status": "not_started"
+    },
+    {
+      "id": 14,
+      "topic": "女孩子为什么总是习惯性说'没事'？",
+      "title_formula": "问句式",
+      "target_interaction": "共鸣驱动",
+      "angle": "社会规训下的情绪压抑",
+      "keywords": [
+        "没事",
+        "女孩子",
+        "情绪",
+        "压抑"
+      ],
+      "pillar": "女性成长困境",
+      "status": "not_started"
+    },
+    {
+      "id": 15,
+      "topic": "谈谈那些'看起来为你好'的打压",
+      "title_formula": "观点冲击式",
+      "target_interaction": "分享驱动",
+      "angle": "职场/家庭中的隐性PUA场景",
+      "keywords": [
+        "打压",
+        "PUA",
+        "职场",
+        "家庭"
+      ],
+      "pillar": "女性成长困境",
+      "status": "not_started"
+    },
+    {
+      "id": 16,
+      "topic": "为什么越懂事的孩子，长大越不快乐？",
+      "title_formula": "问句式",
+      "target_interaction": "共鸣驱动",
+      "angle": "原生家庭与自我觉醒",
+      "keywords": [
+        "懂事",
+        "原生家庭",
+        "快乐",
+        "觉醒"
+      ],
+      "pillar": "女性成长困境",
+      "status": "not_started"
+    },
+    {
+      "id": 17,
+      "topic": "独居女生最大的自由是什么？",
+      "title_formula": "观点冲击式",
+      "target_interaction": "点赞驱动",
+      "angle": "温暖叙事，不鼓吹不婚",
+      "keywords": [
+        "独居",
+        "女生",
+        "自由",
+        "独立"
+      ],
+      "pillar": "女性成长困境",
+      "status": "not_started"
+    },
+    {
+      "id": 18,
+      "topic": "为什么你总是把天聊死？",
+      "title_formula": "问句式",
+      "target_interaction": "收藏驱动",
+      "angle": "3个常见错误 + 改正方法",
+      "keywords": [
+        "聊天",
+        "沟通",
+        "社交",
+        "技巧"
+      ],
+      "pillar": "自我提升/生活方式",
+      "status": "not_started"
+    },
+    {
+      "id": 19,
+      "topic": "情绪不好的时候，怎么快速自救？",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "5分钟可操作的急救清单",
+      "keywords": [
+        "情绪",
+        "自救",
+        "急救",
+        "心理"
+      ],
+      "pillar": "自我提升/生活方式",
+      "status": "not_started"
+    },
+    {
+      "id": 20,
+      "topic": "怎么养成'不内耗'的体质？",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "思维习惯 + 日常练习",
+      "keywords": [
+        "内耗",
+        "思维",
+        "习惯",
+        "成长"
+      ],
+      "pillar": "自我提升/生活方式",
+      "status": "not_started"
+    }
+  ]
+}

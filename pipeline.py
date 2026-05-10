@@ -20,13 +20,13 @@ from core.image_generator import generate_cover_ai, generate_inner_pages
 logger = get_logger(__name__)
 
 
-def _load_topic_pool():
+def _load_topic_pool() -> list[dict]:
     """从 data/topics.json 加载选题池。"""
     data = load_topics_json()
     return data.get("topics", [])
 
 
-def _update_topic_status(topic_str: str, status: str, output_dir: str = None):
+def _update_topic_status(topic_str: str, status: str, output_dir: str | None = None) -> None:
     """更新选题状态并持久化到 topics.json。"""
     data = load_topics_json()
     for t in data.get("topics", []):
@@ -88,12 +88,18 @@ def _extract_cover_info(content: str) -> dict:
         if m:
             info["prompt"] = _clean_md(m.group(1)).replace('\n', ' ')
         else:
-            info["prompt"] = f"A soft emotional aesthetic scene related to {info['title']}, warm lighting, minimalist"
+            topic_hint = info['title'] or 'emotional warmth'
+            info["prompt"] = f"A soft emotional aesthetic scene related to {topic_hint}, warm lighting, minimalist"
+
+    if not info["title"]:
+        logger.warning("未能从笔记中提取封面标题，将跳过封面生成")
+    if not info["subtitle"]:
+        logger.warning("未能从笔记中提取封面副标题，将跳过封面生成")
 
     return info
 
 
-def _write_note_file(output_file: str, brief: dict, result: dict, review: dict, cover_paths: dict, inner_paths: list, preset_comments: dict):
+def _write_note_file(output_file: str, brief: dict, result: dict, review: dict, cover_paths: dict, inner_paths: list, preset_comments: dict) -> None:
     """将笔记及相关产物写入 Markdown 文件。"""
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(f"# {brief['topic']}\n\n")
@@ -115,7 +121,7 @@ def _write_note_file(output_file: str, brief: dict, result: dict, review: dict, 
                 f.write(f"- {c}\n")
 
 
-def generate(topic: str = None, index: int = None):
+def generate(topic: str | None = None, index: int | None = None) -> dict | None:
     """生成单篇笔记 + 封面。"""
     topic_pool = _load_topic_pool()
     if topic:
@@ -212,7 +218,7 @@ def generate(topic: str = None, index: int = None):
     }
 
 
-def list_topics():
+def list_topics() -> None:
     topic_pool = _load_topic_pool()
     logger.info("本月选题池（共 %d 个）:", len(topic_pool))
     for i, t in enumerate(topic_pool):
@@ -221,7 +227,7 @@ def list_topics():
         logger.info("[%d] %s %s (%s | %s | %s)", i, icon, t['topic'], t['title_formula'], t['target_interaction'], status)
 
 
-def batch_generate(max_count: int = None):
+def batch_generate(max_count: int | None = None) -> None:
     """批量生成所有未开始的选题。"""
     topic_pool = _load_topic_pool()
     pending = [t for t in topic_pool if t.get("status") == "not_started"]

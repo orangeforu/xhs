@@ -46,7 +46,7 @@ PALETTE = {
 }
 
 
-def _get_font(size, bold=False):
+def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     """加载字体，失败时按平台 fallback 系统黑体"""
     path = FONT_BOLD if bold else FONT_REGULAR
     try:
@@ -69,7 +69,7 @@ def _get_font(size, bold=False):
         return ImageFont.load_default()
 
 
-def _wrap_text(text, font, max_width):
+def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_width: int) -> list[str]:
     """按最大宽度自动换行，正确处理原始换行符"""
     lines = []
     for paragraph in text.split('\n'):
@@ -106,7 +106,7 @@ def _wrap_text(text, font, max_width):
     return merged
 
 
-def _draw_gradient_bg(draw, width, height, c1, c2):
+def _draw_gradient_bg(draw: ImageDraw.ImageDraw, width: int, height: int, c1: tuple[int, int, int], c2: tuple[int, int, int]) -> None:
     """绘制线性渐变背景（生成 1px 宽渐变条再拉伸，比逐行绘制快 100 倍）"""
     strip = Image.new("RGB", (1, height))
     pixels = []
@@ -121,7 +121,7 @@ def _draw_gradient_bg(draw, width, height, c1, c2):
     draw._image.paste(gradient, (0, 0))
 
 
-def _calc_font_size(text, max_width, target_size, min_size=48):
+def _calc_font_size(text: str, max_width: int, target_size: int, min_size: int = 48) -> tuple[int, ImageFont.FreeTypeFont | ImageFont.ImageFont]:
     """根据文字长度动态计算字号，确保不溢出"""
     for size in range(target_size, min_size - 1, -4):
         font = _get_font(size, bold=True)
@@ -139,7 +139,7 @@ def _calc_font_size(text, max_width, target_size, min_size=48):
 # 方案2：模板合成（纯代码渲染）
 # ═══════════════════════════════════════════════════════════
 
-def generate_cover_template(title, subtitle, style="warm", number=None, output_path="assets/cover_template.png"):
+def generate_cover_template(title: str, subtitle: str, style: str = "warm", number: int | None = None, output_path: str = "assets/cover_template.png") -> str:
     """
     模板合成封面
     style可选: warm(暖调留白) / cool(冷调留白) / chat(聊天记录风) / blank(纯文字海报) / number(数字封面)
@@ -341,7 +341,7 @@ def _http_get_with_retry(url: str, retries: int = 3, timeout: int = 120, **kwarg
     raise last_err
 
 
-def generate_cover_ai(prompt, title, subtitle, output_path="assets/cover_ai.png"):
+def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str = "assets/cover_ai.png") -> str:
     """
     方案1：AI绘画封面
     支持多后端：pollinations / dalle / fallback 模板合成
@@ -449,7 +449,7 @@ def generate_cover_ai(prompt, title, subtitle, output_path="assets/cover_ai.png"
 # 内页文字图生成
 # ═══════════════════════════════════════════════════════════
 
-def generate_inner_page(text, page_num, style="warm", output_path="assets/inner_page.png"):
+def generate_inner_page(text: str, page_num: int, style: str = "warm", output_path: str = "assets/inner_page.png") -> str | None:
     """把单页文字渲染成小红书风格内页图——大留白、居中、有设计感"""
     img = Image.new("RGB", (COVER_WIDTH, COVER_HEIGHT), color="white")
     draw = ImageDraw.Draw(img)
@@ -545,7 +545,7 @@ def generate_inner_page(text, page_num, style="warm", output_path="assets/inner_
     return output_path
 
 
-def generate_inner_pages(content, out_dir, style="warm"):
+def generate_inner_pages(content: str, out_dir: str, style: str = "warm") -> list[str]:
     """解析笔记正文，生成所有内页图"""
     # 提取正文部分
     # 兼容 **【正文】** 等 Markdown 加粗标记
@@ -614,7 +614,7 @@ def generate_inner_pages(content, out_dir, style="warm"):
 # 批量生成入口
 # ═══════════════════════════════════════════════════════════
 
-def generate_all_covers(title, subtitle, prompt, number=None, output_dir="assets"):
+def generate_all_covers(title: str, subtitle: str, prompt: str, number: int | None = None, output_dir: str = "assets") -> dict[str, str]:
     """一次性生成所有风格的封面，方便对比"""
     os.makedirs(output_dir, exist_ok=True)
     results = {}

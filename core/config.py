@@ -62,7 +62,7 @@ def validate_fonts() -> bool:
     return ok
 
 
-def open_folder(path: str):
+def open_folder(path: str) -> None:
     """跨平台打开文件夹。"""
     system = platform.system()
     if system == "Darwin":
@@ -73,7 +73,7 @@ def open_folder(path: str):
         subprocess.run(["xdg-open", path], check=False)
 
 
-def _atomic_write_json(path: Path, data: dict):
+def _atomic_write_json(path: Path, data: dict) -> None:
     """原子写入 JSON：先写临时文件再 rename，避免并发写入导致数据损坏。"""
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_path = tempfile.mkstemp(suffix=".json", dir=str(path.parent))
@@ -97,7 +97,7 @@ def load_topics_json() -> dict:
         return json.load(f)
 
 
-def save_topics_json(data: dict):
+def save_topics_json(data: dict) -> None:
     """保存选题池 JSON。"""
     _atomic_write_json(DATA_DIR / "topics.json", data)
 
@@ -117,12 +117,12 @@ def load_performance_json() -> dict:
         return json.load(f)
 
 
-def save_performance_json(data: dict):
+def save_performance_json(data: dict) -> None:
     """保存发布数据 JSON。"""
     _atomic_write_json(DATA_DIR / "performance.json", data)
 
 
-def init():
+def init() -> None:
     """初始化项目：创建目录、校验环境变量和字体。在入口文件中显式调用。"""
     ensure_dirs()
     validate_env()

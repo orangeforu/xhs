@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import time
 from pathlib import Path
 
@@ -224,7 +225,11 @@ def generate_preset_comments(note_content: str, model: str | None = None) -> dic
         max_tokens=1500,
     )
     raw = _extract_content(data)
-    comments = [line.strip() for line in raw.split("\n") if line.strip() and not line.strip().startswith(("-", "*", "1.", "2.", "【", "##"))]
+    comments = [
+        line.strip() for line in raw.split("\n")
+        if line.strip()
+        and not re.match(r'^[-*]\s|^\d+[\.\、\)]|^【|^##', line.strip())
+    ]
     return {
         "comments": comments,
         "raw": raw,

@@ -6,12 +6,15 @@ from datetime import datetime, timezone
 import streamlit as st
 
 from core.config import (
+    init,
     load_topics_json,
     save_topics_json,
     load_performance_json,
     save_performance_json,
     open_folder,
 )
+
+init()
 
 st.set_page_config(page_title="小红书AI创作台", page_icon="📝", layout="wide")
 
@@ -57,11 +60,11 @@ published_count = sum(1 for t in topics if t.get("status") == "published")
 
 # ── 熔断检测 ──
 def _calculate_grade(likes: int) -> str:
-    if likes >= 800:
+    if likes > 1500:
         return "S"
-    elif likes >= 300:
+    elif likes >= 800:
         return "A"
-    elif likes >= 100:
+    elif likes >= 200:
         return "B"
     return "C"
 
@@ -91,7 +94,9 @@ cb_tripped, cb_streak = _check_circuit_breaker()
 # ── Sidebar ──
 st.sidebar.header("📊 数据看板")
 st.sidebar.metric("本月目标", f"{total_count}篇", f"已生成 {generated_count}篇")
-st.sidebar.metric("粉丝目标", "1400", "当前 900")
+followers_target = int(os.getenv("FOLLOWERS_TARGET", "1400"))
+followers_current = int(os.getenv("FOLLOWERS_CURRENT", "900"))
+st.sidebar.metric("粉丝目标", str(followers_target), f"当前 {followers_current}")
 st.sidebar.progress(
     published_count / total_count if total_count else 0,
     text=f"发布进度 {published_count}/{total_count}",
@@ -131,8 +136,12 @@ with tab1:
                 continue
 
             with st.expander(f"📄 {t['topic']}", expanded=True):
-                with open(note_path, "r", encoding="utf-8") as f:
-                    content = f.read()
+                try:
+                    with open(note_path, "r", encoding="utf-8") as f:
+                        content = f.read()
+                except FileNotFoundError:
+                    st.error(f"文件已被删除: {note_path}")
+                    continue
                 st.markdown(content)
 
                 # 提取预设评论
@@ -146,7 +155,7 @@ with tab1:
                         topic_name = os.path.basename(out_dir)
                         pub_dir = os.path.join("published", topic_name)
                         if os.path.exists(pub_dir):
-                            shutil.rmtree(pub_dir)
+                            st.warning(f"published/{topic_name} 已存在，将被覆盖。")
                         shutil.move(out_dir, pub_dir)
 
                         t["status"] = "published"
@@ -177,14 +186,25 @@ with tab1:
 
                 with col3:
                     if st.button(f"❌ 打回重写", key=f"reject_{t['id']}"):
-                        t["status"] = "not_started"
-                        if os.path.exists(out_dir):
-                            shutil.rmtree(out_dir)
-                        for k in ("generated_at", "output_dir", "published_at"):
-                            t.pop(k, None)
-                        save_topics_json(topics_data)
-                        st.error(f"{t['topic']} 已打回。请调整 pipeline.py 的 prompt 后重新生成。")
-                        st.rerun()
+                        st.session_state[f"confirm_reject_{t['id']}"] = True
+                    if st.session_state.get(f"confirm_reject_{t['id']}"):
+                        st.warning(f"确认打回 **{t['topic']}**？将删除生成的全部文件。")
+                        c1, c2 = st.columns(2)
+                        with c1:
+                            if st.button("确认打回", key=f"confirm_yes_{t['id']}"):
+                                t["status"] = "not_started"
+                                if os.path.exists(out_dir):
+                                    shutil.rmtree(out_dir)
+                                for k in ("generated_at", "output_dir", "published_at"):
+                                    t.pop(k, None)
+                                save_topics_json(topics_data)
+                                st.session_state.pop(f"confirm_reject_{t['id']}", None)
+                                st.error(f"{t['topic']} 已打回。请调整 pipeline.py 的 prompt 后重新生成。")
+                                st.rerun()
+                        with c2:
+                            if st.button("取消", key=f"confirm_no_{t['id']}"):
+                                st.session_state.pop(f"confirm_reject_{t['id']}", None)
+                                st.rerun()
 
                 if preset_text:
                     st.subheader("💬 预设评论（发布后复制到评论区）")
@@ -296,7 +316,7 @@ with tab4:
         st.metric("C级不合格", c_count)
 
     if cb_tripped:
-        st.error("🚨 **熔断已触发**：连续 3 篇 C 级（点赞<100）。请立即停止发布，复盘选题方向和内容质量。")
+        st.error("🚨 **熔断已触发**：连续 3 篇 C 级（点赞<200）。请立即停止发布，复盘选题方向和内容质量。")
     elif c_count >= 2:
         st.warning(f"⚠️ 已有 {c_count} 篇 C 级内容，请注意内容质量。")
 

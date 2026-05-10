@@ -1,12 +1,15 @@
-import os
 import io
+import os
+import platform
 import re
+import time
+
 import requests
+from PIL import Image, ImageDraw, ImageFont
 
 from core.config import get_logger, IMAGE_PROVIDER
 
 logger = get_logger(__name__)
-from PIL import Image, ImageDraw, ImageFont
 
 # 小红书黄金封面尺寸
 COVER_WIDTH = 1242
@@ -44,15 +47,26 @@ PALETTE = {
 
 
 def _get_font(size, bold=False):
-    """加载字体，失败时fallback系统黑体"""
+    """加载字体，失败时按平台 fallback 系统黑体"""
     path = FONT_BOLD if bold else FONT_REGULAR
     try:
         return ImageFont.truetype(path, size)
     except OSError:
-        try:
-            return ImageFont.truetype("/System/Library/Fonts/STHeiti Medium.ttc", size)
-        except OSError:
-            return ImageFont.load_default()
+        system = platform.system()
+        fallbacks = []
+        if system == "Darwin":
+            fallbacks = ["/System/Library/Fonts/STHeiti Medium.ttc"]
+        elif system == "Windows":
+            fallbacks = ["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/simhei.ttf"]
+        else:
+            fallbacks = ["/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                         "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"]
+        for fb in fallbacks:
+            try:
+                return ImageFont.truetype(fb, size)
+            except OSError:
+                continue
+        return ImageFont.load_default()
 
 
 def _wrap_text(text, font, max_width):
@@ -93,13 +107,18 @@ def _wrap_text(text, font, max_width):
 
 
 def _draw_gradient_bg(draw, width, height, c1, c2):
-    """绘制线性渐变背景"""
+    """绘制线性渐变背景（生成 1px 宽渐变条再拉伸，比逐行绘制快 100 倍）"""
+    strip = Image.new("RGB", (1, height))
+    pixels = []
     for y in range(height):
-        ratio = y / height
+        ratio = y / max(height - 1, 1)
         r = int(c1[0] * (1 - ratio) + c2[0] * ratio)
         g = int(c1[1] * (1 - ratio) + c2[1] * ratio)
         b = int(c1[2] * (1 - ratio) + c2[2] * ratio)
-        draw.line([(0, y), (width, y)], fill=(r, g, b))
+        pixels.append((r, g, b))
+    strip.putdata(pixels)
+    gradient = strip.resize((width, height), Image.BILINEAR)
+    draw._image.paste(gradient, (0, 0))
 
 
 def _calc_font_size(text, max_width, target_size, min_size=48):
@@ -289,13 +308,38 @@ def generate_cover_template(title, subtitle, style="warm", number=None, output_p
 
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     img.save(output_path, quality=95)
-    logger.info(f"✅ 模板封面已保存: {output_path} (style={style})")
+    logger.info("模板封面已保存: %s (style=%s)", output_path, style)
     return output_path
 
 
 # ═══════════════════════════════════════════════════════════
 # 方案1：AI绘画 + 文字叠加
 # ═══════════════════════════════════════════════════════════
+
+def _http_get_with_retry(url: str, retries: int = 3, timeout: int = 120, **kwargs) -> requests.Response:
+    """带重试的 HTTP GET，处理 429/5xx 和网络异常。"""
+    last_err = None
+    for attempt in range(retries):
+        try:
+            resp = requests.get(url, timeout=timeout, **kwargs)
+            resp.raise_for_status()
+            return resp
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response else 0
+            if status == 429 or 500 <= status < 600:
+                last_err = e
+                wait = 2 ** attempt
+                logger.warning("图片 API 请求失败 (HTTP %s)，%d秒后重试 (%d/%d)", status, wait, attempt + 1, retries)
+                time.sleep(wait)
+                continue
+            raise
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            last_err = e
+            wait = 2 ** attempt
+            logger.warning("图片 API 请求失败 (%s)，%d秒后重试 (%d/%d)", type(e).__name__, wait, attempt + 1, retries)
+            time.sleep(wait)
+    raise last_err
+
 
 def generate_cover_ai(prompt, title, subtitle, output_path="assets/cover_ai.png"):
     """
@@ -311,14 +355,12 @@ def generate_cover_ai(prompt, title, subtitle, output_path="assets/cover_ai.png"
         encoded_prompt = requests.utils.quote(prompt)
         image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1242&height=1660&nologo=true&seed=42"
         try:
-            resp = requests.get(image_url, timeout=120)
-            resp.raise_for_status()
+            resp = _http_get_with_retry(image_url)
             bg_img = Image.open(io.BytesIO(resp.content))
         except (requests.exceptions.RequestException, OSError, Image.UnidentifiedImageError) as e:
             logger.warning("Pollinations API 失败: %s", e)
 
     elif IMAGE_PROVIDER == "dalle":
-        import os
         api_key = os.getenv("IMAGE_API_KEY", os.getenv("OPENAI_API_KEY", ""))
         if not api_key:
             logger.warning("IMAGE_API_KEY / OPENAI_API_KEY 未配置，跳过 DALL-E")
@@ -333,8 +375,7 @@ def generate_cover_ai(prompt, title, subtitle, output_path="assets/cover_ai.png"
                 resp.raise_for_status()
                 data = resp.json()
                 img_url = data["data"][0]["url"]
-                img_resp = requests.get(img_url, timeout=120)
-                img_resp.raise_for_status()
+                img_resp = _http_get_with_retry(img_url)
                 bg_img = Image.open(io.BytesIO(img_resp.content))
             except Exception as e:
                 logger.warning("DALL-E API 失败: %s", e)
@@ -400,7 +441,7 @@ def generate_cover_ai(prompt, title, subtitle, output_path="assets/cover_ai.png"
     final = composite.convert("RGB")
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     final.save(output_path, quality=95)
-    logger.info(f"✅ AI绘画封面已保存: {output_path}")
+    logger.info("AI绘画封面已保存: %s", output_path)
     return output_path
 
 
@@ -500,7 +541,7 @@ def generate_inner_page(text, page_num, style="warm", output_path="assets/inner_
 
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     img.save(output_path, quality=95)
-    logger.info(f"✅ 内页图已保存: {output_path}")
+    logger.info("内页图已保存: %s", output_path)
     return output_path
 
 
@@ -606,5 +647,5 @@ if __name__ == "__main__":
     logger.info("\n" + "=" * 60)
     logger.info("生成完成！文件列表：")
     for name, path in results.items():
-        logger.info(f"  [{name}] {path}")
+        logger.info("  [%s] %s", name, path)
     logger.info("=" * 60)

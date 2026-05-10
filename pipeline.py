@@ -6,13 +6,14 @@
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import shutil
 from datetime import datetime, timezone
 
-from core.config import get_logger, load_topics_json, save_topics_json, PUBLISHED_DIR
+from core.config import get_logger, init, load_topics_json, save_topics_json, PROJECT_ROOT, PUBLISHED_DIR
 from core.writer import write_note, review_note, generate_preset_comments
 from core.image_generator import generate_cover_ai, generate_inner_pages
 
@@ -131,7 +132,8 @@ def generate(topic: str = None, index: int = None):
 
     # 准备输出目录
     safe_name = "".join(c for c in brief['topic'] if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')[:30]
-    out_dir = f"docs/{safe_name}"
+    topic_hash = hashlib.md5(brief['topic'].encode()).hexdigest()[:4]
+    out_dir = str(PROJECT_ROOT / "docs" / f"{safe_name}_{topic_hash}")
     os.makedirs(out_dir, exist_ok=True)
 
     logger.info("正在生成笔记: %s", brief['topic'])
@@ -152,7 +154,7 @@ def generate(topic: str = None, index: int = None):
                 prompt=cover_info["prompt"],
                 title=cover_info["title"],
                 subtitle=cover_info["subtitle"],
-                output_path=f"{out_dir}/cover_ai.png",
+                output_path=os.path.join(out_dir, "cover_ai.png"),
             )
         except Exception as e:
             logger.warning("AI封面生成失败: %s", e)
@@ -193,7 +195,7 @@ def generate(topic: str = None, index: int = None):
         logger.warning("预设评论生成失败: %s", e)
 
     # Step 7: 保存笔记
-    output_file = f"{out_dir}/note.md"
+    output_file = os.path.join(out_dir, "note.md")
     _write_note_file(output_file, brief, result, review, cover_paths, inner_paths, preset_comments)
     logger.info("已保存到: %s", output_file)
 
@@ -251,6 +253,7 @@ def batch_generate(max_count: int = None):
 
 
 if __name__ == "__main__":
+    init()
     parser = argparse.ArgumentParser(description="小红书AI创作流水线")
     parser.add_argument("--topic", type=str, help="指定选题")
     parser.add_argument("--index", type=int, help="选题索引")

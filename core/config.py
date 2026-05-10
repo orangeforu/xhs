@@ -1,7 +1,9 @@
+import json
 import logging
 import os
 import platform
 import subprocess
+import tempfile
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -71,10 +73,21 @@ def open_folder(path: str):
         subprocess.run(["xdg-open", path], check=False)
 
 
+def _atomic_write_json(path: Path, data: dict):
+    """原子写入 JSON：先写临时文件再 rename，避免并发写入导致数据损坏。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(suffix=".json", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_path, str(path))
+    except Exception:
+        os.unlink(tmp_path)
+        raise
+
+
 def load_topics_json() -> dict:
     """加载选题池 JSON，文件不存在时抛出 FileNotFoundError。"""
-    import json
-
     path = DATA_DIR / "topics.json"
     if not path.exists():
         raise FileNotFoundError(
@@ -86,17 +99,11 @@ def load_topics_json() -> dict:
 
 def save_topics_json(data: dict):
     """保存选题池 JSON。"""
-    import json
-
-    path = DATA_DIR / "topics.json"
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    _atomic_write_json(DATA_DIR / "topics.json", data)
 
 
 def load_performance_json() -> dict:
     """加载发布数据 JSON，不存在时返回空模板。"""
-    import json
-
     path = DATA_DIR / "performance.json"
     if not path.exists():
         return {"notes": [], "summary": {
@@ -112,18 +119,11 @@ def load_performance_json() -> dict:
 
 def save_performance_json(data: dict):
     """保存发布数据 JSON。"""
-    import json
-
-    path = DATA_DIR / "performance.json"
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    _atomic_write_json(DATA_DIR / "performance.json", data)
 
 
-# 启动时自动执行
 def init():
+    """初始化项目：创建目录、校验环境变量和字体。在入口文件中显式调用。"""
     ensure_dirs()
     validate_env()
     validate_fonts()
-
-
-init()

@@ -7,6 +7,10 @@ import sys
 from core.config import init, load_topics_json
 
 
+def pause():
+    input("\n按回车返回主菜单...")
+
+
 def show_topics():
     """显示选题池"""
     data = load_topics_json()
@@ -16,11 +20,11 @@ def show_topics():
     print("=" * 60)
     for i, t in enumerate(topics):
         status = t.get("status", "not_started")
-        icon = {"published": "✅", "generated": "📝"}.get(status, "⬜")
+        icon = {"published": "[已发布]", "generated": "[待审核]"}.get(status, "[未开始]")
         formula = t.get("title_formula", "")
         interaction = t.get("target_interaction", "")
         print(f"  [{i:>2}] {icon} {t['topic']}")
-        print(f"       {formula} | {interaction} | {status}")
+        print(f"       {formula} | {interaction}")
     print("=" * 60)
     return topics
 
@@ -62,7 +66,7 @@ def generate_note(topics):
 
     print(f"\n正在生成笔记...\n")
     subprocess.run(cmd, shell=True)
-    print("\n生成完成！运行「审核发布」查看结果。")
+    print("\n生成完成！")
 
 
 def batch_generate():
@@ -87,7 +91,8 @@ def main():
     init()
 
     while True:
-        print("\n" + "=" * 60)
+        print()
+        print("=" * 60)
         print("  小红书AI创作系统")
         print("=" * 60)
         print("  [1] 查看选题池")
@@ -97,18 +102,25 @@ def main():
         print("  [0] 退出")
         print("=" * 60)
 
-        choice = input("\n请选择: ").strip()
+        try:
+            choice = input("\n请选择: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\n再见！")
+            break
 
         if choice == "0":
             print("再见！")
             break
         elif choice == "1":
             show_topics()
+            pause()
         elif choice == "2":
             topics = show_topics()
             generate_note(topics)
+            pause()
         elif choice == "3":
             batch_generate()
+            pause()
         elif choice == "4":
             open_dashboard()
         else:

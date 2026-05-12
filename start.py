@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 from core.config import init, load_topics_json
+from pipeline import generate as pipeline_generate, batch_generate as pipeline_batch_generate
 
 
 def pause():
@@ -44,7 +45,7 @@ def generate_note(topics):
         if not idx.isdigit() or int(idx) < 0 or int(idx) >= len(topics):
             print("无效编号")
             return
-        cmd = f"{sys.executable} pipeline.py --index {idx}"
+        selected_idx = int(idx)
     elif choice == "2":
         keyword = input("输入关键词: ").strip()
         matched = [t for t in topics if keyword in t["topic"]]
@@ -59,24 +60,22 @@ def generate_note(topics):
         if not idx.isdigit():
             print("无效编号")
             return
-        cmd = f"{sys.executable} pipeline.py --index {idx}"
+        selected_idx = int(idx)
     else:
         print("无效选择")
         return
 
     print(f"\n正在生成笔记...\n")
-    subprocess.run(cmd, shell=True)
+    pipeline_generate(index=selected_idx)
     print("\n生成完成！")
 
 
 def batch_generate():
     """批量生成"""
     max_count = input("生成数量（留空=全部）: ").strip()
-    cmd = f"{sys.executable} pipeline.py --batch"
-    if max_count.isdigit():
-        cmd += f" --max {max_count}"
+    max_count_int = int(max_count) if max_count.isdigit() else None
     print(f"\n开始批量生成...\n")
-    subprocess.run(cmd, shell=True)
+    pipeline_batch_generate(max_count=max_count_int)
 
 
 def open_dashboard():
@@ -84,7 +83,7 @@ def open_dashboard():
     print("\n正在启动 Streamlit 工作台...")
     print("浏览器将自动打开 http://localhost:8501")
     print("按 Ctrl+C 退出\n")
-    subprocess.run(f"{sys.executable} -m streamlit run app.py", shell=True)
+    subprocess.run([sys.executable, "-m", "streamlit", "run", "app.py"])
 
 
 def main():

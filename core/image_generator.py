@@ -1,3 +1,4 @@
+import concurrent.futures
 import io
 import os
 import platform
@@ -5,7 +6,7 @@ import re
 import time
 
 import requests
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from core.config import get_logger, IMAGE_PROVIDER
 
@@ -21,27 +22,43 @@ FONT_REGULAR = os.path.join(FONT_DIR, "NotoSansSC-Regular.ttf")
 FONT_BOLD = os.path.join(FONT_DIR, "NotoSansSC-Bold.ttf")
 
 # 品牌色调定义
+# 每个主题包含：bg_top / bg_bottom（渐变）、title（标题/强调正文）、subtitle（辅助文字）、
+# accent（装饰色）、body（长正文，比 title 更柔和）、highlight（金句/高亮文字色）
 PALETTE = {
     "warm": {
-        "bg_top": (255, 252, 248),
-        "bg_bottom": (255, 238, 225),
-        "title": (60, 35, 20),
-        "subtitle": (130, 95, 70),
-        "accent": (230, 180, 140),
+        "bg_top": (255, 252, 248), "bg_bottom": (255, 238, 225),
+        "title": (60, 35, 20), "subtitle": (130, 95, 70), "accent": (230, 180, 140),
+        "body": (90, 70, 55), "highlight": (45, 30, 20),
+    },
+    "warm_grey": {
+        "bg_top": (250, 247, 243), "bg_bottom": (238, 234, 228),
+        "title": (65, 55, 48), "subtitle": (130, 120, 110), "accent": (195, 180, 165),
+        "body": (90, 82, 75), "highlight": (50, 42, 36),
     },
     "cool": {
-        "bg_top": (245, 248, 252),
-        "bg_bottom": (220, 230, 245),
-        "title": (25, 45, 70),
-        "subtitle": (90, 110, 140),
-        "accent": (160, 190, 220),
+        "bg_top": (245, 248, 252), "bg_bottom": (220, 230, 245),
+        "title": (25, 45, 70), "subtitle": (90, 110, 140), "accent": (160, 190, 220),
+        "body": (60, 80, 110), "highlight": (20, 35, 55),
     },
     "blank": {
-        "bg_top": (252, 252, 252),
-        "bg_bottom": (248, 248, 248),
-        "title": (30, 30, 30),
-        "subtitle": (100, 100, 100),
-        "accent": (200, 200, 200),
+        "bg_top": (252, 252, 252), "bg_bottom": (248, 248, 248),
+        "title": (30, 30, 30), "subtitle": (100, 100, 100), "accent": (200, 200, 200),
+        "body": (70, 70, 70), "highlight": (20, 20, 20),
+    },
+    "twilight": {
+        "bg_top": (238, 236, 242), "bg_bottom": (220, 218, 228),
+        "title": (55, 50, 70), "subtitle": (110, 105, 130), "accent": (180, 170, 200),
+        "body": (85, 80, 100), "highlight": (45, 40, 60),
+    },
+    "crimson": {
+        "bg_top": (250, 240, 240), "bg_bottom": (242, 228, 228),
+        "title": (85, 35, 35), "subtitle": (140, 90, 90), "accent": (210, 130, 130),
+        "body": (120, 70, 70), "highlight": (70, 25, 25),
+    },
+    "mist": {
+        "bg_top": (242, 244, 246), "bg_bottom": (228, 232, 236),
+        "title": (50, 60, 70), "subtitle": (105, 115, 125), "accent": (160, 175, 190),
+        "body": (80, 90, 100), "highlight": (40, 50, 60),
     },
 }
 
@@ -121,6 +138,48 @@ def _draw_gradient_bg(draw: ImageDraw.ImageDraw, width: int, height: int, c1: tu
     draw._image.paste(gradient, (0, 0))
 
 
+def _add_center_glow(img: Image.Image, palette: dict) -> Image.Image:
+    """在画面上方叠加一个极淡的 accent 色光晕，增加空间深度。"""
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    glow_draw = ImageDraw.Draw(glow)
+    cx, cy = img.size[0] // 2, img.size[1] // 3
+    c = palette["bg_top"]
+    for r in range(500, 0, -25):
+        ratio = r / 500
+        alpha = int(10 * (1 - ratio))
+        glow_draw.ellipse(
+            [(cx - int(r * 1.5), cy - r), (cx + int(r * 1.5), cy + r)],
+            fill=(min(255, c[0] + 20), min(255, c[1] + 20), min(255, c[2] + 20), alpha),
+        )
+    return Image.alpha_composite(img, glow)
+
+
+def _add_noise_texture(img: Image.Image, intensity: int = 4) -> Image.Image:
+    """叠加极淡的噪点纹理，模拟纸质质感。"""
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    tile_size = 100
+    noise = Image.new("RGBA", (tile_size, tile_size), (0, 0, 0, 0))
+    import random
+    pixels = []
+    for _ in range(tile_size * tile_size):
+        if random.random() < 0.12:
+            v = random.randint(-intensity, intensity)
+            a = random.randint(2, 5)
+            pixels.append((128 + v, 128 + v, 128 + v, a))
+        else:
+            pixels.append((0, 0, 0, 0))
+    noise.putdata(pixels)
+    width, height = img.size
+    full_noise = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    for y in range(0, height, tile_size):
+        for x in range(0, width, tile_size):
+            full_noise.paste(noise, (x, y))
+    return Image.alpha_composite(img, full_noise)
+
+
 def _calc_font_size(text: str, max_width: int, target_size: int, min_size: int = 48) -> tuple[int, ImageFont.FreeTypeFont | ImageFont.ImageFont]:
     """根据文字长度动态计算字号，确保不溢出"""
     for size in range(target_size, min_size - 1, -4):
@@ -144,13 +203,13 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
     模板合成封面
     style可选: warm(暖调留白) / cool(冷调留白) / chat(聊天记录风) / blank(纯文字海报) / number(数字封面)
     """
-    img = Image.new("RGB", (COVER_WIDTH, COVER_HEIGHT), color="white")
-    draw = ImageDraw.Draw(img)
-
     p = PALETTE.get(style, PALETTE["warm"])
 
     # ── 背景 ──
-    if style in ("warm", "cool", "blank"):
+    img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (*p["bg_top"], 255))
+    draw = ImageDraw.Draw(img)
+
+    if style in ("warm", "cool", "warm_grey", "twilight", "crimson", "mist", "blank"):
         _draw_gradient_bg(draw, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
     elif style == "chat":
         # 微信聊天背景
@@ -163,6 +222,21 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
         draw.text((COVER_WIDTH // 2 - 60, 55), "下午 3:42", font=time_font, fill=(150, 150, 150))
     elif style == "number":
         _draw_gradient_bg(draw, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
+
+    # 装饰性大面积色块（仅非 chat/blank 风格）
+    if style not in ("chat", "blank"):
+        blob = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (0, 0, 0, 0))
+        blob_draw = ImageDraw.Draw(blob)
+        cx, cy = COVER_WIDTH // 2, COVER_HEIGHT // 3
+        for r in range(500, 0, -25):
+            ratio = r / 500
+            alpha = int(10 * (1 - ratio))
+            blob_draw.ellipse(
+                [(cx - int(r * 1.5), cy - r), (cx + int(r * 1.5), cy + r)],
+                fill=(*p["accent"], alpha),
+            )
+        img = Image.alpha_composite(img, blob)
+        draw = ImageDraw.Draw(img)
 
     # ── 安全边距 ──
     margin_x = 100
@@ -288,11 +362,12 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
             draw.text((x + 2, y_start + i * (title_size + 16) + 2), line, font=title_font, fill=(0, 0, 0, 20))
             draw.text((x, y_start + i * (title_size + 16)), line, font=title_font, fill=p["title"])
 
-        # 装饰细线
+        # 装饰细线（3px 圆角风格）
         line_y = y_start + title_h + 50
         bar_w = 60
-        draw.rectangle(
-            [((COVER_WIDTH - bar_w) // 2, line_y), ((COVER_WIDTH + bar_w) // 2, line_y + 5)],
+        draw.rounded_rectangle(
+            [((COVER_WIDTH - bar_w) // 2, line_y), ((COVER_WIDTH + bar_w) // 2, line_y + 3)],
+            radius=2,
             fill=p["accent"],
         )
 
@@ -306,6 +381,8 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
             x = (COVER_WIDTH - tw) // 2
             draw.text((x, y_sub + i * 58), line, font=sub_font, fill=p["subtitle"])
 
+    if img.mode == "RGBA":
+        img = img.convert("RGB")
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     img.save(output_path, quality=95)
     logger.info("模板封面已保存: %s (style=%s)", output_path, style)
@@ -341,7 +418,7 @@ def _http_get_with_retry(url: str, retries: int = 3, timeout: int = 120, **kwarg
     raise last_err
 
 
-def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str = "assets/cover_ai.png") -> str:
+def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm_grey", output_path: str = "assets/cover_ai.png") -> str:
     """
     方案1：AI绘画封面
     支持多后端：pollinations / dalle / fallback 模板合成
@@ -349,6 +426,7 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str =
     logger.info("正在生成AI绘画封面...")
     logger.info("背景prompt: %s...", prompt[:80])
 
+    p = PALETTE.get(style, PALETTE["warm_grey"])
     bg_img = None
 
     if IMAGE_PROVIDER == "pollinations":
@@ -385,33 +463,77 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str =
 
     if bg_img is None:
         logger.info("使用模板合成作为fallback...")
-        return generate_cover_template(title, subtitle, style="warm", output_path=output_path)
+        return generate_cover_template(title, subtitle, style=style, output_path=output_path)
 
     # 调整尺寸
     bg_img = bg_img.resize((COVER_WIDTH, COVER_HEIGHT), Image.LANCZOS)
     bg_img = bg_img.convert("RGBA")
 
-    # 底部1/3渐变遮罩（让文字清晰可读）
+    # 底部渐变遮罩（让文字清晰可读）
     overlay = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (0, 0, 0, 0))
     overlay_draw = ImageDraw.Draw(overlay)
-    mask_start = int(COVER_HEIGHT * 0.55)
+    mask_start = int(COVER_HEIGHT * 0.50)
+    mask_full = int(COVER_HEIGHT * 0.78)
     for y in range(mask_start, COVER_HEIGHT):
-        alpha = int(((y - mask_start) / (COVER_HEIGHT - mask_start)) * 180)
+        if y < mask_full:
+            ratio = (y - mask_start) / (mask_full - mask_start)
+            # 平滑缓入
+            ratio = ratio * ratio * (3 - 2 * ratio)
+            alpha = int(ratio * 160)
+        else:
+            alpha = 220
         overlay_draw.line([(0, y), (COVER_WIDTH, y)], fill=(0, 0, 0, alpha))
 
     composite = Image.alpha_composite(bg_img, overlay)
     draw = ImageDraw.Draw(composite)
 
-    # 文字区域：底部，左右留边距
-    margin_x = 80
+    # 文字区域计算
+    margin_x = 100
     max_text_w = COVER_WIDTH - margin_x * 2
-    text_area_top = int(COVER_HEIGHT * 0.62)
+    text_area_top = int(COVER_HEIGHT * 0.70)
 
-    # 标题：白色加粗，动态字号
-    title_size, title_font = _calc_font_size(title, max_text_w, 84)
+    title_size, title_font = _calc_font_size(title, max_text_w, 80)
     title_lines = _wrap_text(title, title_font, max_text_w)
-    title_h = len(title_lines) * (title_size + 16)
+    title_h = len(title_lines) * (title_size + 14)
 
+    sub_font = _get_font(34)
+    sub_lines = _wrap_text(subtitle, sub_font, max_text_w - 60)
+    sub_h = len(sub_lines) * 48
+
+    card_pad_x = 60
+    card_pad_y = 45
+    card_w = max_text_w + card_pad_x * 2
+    card_h = title_h + sub_h + 50 + card_pad_y * 2
+    card_x = (COVER_WIDTH - card_w) // 2
+    card_y = text_area_top - card_pad_y
+
+    # ── 毛玻璃卡片 ──
+    region = composite.crop((card_x, card_y, card_x + card_w, card_y + card_h))
+    blurred = region.filter(ImageFilter.GaussianBlur(radius=18))
+    frost = Image.new("RGBA", blurred.size, (255, 255, 255, 45))
+    frosted = Image.alpha_composite(blurred, frost)
+    composite.paste(frosted, (card_x, card_y))
+
+    # 卡片细边框
+    draw.rounded_rectangle(
+        [(card_x, card_y), (card_x + card_w, card_y + card_h)],
+        radius=24,
+        outline=(255, 255, 255, 55),
+        width=1,
+    )
+
+    # 装饰 accent 细线（标题上方）
+    decor_w = 40
+    decor_y = text_area_top - 14
+    draw.rectangle(
+        [((COVER_WIDTH - decor_w) // 2, decor_y), ((COVER_WIDTH + decor_w) // 2, decor_y + 2)],
+        fill=(*p["accent"], 200),
+    )
+
+    # 主题化阴影色（比纯黑更高级）
+    shadow_dark = (p["title"][0] // 4, p["title"][1] // 4, p["title"][2] // 4, 200)
+
+    # 标题
     y_title = text_area_top
     for i, line in enumerate(title_lines):
         try:
@@ -420,14 +542,11 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str =
         except (AttributeError, TypeError):
             tw = 0
         x = (COVER_WIDTH - tw) // 2
-        # 黑色阴影增强可读性
-        draw.text((x + 3, y_title + i * (title_size + 16) + 3), line, font=title_font, fill=(0, 0, 0, 200))
-        draw.text((x, y_title + i * (title_size + 16)), line, font=title_font, fill=(255, 255, 255, 255))
+        draw.text((x + 3, y_title + i * (title_size + 14) + 3), line, font=title_font, fill=shadow_dark)
+        draw.text((x, y_title + i * (title_size + 14)), line, font=title_font, fill=(255, 255, 255, 255))
 
     # 副标题
-    sub_font = _get_font(36)
-    sub_lines = _wrap_text(subtitle, sub_font, max_text_w - 60)
-    y_sub = y_title + title_h + 40
+    y_sub = y_title + title_h + 30
     for i, line in enumerate(sub_lines):
         try:
             bbox = sub_font.getbbox(line)
@@ -435,8 +554,8 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str =
         except (AttributeError, TypeError):
             tw = 0
         x = (COVER_WIDTH - tw) // 2
-        draw.text((x + 2, y_sub + i * 54 + 2), line, font=sub_font, fill=(0, 0, 0, 150))
-        draw.text((x, y_sub + i * 54), line, font=sub_font, fill=(255, 255, 255, 230))
+        draw.text((x + 2, y_sub + i * 48 + 2), line, font=sub_font, fill=(*p["title"], 160))
+        draw.text((x, y_sub + i * 48), line, font=sub_font, fill=(255, 255, 255, 235))
 
     final = composite.convert("RGB")
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
@@ -446,98 +565,298 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, output_path: str =
 
 
 # ═══════════════════════════════════════════════════════════
-# 内页文字图生成
+# 内页文字图生成 — 小红书「呼吸感」排版
 # ═══════════════════════════════════════════════════════════
 
-def generate_inner_page(text: str, page_num: int, style: str = "warm", output_path: str = "assets/inner_page.png") -> str | None:
-    """把单页文字渲染成小红书风格内页图——大留白、居中、有设计感"""
-    img = Image.new("RGB", (COVER_WIDTH, COVER_HEIGHT), color="white")
-    draw = ImageDraw.Draw(img)
-    p = PALETTE.get(style, PALETTE["warm"])
+# 视觉锚点符号（统一风格，不超过3种变体）
+ANCHOR_SYMBOLS = ["\u25cf", "\u25cb", "\u25cf"]  # solid circle, hollow circle, solid circle
 
-    # 背景渐变
+
+# 内页排版常量（供分页和渲染共用）
+_BASE_FONT_SIZE = 42
+_LINE_HEIGHT = int(_BASE_FONT_SIZE * 1.5)
+_PARA_SPACING = int(_BASE_FONT_SIZE * 1.8)
+_MAX_TEXT_W = int(COVER_WIDTH * 0.55)
+
+
+def _paginate_blocks(blocks: list) -> list:
+    """将 blocks 分页，返回 list[list[block]]，不含渲染，只计算分页。"""
+    body_font = _get_font(_BASE_FONT_SIZE, bold=False)
+    body_font_bold = _get_font(_BASE_FONT_SIZE + 4, bold=True)
+    render_blocks = []
+    for para_text, is_bold, is_sep in blocks:
+        if is_sep:
+            render_blocks.append(('__separator__', False, 0))
+            continue
+        font = body_font_bold if is_bold else body_font
+        wrapped = _wrap_text(para_text, font, _MAX_TEXT_W)
+        sub_chunks = []
+        for i in range(0, len(wrapped), 3):
+            sub_chunks.append(wrapped[i:i+3])
+        for chunk in sub_chunks:
+            render_blocks.append((chunk, is_bold, len(chunk)))
+
+    y_start = 280
+    y_end = COVER_HEIGHT - 120
+    usable_height = y_end - y_start
+
+    pages = []
+    current_page = []
+    current_height = 0
+    for item in render_blocks:
+        tag, is_bold, line_count = item
+        if tag == '__separator__':
+            if current_height + _LINE_HEIGHT // 2 > usable_height and current_page:
+                pages.append(current_page)
+                current_page = []
+                current_height = 0
+            current_page.append(('__separator__', False, 0))
+            current_height += _LINE_HEIGHT // 2
+        else:
+            block_height = line_count * _LINE_HEIGHT
+            if current_page:
+                block_height += _PARA_SPACING
+            if current_height + block_height > usable_height and current_page:
+                pages.append(current_page)
+                current_page = []
+                current_height = 0
+                block_height = line_count * _LINE_HEIGHT
+            current_page.append((tag, is_bold, line_count))
+            current_height += block_height
+
+    if current_page:
+        pages.append(current_page)
+    return pages
+
+
+def generate_inner_page(text: str, page_num: int, total_pages: int, style: str = "warm_grey",
+                        output_path: str = "assets/inner_page.png") -> str | None:
+    """把单页文字渲染成小红书风格内页图——呼吸感排版，左对齐，短段落，视觉锚点"""
+    p = PALETTE.get(style, PALETTE["warm_grey"])
+
+    img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (*p["bg_top"], 255))
+    draw = ImageDraw.Draw(img)
     _draw_gradient_bg(draw, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
+
+    # 叠加 center glow 和纸质噪点
+    img = _add_center_glow(img, p)
+    img = _add_noise_texture(img, intensity=3)
+    img = img.convert("RGB")
+    draw = ImageDraw.Draw(img)
 
     text = text.strip()
     if not text:
         return None
 
-    # 拆分行并识别加粗
-    raw_lines = []
-    for l in text.split('\n'):
-        l = l.strip()
-        if not l:
+    # 解析段落：保留 --- 分隔符、**加粗**标记
+    raw_paragraphs = text.split('\n')
+    blocks = []  # 每段是 (text, is_bold, is_separator)
+    for raw in raw_paragraphs:
+        stripped = raw.strip()
+        if not stripped:
             continue
-        is_bold = l.startswith('**') and l.endswith('**')
-        if is_bold:
-            l = l[2:-2].strip()
-        raw_lines.append((l, is_bold))
+        if stripped == '---':
+            blocks.append(('', False, True))
+            continue
+        if stripped.startswith('#') or any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】']):
+            continue
+        # 支持行内 **bold** 标记，并移除不支持的 emoji
+        is_bold = bool(re.search(r'\*\*(.*?)\*\*', stripped))
+        clean = re.sub(r'\*\*(.*?)\*\*', lambda m: m.group(1), stripped).strip()
+        clean = re.sub(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+", '', clean).strip()
+        if clean:
+            blocks.append((clean, is_bold, False))
 
-    if not raw_lines:
+    if not blocks:
         return None
 
-    margin_x = 140
-    max_text_w = COVER_WIDTH - margin_x * 2
+    # 分页
+    pages = _paginate_blocks(blocks)
 
-    # 动态字号：行数越少字越大，小红书风格
-    n = len(raw_lines)
-    if n <= 2:
-        font_size = 64
-    elif n <= 4:
-        font_size = 56
-    elif n <= 6:
-        font_size = 48
-    else:
-        font_size = 44
+    if not pages or page_num > len(pages):
+        return None
+    page_blocks = pages[page_num - 1]
 
-    font = _get_font(font_size, bold=False)
-    bold_font = _get_font(font_size, bold=True)
+    # 渲染参数
+    margin_left = 140
+    x_start = margin_left
+    base_font_size = _BASE_FONT_SIZE
+    line_height = _LINE_HEIGHT
+    para_spacing = _PARA_SPACING
+    body_font = _get_font(base_font_size, bold=False)
+    body_font_bold = _get_font(base_font_size + 4, bold=True)
+    y_start = 280
 
-    # 逐行 wrap
-    lines = []
-    for line, is_bold in raw_lines:
-        wrapped = _wrap_text(line, font, max_text_w)
-        for w in wrapped:
-            lines.append((w, is_bold))
+    # 绘制当前页
+    y = y_start
+    anchor_idx = (page_num - 1) % len(ANCHOR_SYMBOLS)
 
-    # wrap 后如果超过 10 行，缩小字号
-    while len(lines) > 10 and font_size > 32:
-        font_size -= 4
-        font = _get_font(font_size, bold=False)
-        bold_font = _get_font(font_size, bold=True)
-        lines = []
-        for line, is_bold in raw_lines:
-            wrapped = _wrap_text(line, font, max_text_w)
-            for w in wrapped:
-                lines.append((w, is_bold))
+    # 高亮块底色（accent 15% + bg_top 85%）
+    bg_top = p["bg_top"]
+    accent = p["accent"]
+    highlight_bg = (
+        int(accent[0] * 0.35 + bg_top[0] * 0.65),
+        int(accent[1] * 0.35 + bg_top[1] * 0.65),
+        int(accent[2] * 0.35 + bg_top[2] * 0.65),
+    )
 
-    # 布局：文字居中偏上，大量留白
-    line_height = int(font_size * 1.8)
-    total_h = len(lines) * line_height
-    y_start = max(340, (COVER_HEIGHT - total_h) // 2 - 60)
-    if y_start + total_h > COVER_HEIGHT - 120:
-        y_start = COVER_HEIGHT - 120 - total_h
+    # 最后一页：把剩余空间均匀分配到段落间距，让收尾更舒展
+    actual_para_spacing = para_spacing
+    if page_num == total_pages:
+        raw_height = 0
+        has_content = False
+        for block in page_blocks:
+            tag, is_bold, line_count = block
+            if tag == '__separator__':
+                raw_height += line_height // 2
+            else:
+                raw_height += line_count * line_height
+                if has_content:
+                    raw_height += para_spacing
+                has_content = True
+        usable_height = (COVER_HEIGHT - 120) - y_start
+        remaining = usable_height - raw_height
+        text_block_count = sum(1 for b in page_blocks if b[0] != '__separator__')
+        if text_block_count > 1 and remaining > 0:
+            actual_para_spacing = para_spacing + remaining // text_block_count
 
-    # 渲染文字（居中）
-    for i, (line, is_bold) in enumerate(lines):
-        f = bold_font if is_bold else font
-        try:
-            bbox = f.getbbox(line)
-            tw = bbox[2] - bbox[0]
-        except (AttributeError, TypeError):
-            tw = 0
-        x = (COVER_WIDTH - tw) // 2
-        draw.text((x, y_start + i * line_height), line, font=f, fill=p["title"])
+    # 控制锚点密度：每页最多前 3 个文字段落显示锚点
+    text_block_indices = [i for i, b in enumerate(page_blocks) if b[0] != '__separator__']
+    anchor_allowed = set(text_block_indices[:3])
+
+    # 正文色阶控制：首段/分隔符后使用 title 色，其余使用 body 色
+    after_sep_or_first = True
+
+    for block_idx, block in enumerate(page_blocks):
+        tag, is_bold, line_count = block
+        if tag == '__separator__':
+            sep_x1 = x_start
+            sep_x2 = x_start + 80
+            sep_y = y + line_height // 2 - 2
+            draw.rectangle([(sep_x1, sep_y), (sep_x2, sep_y + 2)], fill=p["accent"])
+            y += line_height // 2 + actual_para_spacing // 2
+            after_sep_or_first = True
+            continue
+
+        font = body_font_bold if is_bold else body_font
+
+        # 最后一页最后一段：短句居中放大，作为视觉落点
+        # 找到最后一个非 separator 的 block（忽略末尾的 separator）
+        last_text_idx = max((i for i, b in enumerate(page_blocks) if b[0] != '__separator__'), default=-1)
+        is_last_block = (block_idx == len(page_blocks) - 1)
+        is_last_text_block = (block_idx == last_text_idx)
+        is_last_page = (page_num == total_pages)
+        is_short = line_count <= 2 and sum(len(line) for line in tag) <= 24
+
+        if is_last_page and is_last_text_block and is_short:
+            # 装饰细线
+            decor_y = y - 20
+            decor_w = 50
+            draw.rectangle(
+                [((COVER_WIDTH - decor_w) // 2, decor_y), ((COVER_WIDTH + decor_w) // 2, decor_y + 2)],
+                fill=p["accent"],
+            )
+            y = decor_y + 30
+
+            # 放大字号并居中
+            large_size = base_font_size + 8
+            large_font = _get_font(large_size, bold=True)
+            large_lines = _wrap_text(''.join(tag), large_font, _MAX_TEXT_W)
+            large_line_h = int(large_size * 1.5)
+            for line in large_lines:
+                try:
+                    bbox = large_font.getbbox(line)
+                    lw = bbox[2] - bbox[0]
+                except Exception:
+                    lw = 0
+                x = (COVER_WIDTH - lw) // 2
+                draw.text((x, y), line, font=large_font, fill=p["highlight"])
+                y += large_line_h
+            y += actual_para_spacing
+            continue
+
+        # 金句高亮块
+        if is_bold:
+            max_line_w = 0
+            for line in tag:
+                try:
+                    bbox = font.getbbox(line)
+                    lw = bbox[2] - bbox[0]
+                except Exception:
+                    lw = 0
+                max_line_w = max(max_line_w, lw)
+            block_h = line_count * line_height
+            pad_x = 24
+            pad_y = 16
+            rect_x1 = x_start - pad_x
+            rect_y1 = y - pad_y
+            rect_x2 = x_start + max_line_w + pad_x
+            rect_y2 = y + block_h + pad_y
+            rect_x2 = min(rect_x2, COVER_WIDTH - 40)
+            draw.rounded_rectangle(
+                [(rect_x1, rect_y1), (rect_x2, rect_y2)],
+                radius=16,
+                fill=highlight_bg,
+            )
+
+        # 锚点
+        use_anchor = block_idx in anchor_allowed and not (is_last_page and is_last_text_block)
+
+        dot_size = int(base_font_size * 0.4)
+        dot_radius = dot_size // 2
+
+        # 确定本段文字颜色
+        if is_bold:
+            text_color = p["highlight"]
+        elif after_sep_or_first:
+            text_color = p["title"]
+        else:
+            text_color = p["body"]
+
+        for i, line in enumerate(tag):
+            if i == 0 and use_anchor:
+                dot_x = x_start + dot_radius
+                dot_y_center = y + dot_radius
+                anchor_sym = ANCHOR_SYMBOLS[anchor_idx]
+                if anchor_sym == "\u25cf":
+                    draw.ellipse(
+                        [(dot_x - dot_radius, dot_y_center - dot_radius),
+                         (dot_x + dot_radius, dot_y_center + dot_radius)],
+                        fill=p["accent"],
+                    )
+                else:
+                    draw.ellipse(
+                        [(dot_x - dot_radius, dot_y_center - dot_radius),
+                         (dot_x + dot_radius, dot_y_center + dot_radius)],
+                        outline=p["accent"],
+                        width=2,
+                    )
+                anchor_x = x_start + dot_size + int(base_font_size * 0.5)
+            else:
+                anchor_x = x_start
+
+            draw.text((anchor_x, y), line, font=font, fill=text_color)
+            y += line_height
+
+        y += actual_para_spacing
+        after_sep_or_first = False
 
     # 底部页码
-    page_font = _get_font(18)
-    page_text = f"{page_num}"
+    page_font = _get_font(20)
+    page_text = f"— {page_num} / {total_pages} —"
     try:
         bbox = page_font.getbbox(page_text)
         tw = bbox[2] - bbox[0]
     except Exception:
         tw = 0
-    draw.text((COVER_WIDTH - margin_x - tw, COVER_HEIGHT - 80), page_text, font=page_font, fill=p["subtitle"])
+    page_y = COVER_HEIGHT - 70
+    # 页码上方细线装饰
+    line_w = 30
+    draw.rectangle(
+        [((COVER_WIDTH - line_w) // 2, page_y - 14), ((COVER_WIDTH + line_w) // 2, page_y - 12)],
+        fill=p["accent"],
+    )
+    draw.text(((COVER_WIDTH - tw) // 2, page_y), page_text, font=page_font, fill=p["subtitle"])
 
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     img.save(output_path, quality=95)
@@ -545,16 +864,13 @@ def generate_inner_page(text: str, page_num: int, style: str = "warm", output_pa
     return output_path
 
 
-def generate_inner_pages(content: str, out_dir: str, style: str = "warm") -> list[str]:
+def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -> list[str]:
     """解析笔记正文，生成所有内页图"""
     # 提取正文部分
-    # 兼容 **【正文】** 等 Markdown 加粗标记
     body_match = re.search(r'\*?【正文】\*?\s*\n+(.*?)(?:\n\s*\*?【金句】\*?|\n\s*#{1,6}\s*\[?金句\]?|$)', content, re.DOTALL)
     if not body_match:
-        # fallback 1: 尝试匹配没有标记的正文
         body_match = re.search(r'#{1,6}\s*\[?正文\]?.*?\n(.*?)(?:\n\s*#{1,6}\s*\[?金句\]?|$)', content, re.DOTALL)
     if not body_match:
-        # fallback 2: 匹配封面页和第一个发布标记之间的内容
         body_match = re.search(
             r'\*?【(?:封面页|封面)】\*?[\s\S]*?(?:\n\s*---+\s*\n|\n\n)(.*?)(?:\n\s*\*?【(?:金句|互动钩子|话题标签|标题候选)】\*?|\n\s*#{1,6}\s*\[?(?:金句|互动钩子|话题标签|标题候选)\]?|$)',
             content,
@@ -566,49 +882,80 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm") -> lis
         return []
 
     body = body_match.group(1).strip()
-    pages = re.split(r'\n\s*---\s*\n', body)
-    pages = [p.strip() for p in pages if p.strip()]
 
-    if not pages:
-        logger.warning("正文未分页，跳过内页生成")
-        return []
+    # 保留 --- 分隔符，收集所有正文行
+    all_lines = []
+    for line in body.split('\n'):
+        stripped = line.strip()
+        if any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】', '【标题候选】', '【封面页】', '【正文】']):
+            continue
+        if stripped.startswith('#') and not stripped.startswith('##'):
+            continue
+        if stripped.startswith('【') and '】' in stripped:
+            continue
+        all_lines.append(stripped)
 
-    # 过滤发布元数据 + 按每页最多8行重新拆分
-    final_pages = []
-    for page in pages:
-        lines = page.split('\n')
-        clean_lines = []
-        for line in lines:
-            stripped = line.strip()
-            if not stripped:
-                continue
-            # 跳过发布元数据标记
-            if any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】', '【标题候选】', '【封面页】', '【正文】']):
-                continue
-            # 跳过纯话题标签行
-            if stripped.startswith('#') and not stripped.startswith('##'):
-                continue
-            clean_lines.append(stripped)
-
-        # 按每页最多8行拆分（小红书风格：少量文字+大量留白）
-        for i in range(0, len(clean_lines), 8):
-            final_pages.append('\n'.join(clean_lines[i:i + 8]))
-
-    if not final_pages:
+    if not all_lines:
         logger.warning("正文过滤后为空，跳过内页生成")
         return []
 
-    logger.info("📄 提取到 %d 页内页，开始生成...", len(final_pages))
-    paths = []
-    for i, page_text in enumerate(final_pages, 1):
-        path = f"{out_dir}/inner_page_{i}.png"
-        result = generate_inner_page(page_text, i, style=style, output_path=path)
-        if result:
-            paths.append(result)
+    # 将所有行合并为一段文本（保留 --- 分隔符）
+    full_text = '\n'.join(all_lines)
 
+    # 解析 blocks（与 generate_inner_page 保持一致）
+    raw_paragraphs = full_text.split('\n')
+    blocks = []
+    for raw in raw_paragraphs:
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        if stripped == '---':
+            blocks.append(('', False, True))
+            continue
+        if stripped.startswith('#') or any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】']):
+            continue
+        # 支持行内 **bold** 标记，并移除不支持的 emoji
+        is_bold = bool(re.search(r'\*\*(.*?)\*\*', stripped))
+        clean = re.sub(r'\*\*(.*?)\*\*', lambda m: m.group(1), stripped).strip()
+        clean = re.sub(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+", '', clean).strip()
+        if clean:
+            blocks.append((clean, is_bold, False))
+
+    if not blocks:
+        logger.warning("正文解析后无有效内容，跳过内页生成")
+        return []
+
+    # 精确分页，得到准确总页数
+    pages = _paginate_blocks(blocks)
+    total_pages = len(pages)
+    if total_pages == 0:
+        logger.warning("分页后无内容，跳过内页生成")
+        return []
+
+    logger.info("📄 共 %d 页内页，开始生成...", total_pages)
+
+    def _render_page(page_num: int) -> str | None:
+        path = f"{out_dir}/inner_page_{page_num}.png"
+        return generate_inner_page(full_text, page_num, total_pages, style=style, output_path=path)
+
+    paths = []
+    max_workers = min(4, total_pages)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(_render_page, page_num): page_num for page_num in range(1, total_pages + 1)}
+        for future in concurrent.futures.as_completed(futures):
+            page_num = futures[future]
+            try:
+                result = future.result()
+                if result:
+                    paths.append(result)
+                else:
+                    logger.warning("第 %d 页生成为空", page_num)
+            except Exception as e:
+                logger.error("第 %d 页生成异常: %s", page_num, e)
+
+    paths.sort()
     logger.info("✅ 内页生成完成，共 %d 张", len(paths))
     return paths
-
 
 # ═══════════════════════════════════════════════════════════
 # 批量生成入口

@@ -4,6 +4,7 @@ import os
 import platform
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -28,6 +29,25 @@ PROMPTS_DIR = PROJECT_ROOT / "prompts"
 # 图片生成配置
 IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "pollinations").lower()
 IMAGE_API_KEY = os.getenv("IMAGE_API_KEY", "")
+
+
+# ── 跨平台文件锁 ──
+if platform.system() in ("Linux", "Darwin"):
+    import fcntl
+
+    def _lock_file(f, exclusive: bool = True) -> None:
+        op = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
+        fcntl.flock(f.fileno(), op)
+
+    def _unlock_file(f) -> None:
+        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+else:
+    # Windows fallback：使用 lockfile 机制
+    def _lock_file(f, exclusive: bool = True) -> None:
+        pass  # TODO: Windows 下可引入 pywin32 或 filelock
+
+    def _unlock_file(f) -> None:
+        pass
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -94,12 +114,22 @@ def load_topics_json() -> dict:
             f"选题池文件不存在: {path}。请先创建 data/topics.json。"
         )
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        _lock_file(f, exclusive=False)
+        try:
+            return json.load(f)
+        finally:
+            _unlock_file(f)
 
 
 def save_topics_json(data: dict) -> None:
     """保存选题池 JSON。"""
-    _atomic_write_json(DATA_DIR / "topics.json", data)
+    path = DATA_DIR / "topics.json"
+    with open(path, "a+", encoding="utf-8") as f:
+        _lock_file(f, exclusive=True)
+        try:
+            _atomic_write_json(path, data)
+        finally:
+            _unlock_file(f)
 
 
 def load_performance_json() -> dict:
@@ -114,12 +144,22 @@ def load_performance_json() -> dict:
             "current_streak_underperform": 0,
         }}
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        _lock_file(f, exclusive=False)
+        try:
+            return json.load(f)
+        finally:
+            _unlock_file(f)
 
 
 def save_performance_json(data: dict) -> None:
     """保存发布数据 JSON。"""
-    _atomic_write_json(DATA_DIR / "performance.json", data)
+    path = DATA_DIR / "performance.json"
+    with open(path, "a+", encoding="utf-8") as f:
+        _lock_file(f, exclusive=True)
+        try:
+            _atomic_write_json(path, data)
+        finally:
+            _unlock_file(f)
 
 
 def init() -> None:

@@ -99,6 +99,21 @@ def _extract_cover_info(content: str) -> dict:
     return info
 
 
+def _extract_visual_style(content: str) -> str:
+    """从AI生成的Markdown中提取视觉风格标签。"""
+    m = re.search(
+        r'[\[【\*]*(?:视觉风格|风格|style)[\]】\*]*[:：]\s*\n?\s*`?([a-z_]+)`?',
+        content,
+        re.IGNORECASE,
+    )
+    if m:
+        style = m.group(1).strip().lower()
+        valid_styles = {"warm_grey", "twilight", "crimson", "mist", "cool", "warm", "blank"}
+        if style in valid_styles:
+            return style
+    return "warm_grey"
+
+
 def _write_note_file(output_file: str, brief: dict, result: dict, review: dict, cover_paths: dict, inner_paths: list, preset_comments: dict) -> None:
     """将笔记及相关产物写入 Markdown 文件。"""
     with open(output_file, "w", encoding="utf-8") as f:
@@ -148,9 +163,10 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
     result = write_note(brief)
     logger.info("笔记创作完成，字数约 %d", len(result["content"]))
 
-    # Step 2: 提取封面信息
+    # Step 2: 提取封面信息 & 视觉风格
     cover_info = _extract_cover_info(result["content"])
-    logger.info("封面信息 — 标题: %s | 小字: %s", cover_info['title'] or '(未提取)', cover_info['subtitle'] or '(未提取)')
+    style_tag = _extract_visual_style(result["content"])
+    logger.info("封面信息 — 标题: %s | 小字: %s | 风格: %s", cover_info['title'] or '(未提取)', cover_info['subtitle'] or '(未提取)', style_tag)
 
     # Step 3: 生成封面（仅AI绘画方案）
     cover_paths = {}
@@ -160,6 +176,7 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
                 prompt=cover_info["prompt"],
                 title=cover_info["title"],
                 subtitle=cover_info["subtitle"],
+                style=style_tag,
                 output_path=os.path.join(out_dir, "cover_ai.png"),
             )
         except Exception as e:
@@ -168,7 +185,7 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
     # Step 4: 生成内页图
     inner_paths = []
     try:
-        inner_paths = generate_inner_pages(result["content"], out_dir, style="warm")
+        inner_paths = generate_inner_pages(result["content"], out_dir, style=style_tag)
     except Exception as e:
         logger.warning("内页图生成失败: %s", e)
 

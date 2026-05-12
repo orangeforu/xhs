@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 import shutil
 from datetime import datetime, timezone
 
@@ -91,6 +92,38 @@ def _check_circuit_breaker() -> tuple[bool, int]:
 
 cb_tripped, cb_streak = _check_circuit_breaker()
 
+
+# ── 发布辅助函数 ──
+def _extract_title_candidates(content: str) -> list[str]:
+    """从 note.md 提取标题候选列表。"""
+    titles = []
+    m = re.search(r"【标题候选】\s*(.+?)\s*(?=【|$)", content, re.DOTALL)
+    if m:
+        block = m.group(1).strip()
+        for line in block.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            cleaned = re.sub(r"^\d+[\.、]\s*", "", line)
+            cleaned = re.sub(r"^[\s*_`]+|[\s*_`]+$", "", cleaned)
+            if cleaned:
+                titles.append(cleaned)
+    return titles
+
+
+def _extract_body_for_publish(content: str) -> str:
+    """提取并格式化正文，适合小红书发布。"""
+    m = re.search(r"【正文】\s*(.+?)(?=## 预设评论|$)", content, re.DOTALL)
+    if not m:
+        return ""
+    body = m.group(1).strip()
+    body = re.sub(r"\*\*(.+?)\*\*", r"\1", body)
+    body = re.sub(r"\n\s*---\s*\n", "\n\n", body)
+    body = re.sub(r"^#+\s*", "", body, flags=re.MULTILINE)
+    body = re.sub(r"\n{3,}", "\n\n", body)
+    return body.strip()
+
+
 # ── Sidebar ──
 st.sidebar.header("📊 数据看板")
 st.sidebar.metric("本月目标", f"{total_count}篇", f"已生成 {generated_count}篇")
@@ -116,7 +149,7 @@ if st.sidebar.button("📁 打开项目文件夹"):
     open_folder(os.path.dirname(os.path.abspath(__file__)))
 
 # ── Main Tabs ──
-tab1, tab2, tab3, tab4 = st.tabs(["📝 待审核笔记", "📚 选题池", "📖 创作标准", "📈 数据复盘"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📝 待审核笔记", "📚 选题池", "📖 创作标准", "📈 数据复盘", "🚀 一键发布助手"])
 
 # Tab 1: 待审核笔记
 with tab1:
@@ -352,3 +385,73 @@ with tab4:
                     save_performance_json(performance)
                     st.success(f"{topic} 数据已保存！")
                     st.rerun()
+
+# Tab 5: 一键发布助手
+with tab5:
+    st.header("🚀 一键发布助手")
+    st.caption("选择笔记 → 挑选标题 → 复制正文 → 按顺序上传图片 → 粘贴预设评论")
+
+    eligible_topics = [t for t in topics if t.get("status") in ("generated", "published")]
+    if not eligible_topics:
+        st.info("暂无可发布的笔记。先在 Terminal 运行 `python pipeline.py --index N` 生成笔记。")
+    else:
+        options = {f"{t['topic']} ({'待审核' if t.get('status') == 'generated' else '已发布'})": t for t in eligible_topics}
+        selected_label = st.selectbox("选择要发布的笔记", list(options.keys()))
+        selected_topic = options[selected_label]
+
+        out_dir = selected_topic.get("output_dir", "")
+        note_path = os.path.join(out_dir, "note.md") if out_dir else ""
+
+        if not (note_path and os.path.exists(note_path)):
+            st.error(f"找不到笔记文件：{note_path}")
+        else:
+            with open(note_path, "r", encoding="utf-8") as f:
+                raw_content = f.read()
+
+            titles = _extract_title_candidates(raw_content)
+            body = _extract_body_for_publish(raw_content)
+            tags = selected_topic.get("tags", [])
+            hashtags = " ".join([f"#{tag}" for tag in tags])
+
+            col_left, col_right = st.columns([1, 1])
+
+            with col_left:
+                st.subheader("1️⃣ 选择标题")
+                if titles:
+                    selected_title = st.radio("推荐标题（选一个）", titles, index=0)
+                else:
+                    selected_title = st.text_input("自定义标题", value=selected_topic.get("topic", ""))
+
+                st.subheader("2️⃣ 发布正文")
+                full_text = f"{body}\n\n{hashtags}".strip()
+                st.text_area(
+                    "点击文本框，按 Ctrl+A 全选后复制",
+                    full_text,
+                    height=280,
+                    key="publish_body",
+                )
+
+                if "## 预设评论" in raw_content:
+                    preset = raw_content.split("## 预设评论")[1].strip()
+                    st.subheader("4️⃣ 预设评论（发布后粘贴到评论区）")
+                    st.text_area("", preset, height=120, key="publish_preset")
+
+            with col_right:
+                st.subheader("3️⃣ 图片上传顺序")
+                image_files = sorted(
+                    glob.glob(os.path.join(out_dir, "*.png")),
+                    key=lambda x: (
+                        0 if "cover" in os.path.basename(x).lower() else 1,
+                        os.path.basename(x),
+                    ),
+                )
+                if not image_files:
+                    st.warning("该笔记目录下没有找到图片。")
+                else:
+                    for i, img_path in enumerate(image_files, 1):
+                        fname = os.path.basename(img_path)
+                        st.caption(f"第{i}张 · {fname}")
+                        st.image(img_path, use_container_width=True)
+                        if i == 1:
+                            st.info("☝️ 第一张是封面，上传时记得放在最前面")
+                        st.divider()

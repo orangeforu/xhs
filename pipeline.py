@@ -72,7 +72,7 @@ def _extract_cover_info(content: str) -> dict:
     # 背景建议 -> AI绘画prompt（优先提取英文 prompt）
     # 先尝试匹配明确的英文 prompt 标记（兼容中间有空格、AI、绘画、**加粗等变体）
     m = re.search(
-        r'(?:英文\s*AI\s*绘画\s*prompt|英文\s*AI\s*prompt|英文\s*prompt|AI\s*绘画\s*prompt|English\s*prompt)\*?[:：]\s*\n?\s*(?:[-–]\s*)?(.+?)(?:\n\n|\n#|\n【|$)',
+        r'(?:英文\s*AI\s*绘画\s*prompt|英文\s*AI\s*prompt|英文\s*prompt|AI\s*绘画\s*prompt|English\s*prompt)\*{0,2}[:：]\s*\n?\s*(?:[-–]\s*)?(.+?)(?:\n\n|\n#|\n【|$)',
         content,
         re.IGNORECASE | re.DOTALL,
     )
@@ -91,12 +91,85 @@ def _extract_cover_info(content: str) -> dict:
             topic_hint = info['title'] or 'emotional warmth'
             info["prompt"] = f"A soft emotional aesthetic scene related to {topic_hint}, warm lighting, minimalist"
 
+    # 安全校验：确保封面 prompt 不会生成恐怖/阴冷氛围
+    info["prompt"] = _sanitize_prompt(info["prompt"])
+
     if not info["title"]:
         logger.warning("未能从笔记中提取封面标题，将跳过封面生成")
     if not info["subtitle"]:
         logger.warning("未能从笔记中提取封面副标题，将跳过封面生成")
 
     return info
+
+
+def _sanitize_prompt(prompt: str) -> str:
+    """校验并修正 AI 绘画 prompt，防止生成恐怖/阴冷氛围。"""
+    if not prompt:
+        return prompt
+
+    # 阴冷/恐怖关键词列表（不区分大小写）
+    cold_keywords = [
+        "dimly lit", "dark room", "cold-toned", "cold toned",
+        "cold light", "silhouette", "empty room", "uncanny", "eerie", "creepy",
+        "haunted", "gloomy", "desolate", "hollow", "void",
+        "pitch black", "pitch-black", "shadowy", "ominous",
+        "bleak", "dreary", "forlorn", "abandoned",
+        "darkness", "no light", "black background",
+        "monochrome gray", "monochrome grey", "grayscale",
+    ]
+
+    lowered = prompt.lower()
+    found_cold = [kw for kw in cold_keywords if kw in lowered]
+
+    if found_cold:
+        logger.warning("封面 prompt 检测到阴冷关键词 %s，自动修正为温暖氛围", found_cold)
+        # 替换阴冷关键词为温暖描述（保持语法通顺）
+        replacements = {
+            "dimly lit": "softly lit",
+            "dark room": "warm cozy room",
+            "cold-toned": "warm-toned",
+            "cold toned": "warm toned",
+            "cold light": "warm glow",
+            "silhouette": "soft profile",
+            "empty room": "cozy room with soft textures",
+            "uncanny": "gentle",
+            "eerie": "peaceful",
+            "creepy": "warm",
+            "haunted": "serene",
+            "gloomy": "softly glowing",
+            "desolate": "quietly comforting",
+            "hollow": "tender",
+            "void": "warm space",
+            "pitch black": "soft twilight",
+            "pitch-black": "soft twilight",
+            "shadowy": "dappled with warm light",
+            "ominous": "gentle",
+            "bleak": "softly lit",
+            "dreary": "warm and calm",
+            "forlorn": "peaceful",
+            "abandoned": "quietly lived-in",
+            "darkness": "soft warm glow",
+            "no light": "gentle warm light",
+            "black background": "soft cream background",
+            "monochrome gray": "soft pastel tones",
+            "monochrome grey": "soft pastel tones",
+            "grayscale": "warm muted tones",
+        }
+        for bad, good in replacements.items():
+            prompt = re.sub(re.escape(bad), good, prompt, flags=re.IGNORECASE)
+
+    # 强制追加温暖安全词（如果不存在）
+    warm_safeguards = [
+        "soft warm lighting",
+        "cozy atmosphere",
+        "gentle pastel tones",
+        "emotional warmth",
+    ]
+    for safeguard in warm_safeguards:
+        if safeguard not in lowered:
+            prompt += f", {safeguard}"
+
+    return prompt.strip(", ")
 
 
 def _extract_visual_style(content: str) -> str:
@@ -194,14 +267,18 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
     review = review_note(result["content"])
     logger.info("审核等级: %s", review.get("grade", "B"))
 
-    # Step 5b: C级自动重写
-    if review.get("grade") == "C":
-        logger.warning("审核为 C 级，触发自动重写...")
+    # Step 5b: C级自动重写，B级也触发优化
+    grade = review.get("grade", "B")
+    if grade in ("C", "B"):
+        level = "C" if grade == "C" else "B"
+        logger.warning("审核为 %s 级，触发优化重写...", level)
         suggestions = ""
         if review.get("raw_json"):
             issues = review["raw_json"].get("issues", [])
             sugs = review["raw_json"].get("suggestions", [])
             suggestions = "\n".join([f"- {i}" for i in issues] + [f"- {s}" for s in sugs])
+        if grade == "B":
+            suggestions += "\n- 当前内容结构及格但情绪平淡、画面感弱或金句不够扎心。请增强情绪冲击力，增加具体感官细节（温度、光线、气味、触感），让金句更新鲜有穿透力。减少'原来...是...''现在我懂了''你看'等分析结论句式。"
         rewrite_brief = dict(brief)
         rewrite_brief["_rewrite_instructions"] = suggestions or "大幅优化故事节奏，减少分析腔和说教"
         result = write_note(rewrite_brief)

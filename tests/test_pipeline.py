@@ -32,7 +32,8 @@ class TestExtractCoverInfo(unittest.TestCase):
         info = _extract_cover_info(content)
         self.assertEqual(info["title"], "测试标题")
         self.assertEqual(info["subtitle"], "测试小字")
-        self.assertEqual(info["prompt"], "A test prompt")
+        self.assertIn("A test prompt", info["prompt"])
+        self.assertIn("soft warm lighting", info["prompt"])
 
     def test_fallback_prompt_extraction(self):
         content = """
@@ -47,7 +48,8 @@ class TestExtractCoverInfo(unittest.TestCase):
         info = _extract_cover_info(content)
         self.assertEqual(info["title"], "标题")
         self.assertEqual(info["subtitle"], "小字")
-        self.assertEqual(info["prompt"], "一个测试场景描述")
+        self.assertIn("一个测试场景描述", info["prompt"])
+        self.assertIn("soft warm lighting", info["prompt"])
 
     def test_missing_title(self):
         info = _extract_cover_info("没有封面信息")

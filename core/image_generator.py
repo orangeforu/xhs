@@ -431,7 +431,9 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
 
     if IMAGE_PROVIDER == "pollinations":
         encoded_prompt = requests.utils.quote(prompt)
-        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1242&height=1660&nologo=true&seed=42"
+        # 动态 seed：基于 prompt+title+subtitle 的 hash，保证同一篇笔记可复现，不同笔记不撞脸
+        dynamic_seed = abs(hash((prompt, title, subtitle))) % 100000
+        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1242&height=1660&nologo=true&seed={dynamic_seed}"
         try:
             resp = _http_get_with_retry(image_url)
             bg_img = Image.open(io.BytesIO(resp.content))
@@ -658,8 +660,26 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         if stripped == '---':
             blocks.append(('', False, True))
             continue
-        if stripped.startswith('#') or any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】']):
+
+        # 严格过滤元数据行、话题标签行、图片占位符等
+        _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
+        if any(m in stripped for m in _skip_markers):
             continue
+        if re.match(r'^话题标签[：:]', stripped):
+            continue
+        if re.match(r'^视觉风格[：:]', stripped):
+            continue
+        if re.match(r'\[Image\s*#\d+\]', stripped):
+            continue
+
+        # 过滤纯视觉风格标签值
+        if stripped in ('warm_grey', 'twilight', 'crimson', 'mist', 'cool', 'warm', 'blank'):
+            continue
+        # 过滤纯话题标签行（整行都是 #xxx 格式）
+        words = stripped.split()
+        if words and all(w.startswith('#') for w in words):
+            continue
+
         # 支持行内 **bold** 标记，并移除不支持的 emoji
         is_bold = bool(re.search(r'\*\*(.*?)\*\*', stripped))
         clean = re.sub(r'\*\*(.*?)\*\*', lambda m: m.group(1), stripped).strip()
@@ -867,12 +887,14 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
 def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -> list[str]:
     """解析笔记正文，生成所有内页图"""
     # 提取正文部分
-    body_match = re.search(r'\*?【正文】\*?\s*\n+(.*?)(?:\n\s*\*?【金句】\*?|\n\s*#{1,6}\s*\[?金句\]?|$)', content, re.DOTALL)
+    # 提取正文：从【正文】或# 正文开始，到下一个【xxx】或# 【xxx】或文档结束
+    end_pattern = r'(?=\n\s*(?:\*?【|#{1,6}\s*【)|$)'
+    body_match = re.search(r'\*?【正文】\*?\s*\n+(.*?)' + end_pattern, content, re.DOTALL)
     if not body_match:
-        body_match = re.search(r'#{1,6}\s*\[?正文\]?.*?\n(.*?)(?:\n\s*#{1,6}\s*\[?金句\]?|$)', content, re.DOTALL)
+        body_match = re.search(r'#{1,6}\s*\[?正文\]?.*?\n(.*?)' + end_pattern, content, re.DOTALL)
     if not body_match:
         body_match = re.search(
-            r'\*?【(?:封面页|封面)】\*?[\s\S]*?(?:\n\s*---+\s*\n|\n\n)(.*?)(?:\n\s*\*?【(?:金句|互动钩子|话题标签|标题候选)】\*?|\n\s*#{1,6}\s*\[?(?:金句|互动钩子|话题标签|标题候选)\]?|$)',
+            r'\*?【(?:封面页|封面)】\*?[\s\S]*?(?:\n\s*---+\s*\n|\n\n)(.*?)' + end_pattern,
             content,
             re.DOTALL,
         )
@@ -887,11 +909,22 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
     all_lines = []
     for line in body.split('\n'):
         stripped = line.strip()
-        if any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】', '【标题候选】', '【封面页】', '【正文】']):
+        _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
+        if any(m in stripped for m in _skip_markers):
             continue
         if stripped.startswith('#') and not stripped.startswith('##'):
             continue
         if stripped.startswith('【') and '】' in stripped:
+            continue
+        if re.match(r'^话题标签[：:]', stripped):
+            continue
+        if re.match(r'^视觉风格[：:]', stripped):
+            continue
+        if re.match(r'\[Image\s*#\d+\]', stripped):
+            continue
+        # 过滤纯话题标签行
+        words = stripped.split()
+        if words and all(w.startswith('#') for w in words):
             continue
         all_lines.append(stripped)
 
@@ -912,7 +945,17 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
         if stripped == '---':
             blocks.append(('', False, True))
             continue
-        if stripped.startswith('#') or any(marker in stripped for marker in ['【金句】', '【互动钩子】', '【话题标签】']):
+        _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
+        if any(m in stripped for m in _skip_markers):
+            continue
+        if re.match(r'^话题标签[：:]', stripped):
+            continue
+        if re.match(r'^视觉风格[：:]', stripped):
+            continue
+        if re.match(r'\[Image\s*#\d+\]', stripped):
+            continue
+        words = stripped.split()
+        if words and all(w.startswith('#') for w in words):
             continue
         # 支持行内 **bold** 标记，并移除不支持的 emoji
         is_bold = bool(re.search(r'\*\*(.*?)\*\*', stripped))

@@ -221,7 +221,7 @@ def generate_preset_comments(note_content: str, model: str | None = None) -> dic
     data = _call_api(
         messages=[{"role": "user", "content": preset_prompt}],
         model=model,
-        temperature=0.9,
+        temperature=0.7,
         max_tokens=1500,
     )
     raw = _extract_content(data)

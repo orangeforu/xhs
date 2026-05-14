@@ -1,6 +1,6 @@
 import unittest
 
-from core.writer import _extract_content
+from core.api_client import _extract_content
 
 
 class TestExtractContent(unittest.TestCase):

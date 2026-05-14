@@ -23,6 +23,11 @@ Thumbs.db
 output_note_*.md
 docs/draft_note_*.md
 
+# Runtime generated content
+# docs/ is kept for legacy notes comparison, docs_agent/ is regenerated per run
+docs_agent/
+data/agent_memory/
+
 # Assets generated during runtime (optional)
 # Uncomment if you don't want to commit generated covers
 # assets/cover_*.png

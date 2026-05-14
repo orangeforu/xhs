@@ -172,22 +172,52 @@ def review_note(note_content: str, model: str | None = None) -> dict:
     try:
         parsed = json.loads(raw)
         grade = parsed.get("grade", "B")
-        review_text = f"""## 审核等级：{grade}
+        review_text = f"## 审核等级：{grade}\n\n"
 
-### 通过项
-"""
-        checklist = parsed.get("pass_checklist", {})
-        for k, v in checklist.items():
-            mark = "✅" if v else "❌"
-            review_text += f"- {mark} {k}\n"
+        # 新版：读者体验式审核
+        trajectory = parsed.get("emotional_trajectory", "")
+        if trajectory:
+            review_text += f"### 情绪轨迹\n{trajectory}\n\n"
 
-        issues = parsed.get("issues", [])
+        peak = parsed.get("peak_moment", "")
+        if peak:
+            review_text += f"### 高潮瞬间\n{peak}\n\n"
+
+        why = parsed.get("why_it_works_or_not", "")
+        if why:
+            review_text += f"### 原因分析\n{why}\n\n"
+
+        discussion = parsed.get("discussion_potential", "")
+        prediction = parsed.get("discussion_prediction", "")
+        if discussion:
+            review_text += f"### 讨论潜力：{discussion}\n"
+        if prediction:
+            review_text += f"{prediction}\n\n"
+
+        share = parsed.get("would_you_share", "")
+        if share:
+            review_text += f"### 会分享吗？{share}\n\n"
+
+        summary = parsed.get("one_line_summary", "")
+        if summary:
+            review_text += f"### 一句话总结\n{summary}\n\n"
+
+        # 兼容旧版格式
+        if not trajectory:
+            checklist = parsed.get("pass_checklist", {})
+            if checklist:
+                review_text += "### 通过项\n"
+                for k, v in checklist.items():
+                    mark = "✅" if v else "❌"
+                    review_text += f"- {mark} {k}\n"
+
+        issues = parsed.get("quality_issues", parsed.get("issues", []))
         if issues:
-            review_text += "\n### 问题\n"
+            review_text += "\n### 质量问题\n"
             for i in issues:
                 review_text += f"- ❌ {i}\n"
 
-        suggestions = parsed.get("suggestions", [])
+        suggestions = parsed.get("quality_suggestions", parsed.get("suggestions", []))
         if suggestions:
             review_text += "\n### 修改建议\n"
             for s in suggestions:

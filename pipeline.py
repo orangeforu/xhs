@@ -274,13 +274,25 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
         logger.warning("审核为 %s 级，触发优化重写...", level)
         suggestions = ""
         if review.get("raw_json"):
-            issues = review["raw_json"].get("issues", [])
-            sugs = review["raw_json"].get("suggestions", [])
-            suggestions = "\n".join([f"- {i}" for i in issues] + [f"- {s}" for s in sugs])
+            raw = review["raw_json"]
+            # 新版审核格式：从读者体验反馈中提取改进建议
+            why = raw.get("why_it_works_or_not", "")
+            trajectory = raw.get("emotional_trajectory", "")
+            peak = raw.get("peak_moment", "")
+            if why:
+                suggestions += f"- 读者反馈：{why}\n"
+            if trajectory:
+                suggestions += f"- 情绪轨迹：{trajectory}\n"
+            if not peak:
+                suggestions += "- 缺少让读者"愣住"的高潮瞬间，需要一个更强的转折或细节\n"
+            # 兼容旧版格式
+            issues = raw.get("quality_issues", raw.get("issues", []))
+            sugs = raw.get("quality_suggestions", raw.get("suggestions", []))
+            suggestions += "\n".join([f"- {i}" for i in issues] + [f"- {s}" for s in sugs])
         if grade == "B":
-            suggestions += "\n- 当前内容结构及格但情绪平淡、画面感弱或金句不够扎心。请增强情绪冲击力，增加具体感官细节（温度、光线、气味、触感），让金句更新鲜有穿透力。减少'原来...是...''现在我懂了''你看'等分析结论句式。"
+            suggestions += "\n- 当前内容读完后情绪波动不够强烈。请增强故事的上瘾感：制造更强的转折、更意外的细节、更能引发愤怒/共鸣/表达欲的高潮。目标是让读者读完必须做点什么（截图/评论/转发）。"
         rewrite_brief = dict(brief)
-        rewrite_brief["_rewrite_instructions"] = suggestions or "大幅优化故事节奏，减少分析腔和说教"
+        rewrite_brief["_rewrite_instructions"] = suggestions or "大幅增强故事的情绪冲击力，让读者上瘾"
         result = write_note(rewrite_brief)
         review = review_note(result["content"])
         logger.info("重写后审核等级: %s", review.get("grade", "B"))

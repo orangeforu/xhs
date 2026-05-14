@@ -337,7 +337,9 @@
         "成长"
       ],
       "pillar": "自我提升/生活方式",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-05-14T10:51:50+00:00",
+      "output_dir": "D:\\SoftWare\\User\\Vs\\xhs\\docs\\怎么养成不内耗的体质_4260"
     }
   ]
 }

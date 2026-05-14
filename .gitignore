@@ -9,7 +9,6 @@ __pycache__/
 .env.local
 
 # IDE
-.claude/
 .vscode/
 .idea/
 *.swp

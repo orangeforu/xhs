@@ -665,9 +665,6 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
         if any(m in stripped for m in _skip_markers):
             continue
-        # 过滤纯加粗行（通常是金句，不应出现在内页正文）
-        if re.match(r'^\*\*.+\*\*$', stripped):
-            continue
         if re.match(r'^话题标签[：:]', stripped):
             continue
         if re.match(r'^视觉风格[：:]', stripped):

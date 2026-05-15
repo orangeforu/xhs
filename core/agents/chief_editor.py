@@ -28,6 +28,7 @@ class ChiefEditor(BaseAgent):
         review = None
         design_result = None
         inner_paths = []
+        grade_history = []  # 记录每轮审核等级，防止死循环
 
         # ── Round 0: 初稿 ──
         logger.info("=" * 50)
@@ -74,8 +75,11 @@ class ChiefEditor(BaseAgent):
             if "review" in results:
                 review = results["review"] or review
 
+            # 记录本轮grade，用于检测死循环
+            grade_history.append(review.get("grade", "B") if review else "B")
+
             # 主编决策
-            decision = self._make_decision(draft, design_result, review, round_num)
+            decision = self._make_decision(draft, design_result, review, round_num, grade_history)
 
             if decision["action"] == "publish":
                 logger.info("主编决策: 通过 (%s)", decision["reason"])
@@ -123,7 +127,7 @@ class ChiefEditor(BaseAgent):
             "rounds": round_num + 1,
         }
 
-    def _make_decision(self, draft, design_result, review, round_num) -> dict:
+    def _make_decision(self, draft, design_result, review, round_num, grade_history=None) -> dict:
         """主编做最终决策。"""
         if not review:
             return {"action": "revise", "feedback": "审核未返回结果，请重新生成", "core_issue": "审核失败"}
@@ -139,6 +143,12 @@ class ChiefEditor(BaseAgent):
         # B级 + pass/conditional，且无严重 issues，可以通过
         if grade == "B" and verdict in ("pass", "conditional") and len(issues) <= 2:
             return {"action": "publish", "reason": f"B级内容可接受，issues={len(issues)}"}
+
+        # 死循环检测：连续3轮等级相同（如B-B-B），强制通过，避免越改越差
+        if grade_history and len(grade_history) >= 3:
+            last_three = grade_history[-3:]
+            if len(set(last_three)) == 1 and last_three[0] in ("A", "B"):
+                return {"action": "publish", "reason": f"连续3轮等级均为{last_three[0]}，避免审核死循环，强制通过"}
 
         # 已达最大轮数
         if round_num >= 4:

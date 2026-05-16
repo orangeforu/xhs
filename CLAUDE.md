@@ -50,6 +50,14 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 
 每个 Agent 通过 `AgentMemory`（`core/agents/memory.py`）持久化跨会话记忆到 `data/agent_memory/`，记录成功/失败模式。
 
+### MessageBus 通信机制
+
+`core/agents/base.py` 定义了发布/订阅模式的消息总线：
+- `MessageType` 枚举定义了 8 种消息类型（BRIEF/DRAFT/DESIGN/REVIEW/REQUEST/RESPONSE/DECISION/COMMENT/NOTIFY）。
+- `MessageBus.subscribe()` 注册回调，`publish()` 支持广播（`to_agent=None`）和点对点投递。
+- `MessageBus.get_history()` 和 `get_last_message()` 用于查询通信历史。
+- `BaseAgent.think()` 调用 LLM 时会自动注入 `AgentMemory` 中的持久化上下文。
+
 ### 封面与内页生成
 
 `core/image_generator.py` 负责全部图片渲染：
@@ -66,6 +74,29 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 ### 数据持久化
 
 `core/config.py` 提供原子写入 JSON（`tempfile.mkstemp` + `os.replace`）和跨平台文件锁（`fcntl`），防止并发损坏 `data/topics.json` 和 `data/performance.json`。
+
+### LLM 调用层
+
+`core/writer.py` 是唯一的 LLM 调用入口：
+- `_call_api()`：OpenAI 兼容 API，内置 3 次指数退避重试（处理 429/5xx）。
+- `write_note()`：写作入口，加载 `prompts/system_writer.md` + `prompts/write_note.md`，按标题公式注入特化指令。
+- `review_note()`：审核入口，加载 `prompts/review.md`，返回结构化 JSON（grade/emotional_trajectory/quality_issues 等）。
+- `generate_preset_comments()`：评论生成，加载 `prompts/preset_comments.md`。
+
+### 输出目录结构
+
+每篇笔记生成到 `docs_agent/{topic_name}_{hash}/` 下：
+```
+docs_agent/
+  {topic}_{hash}/
+    note.md              # 主文件（正文 + 审核 + 封面/内页路径 + 预设评论）
+    cover_ai.png         # AI 绘画封面
+    inner_page_1.png     # 内页第 1 页
+    inner_page_2.png     # 内页第 2 页
+    ...
+```
+
+发布后通过 `shutil.move()` 将整目录迁移到 `published/`。
 
 ## 平台调性约束
 

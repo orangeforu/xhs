@@ -48,7 +48,9 @@
         "男生"
       ],
       "pillar": "亲密关系洞察",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-05-17T03:24:09.896307+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/约会时男生哪些细节说明他人品很好_115a"
     },
     {
       "id": 4,
@@ -302,7 +304,7 @@
       ],
       "pillar": "自我提升/生活方式",
       "status": "generated",
-      "generated_at": "2026-05-15T03:41:51.848456+00:00",
+      "generated_at": "2026-05-16T16:10:27.348766+00:00",
       "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/为什么你总是把天聊死_6647"
     },
     {

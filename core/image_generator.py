@@ -905,6 +905,10 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
 
     body = body_match.group(1).strip()
 
+    # 过滤掉 【金句】section 及其内容（防止金句泄露到内页）
+    # 策略：找到 【金句】 或 # 金句 的位置，截断其后的内容
+    body = re.split(r'\n\s*(?:\*?【金句】\*?|#{1,6}\s*\[?金句\]?)', body, maxsplit=1)[0]
+
     # 保留 --- 分隔符，收集所有正文行
     all_lines = []
     for line in body.split('\n'):

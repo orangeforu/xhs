@@ -124,12 +124,7 @@ def load_topics_json() -> dict:
 def save_topics_json(data: dict) -> None:
     """保存选题池 JSON。"""
     path = DATA_DIR / "topics.json"
-    with open(path, "a+", encoding="utf-8") as f:
-        _lock_file(f, exclusive=True)
-        try:
-            _atomic_write_json(path, data)
-        finally:
-            _unlock_file(f)
+    _atomic_write_json(path, data)
 
 
 def load_performance_json() -> dict:
@@ -138,7 +133,7 @@ def load_performance_json() -> dict:
     if not path.exists():
         return {"notes": [], "summary": {
             "total_published": 0, "total_likes": 0, "total_collects": 0,
-            "total_comments": 0, "total_shares": 0,
+            "total_comments": 0, "total_shares": 0, "total_exposure": 0,
             "s_grade_count": 0, "a_grade_count": 0,
             "b_grade_count": 0, "c_grade_count": 0,
             "current_streak_underperform": 0,
@@ -154,12 +149,7 @@ def load_performance_json() -> dict:
 def save_performance_json(data: dict) -> None:
     """保存发布数据 JSON。"""
     path = DATA_DIR / "performance.json"
-    with open(path, "a+", encoding="utf-8") as f:
-        _lock_file(f, exclusive=True)
-        try:
-            _atomic_write_json(path, data)
-        finally:
-            _unlock_file(f)
+    _atomic_write_json(path, data)
 
 
 def init() -> None:

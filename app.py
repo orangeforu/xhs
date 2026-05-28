@@ -70,6 +70,113 @@ def _calculate_grade(likes: int) -> str:
     return "C"
 
 
+def _calc_interaction_rate(note: dict) -> float:
+    """计算互动率 = (点赞+收藏+评论+分享) / 曝光量"""
+    exposure = note.get("exposure", 0)
+    if not exposure:
+        return 0.0
+    total = note.get("likes", 0) + note.get("collects", 0) + note.get("comments", 0) + note.get("shares", 0)
+    return total / exposure
+
+
+def _calc_formula_stats(notes: list[dict]) -> dict:
+    """按标题公式分组统计平均数据。"""
+    stats: dict[str, dict] = {}
+    for n in notes:
+        formula = n.get("title_formula", "未知")
+        if formula not in stats:
+            stats[formula] = {"count": 0, "total_likes": 0, "total_collects": 0, "total_comments": 0, "total_shares": 0, "total_engagement": 0.0}
+        s = stats[formula]
+        s["count"] += 1
+        s["total_likes"] += n.get("likes", 0)
+        s["total_collects"] += n.get("collects", 0)
+        s["total_comments"] += n.get("comments", 0)
+        s["total_shares"] += n.get("shares", 0)
+        rate = _calc_interaction_rate(n)
+        s["total_engagement"] += rate
+    return stats
+
+
+def _calc_pillar_stats(notes: list[dict]) -> dict:
+    """按内容支柱分组统计平均数据。"""
+    stats: dict[str, dict] = {}
+    for n in notes:
+        pillar = n.get("pillar", "未知")
+        if pillar not in stats:
+            stats[pillar] = {"count": 0, "total_likes": 0, "total_collects": 0, "total_comments": 0, "total_shares": 0, "total_engagement": 0.0}
+        s = stats[pillar]
+        s["count"] += 1
+        s["total_likes"] += n.get("likes", 0)
+        s["total_collects"] += n.get("collects", 0)
+        s["total_comments"] += n.get("comments", 0)
+        s["total_shares"] += n.get("shares", 0)
+        rate = _calc_interaction_rate(n)
+        s["total_engagement"] += rate
+    return stats
+
+
+def _check_compliance(content: str, title: str, tags: list[str], image_count: int) -> dict:
+    """发布前合规检查。"""
+    issues = []
+    warnings = []
+
+    # 标题检查
+    if len(title) > 20:
+        issues.append(f"标题超长（{len(title)}字，建议≤20字）")
+    if not re.search(r'[\U0001F300-\U0001F9FF\U00002600-\U000027B0]', title):
+        warnings.append("标题缺少 emoji，建议加 1-2 个")
+
+    # 标签检查
+    if len(tags) < 3:
+        issues.append(f"标签不足（{len(tags)}个，要求 3-5 个）")
+    elif len(tags) > 5:
+        issues.append(f"标签过多（{len(tags)}个，要求 3-5 个）")
+    if not any("不懂就问" in t for t in tags):
+        warnings.append("缺少必带标签 #不懂就问有问必答")
+
+    # 图片检查
+    if image_count < 3:
+        issues.append(f"图片不足（{image_count}张，建议 3-6 张）")
+    elif image_count > 9:
+        warnings.append(f"图片较多（{image_count}张），小红书最多 9 张")
+
+    # 敏感词检查
+    sensitive_words = ["私信", "微信", "淘宝", "京东", "拼多多", "抖音", "快手", "B站",
+                       "公众号", "小程序", "加我", "联系我", "购买链接", "下单"]
+    found = [w for w in sensitive_words if w in content]
+    if found:
+        issues.append(f"检测到引流/敏感词：{', '.join(found)}")
+
+    # 正文长度检查
+    body_len = len(re.sub(r'\s+', '', content))
+    if body_len < 300:
+        warnings.append(f"正文偏短（{body_len}字，建议 500-800 字）")
+    elif body_len > 1200:
+        warnings.append(f"正文偏长（{body_len}字，建议 500-800 字）")
+
+    return {
+        "passed": len(issues) == 0,
+        "issues": issues,
+        "warnings": warnings,
+    }
+
+
+def _recalculate_summary(performance: dict) -> None:
+    """根据 notes 数据重算 summary 统计。"""
+    notes = performance.get("notes", [])
+    summary = performance.setdefault("summary", {})
+    summary["total_published"] = len(notes)
+    summary["total_likes"] = sum(n.get("likes", 0) for n in notes)
+    summary["total_collects"] = sum(n.get("collects", 0) for n in notes)
+    summary["total_comments"] = sum(n.get("comments", 0) for n in notes)
+    summary["total_shares"] = sum(n.get("shares", 0) for n in notes)
+    summary["total_exposure"] = sum(n.get("exposure", 0) for n in notes)
+    summary["s_grade_count"] = sum(1 for n in notes if n.get("grade") == "S")
+    summary["a_grade_count"] = sum(1 for n in notes if n.get("grade") == "A")
+    summary["b_grade_count"] = sum(1 for n in notes if n.get("grade") == "B")
+    summary["c_grade_count"] = sum(1 for n in notes if n.get("grade") == "C")
+
+
 def _check_circuit_breaker() -> tuple[bool, int]:
     """检查是否触发熔断：连续3篇C级。返回 (是否熔断, 连续C级数)。"""
     notes = performance.get("notes", [])
@@ -135,6 +242,18 @@ st.sidebar.progress(
     text=f"发布进度 {published_count}/{total_count}",
 )
 
+# 最有效公式/支柱提示
+if performance.get("notes"):
+    _notes = performance["notes"]
+    _formula_stats = _calc_formula_stats(_notes)
+    if _formula_stats:
+        best_f = max(_formula_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+        st.sidebar.caption(f"🏆 最有效公式: **{best_f[0]}**（均赞 {best_f[1]['total_likes']/best_f[1]['count']:.0f}）")
+    _pillar_stats = _calc_pillar_stats(_notes)
+    if _pillar_stats:
+        best_p = max(_pillar_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+        st.sidebar.caption(f"🏆 最有效支柱: **{best_p[0]}**（均赞 {best_p[1]['total_likes']/best_p[1]['count']:.0f}）")
+
 if cb_tripped:
     st.sidebar.error(f"🚨 熔断警告：连续 {cb_streak} 篇 C 级！请暂停发布，复盘选题方向。")
 elif cb_streak > 0:
@@ -199,14 +318,18 @@ with tab1:
                         perf["notes"].append({
                             "topic_id": t["id"],
                             "topic": t["topic"],
+                            "title_formula": t.get("title_formula", ""),
+                            "pillar": t.get("pillar", ""),
+                            "target_interaction": t.get("target_interaction", ""),
                             "published_at": t["published_at"],
+                            "exposure": 0,
                             "likes": 0,
                             "collects": 0,
                             "comments": 0,
                             "shares": 0,
                             "grade": "pending",
                         })
-                        perf["summary"]["total_published"] = len(perf["notes"])
+                        _recalculate_summary(perf)
                         save_performance_json(perf)
 
                         st.success(f"{t['topic']} 已发布！目录已移动到 published/")
@@ -286,12 +409,30 @@ with tab2:
             else:
                 st.info(label)
 
+        # 展开显示详细信息
+        angle = t.get("angle", "")
+        story = t.get("story_prototype", "")
+        controversy = t.get("controversy_anchor", "")
+        if angle or story or controversy:
+            details = []
+            if angle:
+                details.append(f"**角度**: {angle}")
+            if story:
+                details.append(f"**故事原型**: {story}")
+            if controversy:
+                details.append(f"**争议锚点**: {controversy}")
+            st.caption(" | ".join(details))
+
 # Tab 3: 创作标准
 with tab3:
     st.header("📖 A级创作标准速查")
 
-    with open("docs/persona_dna.md", "r", encoding="utf-8") as f:
-        dna = f.read()
+    dna_path = "docs/persona_dna.md"
+    if os.path.exists(dna_path):
+        with open(dna_path, "r", encoding="utf-8") as f:
+            dna = f.read()
+    else:
+        dna = ""
 
     st.subheader("🚫 绝对禁忌词")
     st.code("你看 / 你就看一点 / 其实啊 / 其实 / 第一...第二... / 总结起来 / 总之 / 真正爱你的人不会...")
@@ -331,7 +472,7 @@ with tab4:
     summary = performance.get("summary", {})
 
     # 统计摘要
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
         st.metric("总发布", summary.get("total_published", 0))
     with col2:
@@ -339,12 +480,21 @@ with tab4:
         avg_likes = total_likes / len(notes) if notes else 0
         st.metric("总点赞", total_likes, f"均赞 {avg_likes:.0f}")
     with col3:
-        s_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "S")
-        st.metric("S级爆款", s_count)
+        total_exposure = sum(n.get("exposure", 0) for n in notes)
+        st.metric("总曝光", f"{total_exposure:,}" if total_exposure else "—")
     with col4:
-        a_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "A")
-        st.metric("A级优质", a_count)
+        # 计算整体互动率
+        if total_exposure > 0:
+            total_all_interaction = sum(n.get("likes", 0) + n.get("collects", 0) + n.get("comments", 0) + n.get("shares", 0) for n in notes)
+            overall_eng_rate = total_all_interaction / total_exposure
+            st.metric("平均互动率", f"{overall_eng_rate:.2%}")
+        else:
+            st.metric("平均互动率", "—")
     with col5:
+        s_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "S")
+        a_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "A")
+        st.metric("S/A级", f"{s_count}/{a_count}")
+    with col6:
         c_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "C")
         st.metric("C级不合格", c_count)
 
@@ -352,6 +502,156 @@ with tab4:
         st.error("🚨 **熔断已触发**：连续 3 篇 C 级（点赞<200）。请立即停止发布，复盘选题方向和内容质量。")
     elif c_count >= 2:
         st.warning(f"⚠️ 已有 {c_count} 篇 C 级内容，请注意内容质量。")
+
+    # ── 标题公式效果分析 ──
+    if notes:
+        st.divider()
+        st.subheader("📊 标题公式效果分析")
+
+        formula_stats = _calc_formula_stats(notes)
+        if formula_stats:
+            formula_rows = []
+            for formula, s in formula_stats.items():
+                count = s["count"]
+                formula_rows.append({
+                    "公式": formula,
+                    "篇数": count,
+                    "平均点赞": s["total_likes"] / count,
+                    "平均收藏": s["total_collects"] / count,
+                    "平均评论": s["total_comments"] / count,
+                    "平均互动率": s["total_engagement"] / count,
+                })
+            # 按平均点赞排序
+            formula_rows.sort(key=lambda x: x["平均点赞"], reverse=True)
+            best_formula = formula_rows[0]["公式"] if formula_rows else ""
+
+            for row in formula_rows:
+                is_best = row["公式"] == best_formula
+                cols = st.columns([2, 1, 1, 1, 1, 1])
+                with cols[0]:
+                    label = f"🏆 **{row['公式']}**" if is_best else row["公式"]
+                    st.markdown(label)
+                with cols[1]:
+                    st.caption(f"{row['篇数']}篇")
+                with cols[2]:
+                    st.caption(f"👍 {row['平均点赞']:.0f}")
+                with cols[3]:
+                    st.caption(f"⭐ {row['平均收藏']:.0f}")
+                with cols[4]:
+                    st.caption(f"💬 {row['平均评论']:.0f}")
+                with cols[5]:
+                    st.caption(f"📈 {row['平均互动率']:.2%}")
+
+            if best_formula:
+                st.success(f"💡 最有效公式：**{best_formula}**，建议增加该类型选题比例。")
+
+        # ── 内容支柱效果分析 ──
+        st.subheader("📊 内容支柱效果分析")
+
+        pillar_stats = _calc_pillar_stats(notes)
+        if pillar_stats:
+            pillar_rows = []
+            for pillar, s in pillar_stats.items():
+                count = s["count"]
+                pillar_rows.append({
+                    "支柱": pillar,
+                    "篇数": count,
+                    "平均点赞": s["total_likes"] / count,
+                    "平均收藏": s["total_collects"] / count,
+                    "平均评论": s["total_comments"] / count,
+                    "平均互动率": s["total_engagement"] / count,
+                })
+            pillar_rows.sort(key=lambda x: x["平均点赞"], reverse=True)
+            best_pillar = pillar_rows[0]["支柱"] if pillar_rows else ""
+
+            for row in pillar_rows:
+                is_best = row["支柱"] == best_pillar
+                cols = st.columns([2, 1, 1, 1, 1, 1])
+                with cols[0]:
+                    label = f"🏆 **{row['支柱']}**" if is_best else row["支柱"]
+                    st.markdown(label)
+                with cols[1]:
+                    st.caption(f"{row['篇数']}篇")
+                with cols[2]:
+                    st.caption(f"👍 {row['平均点赞']:.0f}")
+                with cols[3]:
+                    st.caption(f"⭐ {row['平均收藏']:.0f}")
+                with cols[4]:
+                    st.caption(f"💬 {row['平均评论']:.0f}")
+                with cols[5]:
+                    st.caption(f"📈 {row['平均互动率']:.2%}")
+
+            if best_pillar:
+                st.success(f"💡 最有效支柱：**{best_pillar}**，这是你的流量密码。")
+
+        # ── 互动目标效果分析 ──
+        st.subheader("📊 互动目标效果分析")
+
+        interaction_types = {}
+        for n in notes:
+            it = n.get("target_interaction", "未知")
+            if it not in interaction_types:
+                interaction_types[it] = {"count": 0, "total_likes": 0, "total_collects": 0}
+            interaction_types[it]["count"] += 1
+            interaction_types[it]["total_likes"] += n.get("likes", 0)
+            interaction_types[it]["total_collects"] += n.get("collects", 0)
+
+        if interaction_types:
+            for it, s in sorted(interaction_types.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1), reverse=True):
+                count = s["count"]
+                avg_likes = s["total_likes"] / count
+                avg_collects = s["total_collects"] / count
+                st.caption(f"**{it}**：{count}篇 | 平均点赞 {avg_likes:.0f} | 平均收藏 {avg_collects:.0f}")
+
+        # ── 运营建议 ──
+        st.divider()
+        st.subheader("💡 运营建议")
+
+        recommendations = []
+
+        # 基于公式效果的建议
+        if formula_stats:
+            best_f = max(formula_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+            worst_f = min(formula_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+            if best_f[0] != worst_f[0]:
+                best_avg = best_f[1]["total_likes"] / best_f[1]["count"]
+                worst_avg = worst_f[1]["total_likes"] / worst_f[1]["count"]
+                if best_avg > worst_avg * 1.5:
+                    recommendations.append(f"📊 **{best_f[0]}** 表现远超 **{worst_f[0]}**（{best_avg:.0f} vs {worst_avg:.0f} 赞），建议增加前者比例。")
+
+        # 基于支柱效果的建议
+        if pillar_stats:
+            best_p = max(pillar_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+            recommendations.append(f"🏆 **{best_p[0]}** 是你的流量密码，建议作为主力支柱。")
+
+        # 基于 C 级内容的建议
+        c_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "C")
+        if c_count >= 2:
+            recommendations.append(f"⚠️ 已有 {c_count} 篇 C 级内容，建议暂停发布，复盘选题方向后再继续。")
+
+        # 基于互动率的建议
+        notes_with_exposure = [n for n in notes if n.get("exposure", 0) > 0]
+        if notes_with_exposure:
+            avg_eng = sum(_calc_interaction_rate(n) for n in notes_with_exposure) / len(notes_with_exposure)
+            if avg_eng < 0.03:
+                recommendations.append(f"📈 平均互动率 {avg_eng:.2%} 偏低（目标 3%+），建议优化标题吸引力和评论钩子。")
+            elif avg_eng >= 0.05:
+                recommendations.append(f"🎉 平均互动率 {avg_eng:.2%} 优秀（目标 5%+），保持当前策略。")
+
+        # 发布节奏建议
+        if len(notes) >= 3:
+            recent_3 = sorted(notes, key=lambda x: x.get("published_at", ""), reverse=True)[:3]
+            recent_grades = [_calculate_grade(n.get("likes", 0)) for n in recent_3]
+            if all(g == "C" for g in recent_grades):
+                recommendations.append("🚨 连续 3 篇 C 级，建议立即暂停发布，全面复盘。")
+            elif all(g in ("S", "A") for g in recent_grades):
+                recommendations.append("🔥 连续 3 篇高质量，趁热打铁，可以加速发布节奏。")
+
+        if not recommendations:
+            recommendations.append("数据积累中，继续发布后会生成个性化建议。")
+
+        for rec in recommendations:
+            st.markdown(rec)
 
     st.divider()
     st.subheader("📋 已发布笔记数据录入")
@@ -362,26 +662,38 @@ with tab4:
         for i, note in enumerate(notes):
             topic = note.get("topic", f"笔记 {i+1}")
             with st.expander(f"{topic}", expanded=False):
-                cols = st.columns(5)
+                cols = st.columns(6)
                 with cols[0]:
-                    likes = st.number_input("点赞", min_value=0, value=note.get("likes", 0), key=f"likes_{i}")
+                    exposure = st.number_input("曝光量", min_value=0, value=note.get("exposure", 0), key=f"exposure_{i}")
                 with cols[1]:
-                    collects = st.number_input("收藏", min_value=0, value=note.get("collects", 0), key=f"collects_{i}")
+                    likes = st.number_input("点赞", min_value=0, value=note.get("likes", 0), key=f"likes_{i}")
                 with cols[2]:
-                    comments = st.number_input("评论", min_value=0, value=note.get("comments", 0), key=f"comments_{i}")
+                    collects = st.number_input("收藏", min_value=0, value=note.get("collects", 0), key=f"collects_{i}")
                 with cols[3]:
-                    shares = st.number_input("分享", min_value=0, value=note.get("shares", 0), key=f"shares_{i}")
+                    comments = st.number_input("评论", min_value=0, value=note.get("comments", 0), key=f"comments_{i}")
                 with cols[4]:
+                    shares = st.number_input("分享", min_value=0, value=note.get("shares", 0), key=f"shares_{i}")
+                with cols[5]:
                     grade = _calculate_grade(likes)
                     grade_color = {"S": "🟢", "A": "🔵", "B": "🟡", "C": "🔴"}.get(grade, "⚪")
                     st.markdown(f"**等级: {grade_color} {grade}**")
 
+                # 互动率显示
+                total_interaction = likes + collects + comments + shares
+                if exposure > 0:
+                    eng_rate = total_interaction / exposure
+                    st.caption(f"互动率: {eng_rate:.2%} | 总互动: {total_interaction} | 曝光: {exposure}")
+                else:
+                    st.caption(f"总互动: {total_interaction} | 请填写曝光量以计算互动率")
+
                 if st.button("💾 保存数据", key=f"save_perf_{i}"):
+                    note["exposure"] = exposure
                     note["likes"] = likes
                     note["collects"] = collects
                     note["comments"] = comments
                     note["shares"] = shares
                     note["grade"] = grade
+                    _recalculate_summary(performance)
                     save_performance_json(performance)
                     st.success(f"{topic} 数据已保存！")
                     st.rerun()
@@ -412,6 +724,62 @@ with tab5:
             body = _extract_body_for_publish(raw_content)
             tags = selected_topic.get("tags", [])
             hashtags = " ".join([f"#{tag}" for tag in tags])
+
+            # ── 发布前 Checklist ──
+            st.subheader("✅ 发布前检查")
+
+            # 提取标签
+            tag_match = re.search(r'【话题标签】\s*(.+?)(?=【|$)', raw_content, re.DOTALL)
+            parsed_tags = []
+            if tag_match:
+                for word in tag_match.group(1).strip().split():
+                    word = word.strip()
+                    if word.startswith("#") and len(word) > 1:
+                        parsed_tags.append(word)
+
+            # 提取正文用于检查
+            body_for_check = _extract_body_for_publish(raw_content)
+
+            # 统计图片
+            image_count = len(glob.glob(os.path.join(out_dir, "*.png")))
+
+            # 标题候选（取第一个做检查）
+            title_candidates = _extract_title_candidates(raw_content)
+            check_title = title_candidates[0] if title_candidates else selected_topic.get("topic", "")
+
+            # 运行合规检查
+            compliance = _check_compliance(body_for_check, check_title, parsed_tags, image_count)
+
+            if compliance["passed"]:
+                st.success("合规检查通过")
+            else:
+                for issue in compliance["issues"]:
+                    st.error(f"❌ {issue}")
+
+            if compliance["warnings"]:
+                for warn in compliance["warnings"]:
+                    st.warning(f"⚠️ {warn}")
+
+            # Checklist 详情
+            checklist_cols = st.columns(4)
+            with checklist_cols[0]:
+                title_ok = len(check_title) <= 20
+                st.markdown(f"{'✅' if title_ok else '❌'} 标题 ≤ 20字（{len(check_title)}字）")
+                has_emoji = bool(re.search(r'[\U0001F300-\U0001F9FF\U00002600-\U000027B0]', check_title))
+                st.markdown(f"{'✅' if has_emoji else '⚠️'} 标题含 emoji")
+            with checklist_cols[1]:
+                tag_ok = 3 <= len(parsed_tags) <= 5
+                st.markdown(f"{'✅' if tag_ok else '❌'} 标签 3-5个（{len(parsed_tags)}个）")
+                has_required_tag = any("不懂就问" in t for t in parsed_tags)
+                st.markdown(f"{'✅' if has_required_tag else '⚠️'} 含必带标签")
+            with checklist_cols[2]:
+                img_ok = 3 <= image_count <= 9
+                st.markdown(f"{'✅' if img_ok else '❌'} 图片 3-9张（{image_count}张）")
+            with checklist_cols[3]:
+                body_ok = 300 <= len(re.sub(r'\s+', '', body_for_check)) <= 1200
+                st.markdown(f"{'✅' if body_ok else '⚠️'} 正文字数合理")
+
+            st.divider()
 
             col_left, col_right = st.columns([1, 1])
 

@@ -235,7 +235,7 @@ def load_calendar_json() -> dict:
 def save_calendar_json(data: dict) -> None:
     """保存内容日历 JSON。"""
     path = DATA_DIR / "calendar.json"
-    _atomic_write_json(path, data)
+    _atomic_write_json(path, data, with_lock=True)
 
 
 def init() -> None:

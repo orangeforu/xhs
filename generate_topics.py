@@ -244,7 +244,7 @@ def generate_topics(total: int = 100, trending_keywords: list[str] | None = None
     return all_topics[:total]
 
 
-def save_topics(topics: list[dict], append: bool = False):
+def save_topics(topics: list[dict], append: bool = False) -> None:
     """保存选题到topics.json。append=True时追加到已有选题。"""
     if append:
         try:
@@ -275,7 +275,7 @@ def save_topics(topics: list[dict], append: bool = False):
     logger.info("已保存 %d 个选题到 %s", len(data["topics"]), path)
 
 
-def main():
+def main() -> None:
     import argparse
     init()
 

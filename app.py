@@ -179,6 +179,20 @@ def _recalculate_summary(performance: dict) -> None:
     summary["c_grade_count"] = sum(1 for n in notes if n.get("grade") == "C")
 
 
+def _sync_agent_memory(performance: dict) -> None:
+    """将发布数据同步到 Agent 记忆系统。"""
+    notes = performance.get("notes", [])
+    if not notes:
+        return
+    try:
+        from core.agents.memory import AgentMemory
+        for agent_name in ["emotional_writer", "content_editor", "cover_designer", "chief_editor"]:
+            mem = AgentMemory(agent_name)
+            mem.ingest_performance_data(notes)
+    except Exception as e:
+        pass  # 静默失败，不影响 UI
+
+
 def _check_circuit_breaker() -> tuple[bool, int]:
     """检查是否触发熔断：连续3篇C级。返回 (是否熔断, 连续C级数)。"""
     notes = performance.get("notes", [])
@@ -697,6 +711,7 @@ with tab4:
                     note["grade"] = grade
                     _recalculate_summary(performance)
                     save_performance_json(performance)
+                    _sync_agent_memory(performance)
                     st.success(f"{topic} 数据已保存！")
                     st.rerun()
 

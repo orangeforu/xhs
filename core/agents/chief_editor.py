@@ -250,5 +250,5 @@ class ChiefEditor(BaseAgent):
         else:
             mem.record_mediocre(context)
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         pass

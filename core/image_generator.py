@@ -400,6 +400,8 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
 
 def _http_get_with_retry(url: str, retries: int = 3, timeout: int = 120, **kwargs) -> requests.Response:
     """带重试的 HTTP GET，处理 429/5xx 和网络异常。"""
+    if retries < 1:
+        raise ValueError(f"retries 必须 >= 1，收到 {retries}")
     last_err = None
     for attempt in range(retries):
         try:

@@ -71,14 +71,14 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def ensure_dirs():
+def ensure_dirs() -> None:
     """确保必要目录存在。"""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
     PUBLISHED_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def validate_env():
+def validate_env() -> None:
     """验证关键环境变量，缺失时立即报错并给出清晰指引。"""
     api_key = os.getenv("LLM_API_KEY", "") or os.getenv("KIMI_API_KEY", "")
     if not api_key:

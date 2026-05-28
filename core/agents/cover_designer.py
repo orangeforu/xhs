@@ -1,3 +1,4 @@
+import os
 import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
@@ -75,7 +76,6 @@ class CoverDesigner(BaseAgent):
         cover_path = None
         cover_paths = {}
         if output_path:
-            import os
             base_dir = os.path.dirname(output_path)
             # AI 绘画封面
             ai_path = os.path.join(base_dir, "cover_ai.png")
@@ -186,7 +186,7 @@ class CoverDesigner(BaseAgent):
 
         return design
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DRAFT:
             draft_content = message.content.get("content", "")

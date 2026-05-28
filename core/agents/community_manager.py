@@ -86,7 +86,7 @@ class CommunityManager(BaseAgent):
         parsed = extract_json_from_llm(raw)
         return parsed if parsed else {}
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         """处理消息总线消息。"""
         if message.msg_type == MessageType.REVIEW:
             # 记录审核结果，了解内容质量

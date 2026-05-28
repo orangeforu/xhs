@@ -80,7 +80,7 @@ class EmotionalWriter(BaseAgent):
 
         return prompt
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         """处理其他 agent 通过消息总线发来的消息。"""
         if message.msg_type == MessageType.REQUEST:
             if message.from_agent == "cover_designer":

@@ -157,7 +157,7 @@ needs_relayout: 如果排版或分页有问题，标记为 true
             "needs_relayout": False,
         }
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DRAFT:
             # 收到初稿，记录字数用于统计

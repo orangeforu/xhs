@@ -32,7 +32,7 @@ class LayoutArtist(BaseAgent):
         self.send(to_agent=None, msg_type=MessageType.DESIGN, content=result, round_num=round_num)
         return inner_paths
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         if message.msg_type == MessageType.DRAFT:
             # 收到 draft 更新，记录字数
             content = message.content.get("content", "")

@@ -76,7 +76,7 @@ class MessageBus:
                 if not self.subscribers[agent_name]:
                     del self.subscribers[agent_name]
 
-    def publish(self, message: Message):
+    def publish(self, message: Message) -> None:
         with self._lock:
             self.history.append(message)
             # 构建 targets 和 callbacks 快照，避免锁外遍历时状态变化
@@ -135,11 +135,11 @@ class BaseAgent:
         self._memory_lock = threading.Lock()  # 保护 _memory_cache 和 _memory_loaded
         bus.subscribe(name, self._on_message)
 
-    def _on_message(self, message: Message):
+    def _on_message(self, message: Message) -> None:
         self.session_memory.append(message)
         self.handle(message)
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         """子类必须重写此方法。"""
         raise NotImplementedError(f"Agent {self.name} 未实现 handle 方法")
 
@@ -189,7 +189,7 @@ class BaseAgent:
         )
         return _extract_content(data)
 
-    def reset_memory_cache(self):
+    def reset_memory_cache(self) -> None:
         """重置记忆缓存，下次 think() 时重新从磁盘加载。用于新一轮迭代开始时。"""
         with self._memory_lock:
             self._memory_loaded = False

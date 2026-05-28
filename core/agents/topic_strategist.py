@@ -82,7 +82,7 @@ class TopicStrategist(BaseAgent):
             "summary": data.get("summary", {}),
         }
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DECISION:
             # 记录主编决策，用于后续选题策略参考

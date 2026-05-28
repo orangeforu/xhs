@@ -38,11 +38,11 @@ class AgentMemory:
             "version": 2,
         }
 
-    def save(self):
+    def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         _atomic_write_json(self.path, self.data)
 
-    def record_success(self, context: dict):
+    def record_success(self, context: dict) -> None:
         # 去重：同一 topic 不重复记录
         topic = context.get("topic", "")
         with self._lock:
@@ -55,7 +55,7 @@ class AgentMemory:
             self.data["total_runs"] += 1
         self.save()
 
-    def record_failure(self, context: dict):
+    def record_failure(self, context: dict) -> None:
         # 去重：同一 topic 不重复记录
         topic = context.get("topic", "")
         with self._lock:
@@ -67,7 +67,7 @@ class AgentMemory:
             self.data["total_runs"] += 1
         self.save()
 
-    def record_mediocre(self, context: dict):
+    def record_mediocre(self, context: dict) -> None:
         """记录 B 级平庸内容，用于学习什么内容只是'及格'。"""
         key = "mediocre_patterns"
         topic = context.get("topic", "")
@@ -82,7 +82,7 @@ class AgentMemory:
             self.data["total_runs"] += 1
         self.save()
 
-    def add_collaboration_note(self, partner: str, note: str):
+    def add_collaboration_note(self, partner: str, note: str) -> None:
         with self._lock:
             notes = self.data.setdefault("collaboration_notes", {})
             partner_notes = notes.setdefault(partner, [])
@@ -90,7 +90,7 @@ class AgentMemory:
             notes[partner] = partner_notes[-5:]
         self.save()
 
-    def update_style_preference(self, key: str, value: Any):
+    def update_style_preference(self, key: str, value: Any) -> None:
         with self._lock:
             self.data.setdefault("style_preferences", {})[key] = value
         self.save()
@@ -163,7 +163,7 @@ class AgentMemory:
             "success_rate": success / max(total, 1),
         }
 
-    def ingest_performance_data(self, notes: list[dict]):
+    def ingest_performance_data(self, notes: list[dict]) -> None:
         """从 performance.json 中学习公式和支柱的实际表现。"""
         formula_stats: dict[str, list[str]] = {}
         pillar_stats: dict[str, list[str]] = {}

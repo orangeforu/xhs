@@ -27,11 +27,14 @@ class AgentMemory:
         return {
             "success_patterns": [],
             "failure_patterns": [],
+            "mediocre_patterns": [],
             "style_preferences": {},
             "collaboration_notes": {},
+            "formula_performance": {},
+            "pillar_performance": {},
             "total_runs": 0,
             "success_count": 0,
-            "version": 1,
+            "version": 2,
         }
 
     def save(self):
@@ -119,6 +122,11 @@ class AgentMemory:
                 f"{'保持水准，争取突破S级。' if stats['success_rate'] > 0.7 else '需要提升质量，关注失败教训。'}"
             )
 
+        # 注入数据洞察
+        insights = self.get_performance_insights()
+        if insights:
+            parts.append(insights)
+
         return "\n".join(parts) if parts else ""
 
     def get_stats(self) -> dict:
@@ -129,3 +137,65 @@ class AgentMemory:
             "success_count": success,
             "success_rate": success / max(total, 1),
         }
+
+    def ingest_performance_data(self, notes: list[dict]):
+        """从 performance.json 中学习公式和支柱的实际表现。"""
+        formula_stats: dict[str, list[str]] = {}
+        pillar_stats: dict[str, list[str]] = {}
+
+        for n in notes:
+            grade = n.get("grade", "B")
+            formula = n.get("title_formula", "")
+            pillar = n.get("pillar", "")
+
+            if formula:
+                formula_stats.setdefault(formula, []).append(grade)
+            if pillar:
+                pillar_stats.setdefault(pillar, []).append(grade)
+
+        # 更新公式表现
+        for formula, grades in formula_stats.items():
+            avg_score = sum({"S": 1.0, "A": 0.8, "B": 0.5, "C": 0.1}.get(g, 0.5) for g in grades) / len(grades)
+            self.data.setdefault("formula_performance", {})[formula] = {
+                "count": len(grades),
+                "avg_score": round(avg_score, 2),
+                "grades": grades[-5:],  # 只保留最近5个
+            }
+
+        # 更新支柱表现
+        for pillar, grades in pillar_stats.items():
+            avg_score = sum({"S": 1.0, "A": 0.8, "B": 0.5, "C": 0.1}.get(g, 0.5) for g in grades) / len(grades)
+            self.data.setdefault("pillar_performance", {})[pillar] = {
+                "count": len(grades),
+                "avg_score": round(avg_score, 2),
+                "grades": grades[-5:],
+            }
+
+        self.save()
+        logger.info("已从 %d 篇发布数据中学习公式和支柱表现", len(notes))
+
+    def get_performance_insights(self) -> str:
+        """生成基于实际数据的洞察文本。"""
+        parts = []
+
+        formula_perf = self.data.get("formula_performance", {})
+        if formula_perf:
+            best_formula = max(formula_perf.items(), key=lambda x: x[1]["avg_score"])
+            worst_formula = min(formula_perf.items(), key=lambda x: x[1]["avg_score"])
+            if best_formula[0] != worst_formula[0]:
+                parts.append(
+                    f"【数据洞察】最有效公式: {best_formula[0]}（{best_formula[1]['count']}篇，"
+                    f"平均分 {best_formula[1]['avg_score']}）；"
+                    f"最弱公式: {worst_formula[0]}（{worst_formula[1]['count']}篇，"
+                    f"平均分 {worst_formula[1]['avg_score']}）。"
+                )
+
+        pillar_perf = self.data.get("pillar_performance", {})
+        if pillar_perf:
+            best_pillar = max(pillar_perf.items(), key=lambda x: x[1]["avg_score"])
+            parts.append(
+                f"【数据洞察】流量密码支柱: {best_pillar[0]}（{best_pillar[1]['count']}篇，"
+                f"平均分 {best_pillar[1]['avg_score']}）。"
+            )
+
+        return "\n".join(parts) if parts else ""

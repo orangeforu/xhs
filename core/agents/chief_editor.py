@@ -40,16 +40,16 @@ class ChiefEditor(BaseAgent):
             if round_num == 0 or (review and review.get("needs_redesign")):
                 cover_path = f"{out_dir}/cover_ai.png"
                 style_override = brief.get("series_style", "")
-                parallel_tasks.append(("design", lambda: designer.design(draft["content"], round_num=round_num, output_path=cover_path, style_override=style_override)))
+                parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so)))
             else:
                 parallel_tasks.append(("design", lambda: design_result))
 
             if round_num == 0 or (review and review.get("needs_relayout")):
-                parallel_tasks.append(("layout", lambda: artist.layout(draft["content"], style=self._extract_style(draft["content"]), out_dir=out_dir, round_num=round_num)))
+                parallel_tasks.append(("layout", lambda rn=round_num: artist.layout(draft["content"], style=self._extract_style(draft["content"]), out_dir=out_dir, round_num=rn)))
             else:
                 parallel_tasks.append(("layout", lambda: inner_paths))
 
-            parallel_tasks.append(("review", lambda: editor.review(draft["content"], round_num=round_num)))
+            parallel_tasks.append(("review", lambda rn=round_num: editor.review(draft["content"], round_num=rn)))
 
             results = {}
             task_errors = {}

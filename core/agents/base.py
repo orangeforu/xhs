@@ -119,6 +119,7 @@ class BaseAgent:
         self.session_memory: list[Message] = []  # 当前会话
         self._memory_cache: str | None = None  # 同一轮迭代内缓存
         self._memory_loaded: bool = False
+        self._memory_lock = threading.Lock()  # 保护 _memory_cache 和 _memory_loaded
         bus.subscribe(name, self._on_message)
 
     def _on_message(self, message: Message):
@@ -154,11 +155,12 @@ class BaseAgent:
         max_tokens: int = 2500,
     ) -> str:
         """调用 LLM 进行推理，自动注入持久化记忆上下文（同轮迭代内缓存）。"""
-        if not self._memory_loaded:
-            from core.agents.memory import AgentMemory
-            memory = AgentMemory(self.name)
-            self._memory_cache = memory.get_context()
-            self._memory_loaded = True
+        with self._memory_lock:
+            if not self._memory_loaded:
+                from core.agents.memory import AgentMemory
+                memory = AgentMemory(self.name)
+                self._memory_cache = memory.get_context()
+                self._memory_loaded = True
 
         full_prompt = prompt
         if self._memory_cache:

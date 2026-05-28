@@ -30,6 +30,7 @@ docs/draft_note_*.md
 docs_agent/
 docs_agent_v1/
 data/agent_memory/
+data/*_backup_*.json
 
 # Assets generated during runtime (optional)
 # Uncomment if you don't want to commit generated covers

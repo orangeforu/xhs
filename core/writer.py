@@ -60,6 +60,8 @@ def _call_api(
             logger.warning("API 返回非 JSON 响应，%d秒后重试 (%d/%d): %s", wait, attempt + 1, retries, e)
             time.sleep(wait)
 
+    if last_err is None:
+        raise RuntimeError("_call_api 未执行任何请求（retries=0）")
     raise last_err
 
 

@@ -31,6 +31,7 @@ docs_agent/
 docs_agent_v1/
 data/agent_memory/
 data/*_backup_*.json
+data/*.lock
 
 # Assets generated during runtime
 assets/cover_*.png

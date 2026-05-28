@@ -209,6 +209,18 @@ def score_title(title: str, performance: dict) -> dict:
             score -= 15
             reasons.append(f"含低质词「{pattern}」")
 
+    # 6. 公式多样性惩罚：如果同一公式近期使用过多，降分
+    if notes:
+        recent = notes[-5:]  # 最近 5 篇
+        if formula:
+            same_count = sum(1 for n in recent if n.get("title_formula") == formula)
+            if same_count >= 3:
+                score -= 10
+                reasons.append(f"{formula}近期已用{same_count}次，缺乏多样性")
+            elif same_count >= 2:
+                score -= 5
+                reasons.append(f"{formula}近期已用{same_count}次")
+
     score = max(0, min(100, score))
 
     return {

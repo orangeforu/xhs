@@ -5,13 +5,54 @@ from datetime import datetime, timezone
 
 import streamlit as st
 
-from core.config import load_performance_json
+from core.config import load_performance_json, save_performance_json
 from core.publish_helpers import (
     calculate_grade as _calculate_grade,
     calc_interaction_rate as _calc_interaction_rate,
     calc_formula_stats as _calc_formula_stats,
     calc_pillar_stats as _calc_pillar_stats,
+    recalculate_summary as _recalculate_summary,
+    score_title as _score_title,
 )
+
+
+def _render_engagement_input(performance: dict):
+    """互动数据录入 — 让用户手动输入真实互动数据，闭环反馈循环。"""
+    notes = performance.get("notes", [])
+    # 找出还没有互动数据的已发布笔记
+    needs_data = [n for n in notes if n.get("likes", 0) == 0 and n.get("collects", 0) == 0]
+
+    if not needs_data:
+        return
+
+    with st.expander(f"📝 录入互动数据（{len(needs_data)} 篇待录入）", expanded=False):
+        st.caption("发布笔记后，将小红书后台的真实数据录入，系统会自动学习并优化后续选题和内容策略。")
+        for n in needs_data:
+            topic = n.get("topic", "未知")
+            st.markdown(f"**{topic}**")
+            cols = st.columns(5)
+            with cols[0]:
+                likes = st.number_input("点赞", min_value=0, key=f"likes_{topic}", step=1)
+            with cols[1]:
+                collects = st.number_input("收藏", min_value=0, key=f"collects_{topic}", step=1)
+            with cols[2]:
+                comments = st.number_input("评论", min_value=0, key=f"comments_{topic}", step=1)
+            with cols[3]:
+                shares = st.number_input("分享", min_value=0, key=f"shares_{topic}", step=1)
+            with cols[4]:
+                exposure = st.number_input("曝光", min_value=0, key=f"exposure_{topic}", step=100)
+
+            if st.button("💾 保存", key=f"save_eng_{topic}"):
+                n["likes"] = likes
+                n["collects"] = collects
+                n["comments"] = comments
+                n["shares"] = shares
+                n["exposure"] = exposure
+                n["grade"] = _calculate_grade(likes)
+                _recalculate_summary(performance)
+                save_performance_json(performance)
+                st.success(f"{topic} 数据已保存！等级: {n['grade']}")
+                st.rerun()
 
 
 def render_analytics_tab(cb_tripped: bool = False, cb_streak: int = 0):
@@ -21,6 +62,9 @@ def render_analytics_tab(cb_tripped: bool = False, cb_streak: int = 0):
     performance = load_performance_json()
     notes = performance.get("notes", [])
     summary = performance.get("summary", {})
+
+    # 互动数据录入（闭环反馈）
+    _render_engagement_input(performance)
 
     _render_summary_metrics(summary, notes, cb_tripped)
     _render_formula_analysis(notes)

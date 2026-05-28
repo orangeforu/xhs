@@ -1,5 +1,3 @@
-import re
-
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.image_generator import generate_inner_pages

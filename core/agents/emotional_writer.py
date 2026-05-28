@@ -1,5 +1,3 @@
-import json
-
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.utils import load_prompt, FORMULA_INSTRUCTIONS

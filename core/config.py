@@ -152,6 +152,17 @@ def save_performance_json(data: dict) -> None:
     _atomic_write_json(path, data)
 
 
+def _grade_from_likes(likes: int) -> str:
+    """根据点赞数计算等级（与 publish_helpers.calculate_grade 逻辑一致）。"""
+    if likes > 1500:
+        return "S"
+    elif likes >= 800:
+        return "A"
+    elif likes >= 200:
+        return "B"
+    return "C"
+
+
 def update_note_performance(topic: str, metrics: dict) -> bool:
     """更新单篇笔记的运营数据（按 topic 匹配）。
 
@@ -164,16 +175,7 @@ def update_note_performance(topic: str, metrics: dict) -> bool:
             for key in ("likes", "collects", "comments", "shares", "exposure"):
                 if key in metrics:
                     note[key] = int(metrics[key])
-            # 重算 grade
-            likes = note.get("likes", 0)
-            if likes > 1500:
-                note["grade"] = "S"
-            elif likes >= 800:
-                note["grade"] = "A"
-            elif likes >= 200:
-                note["grade"] = "B"
-            else:
-                note["grade"] = "C"
+            note["grade"] = _grade_from_likes(note.get("likes", 0))
             save_performance_json(data)
             return True
     return False

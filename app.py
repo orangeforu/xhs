@@ -610,16 +610,7 @@ with tab4:
                     val = row.get(key, "").strip()
                     if val and val.isdigit():
                         note[key] = int(val)
-                # 重算 grade
-                likes = note.get("likes", 0)
-                if likes > 1500:
-                    note["grade"] = "S"
-                elif likes >= 800:
-                    note["grade"] = "A"
-                elif likes >= 200:
-                    note["grade"] = "B"
-                else:
-                    note["grade"] = "C"
+                note["grade"] = _calculate_grade(note.get("likes", 0))
                 import_count += 1
 
             if import_count > 0:
@@ -637,8 +628,6 @@ with tab4:
     if notes:
         st.divider()
         st.subheader("📋 运营周报")
-
-        from datetime import timedelta
 
         now = datetime.now()
         week_ago = now - timedelta(days=7)

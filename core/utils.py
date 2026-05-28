@@ -36,8 +36,8 @@ def extract_visual_style(content: str) -> str:
     )
     if m:
         style = m.group(1).strip().lower()
-        valid_styles = {"warm_grey", "twilight", "crimson", "mist", "cool", "warm", "blank"}
-        if style in valid_styles:
+        from core.image_generator import PALETTE
+        if style in PALETTE:
             return style
     return "warm_grey"
 

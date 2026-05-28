@@ -77,12 +77,14 @@ needs_relayout: 如果排版或分页有问题，标记为 true
 
             # 将读者体验中发现的质量问题合并到 issues
             quality_issues = reader_data.get("quality_issues", [])
+            quality_suggestions = reader_data.get("quality_suggestions", [])
+            default_suggestion = quality_suggestions[0] if quality_suggestions else "参考读者体验反馈修改"
             for qi in quality_issues[:3]:
                 if isinstance(qi, str):
                     parsed.setdefault("issues", []).append({
                         "location": "读者体验",
                         "problem": qi,
-                        "suggestion": reader_data.get("quality_suggestions", [""])[0] if reader_data.get("quality_suggestions") else "参考读者体验反馈修改",
+                        "suggestion": default_suggestion,
                     })
 
             # 将讨论潜力低作为 suggestion
@@ -111,8 +113,8 @@ needs_relayout: 如果排版或分页有问题，标记为 true
         try:
             reader_prompt_filled = self.reader_prompt.replace("{note_content}", note_content)
             raw = self.think(reader_prompt_filled, temperature=0.5, max_tokens=1500)
-            # 提取 JSON
-            m = re.search(r'\{.*\}', raw, re.DOTALL)
+            # 提取 JSON（非贪婪匹配，避免多 JSON 对象混淆）
+            m = re.search(r'\{[^{}]*\}', raw, re.DOTALL)
             if m:
                 return json.loads(m.group())
         except Exception as e:
@@ -121,8 +123,8 @@ needs_relayout: 如果排版或分页有问题，标记为 true
 
     def _parse_review(self, raw: str) -> dict:
         """解析 LLM 输出的审核 JSON。"""
-        # 尝试提取 JSON 块
-        m = re.search(r'\{.*\}', raw, re.DOTALL)
+        # 尝试提取 JSON 块（非贪婪匹配）
+        m = re.search(r'\{[^{}]*\}', raw, re.DOTALL)
         if m:
             try:
                 parsed = json.loads(m.group())

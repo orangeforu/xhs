@@ -1,4 +1,5 @@
 import concurrent.futures
+import functools
 import hashlib
 import io
 import os
@@ -11,7 +12,7 @@ from urllib.parse import quote
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-from core.config import get_logger, IMAGE_PROVIDER
+from core.config import get_logger, IMAGE_PROVIDER, FONT_DIR
 
 logger = get_logger(__name__)
 
@@ -20,9 +21,8 @@ COVER_WIDTH = 1242
 COVER_HEIGHT = 1660
 
 # 思源黑体（免费商用）
-FONT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "fonts")
-FONT_REGULAR = os.path.join(FONT_DIR, "NotoSansSC-Regular.ttf")
-FONT_BOLD = os.path.join(FONT_DIR, "NotoSansSC-Bold.ttf")
+FONT_REGULAR = str(FONT_DIR / "NotoSansSC-Regular.ttf")
+FONT_BOLD = str(FONT_DIR / "NotoSansSC-Bold.ttf")
 
 # 品牌色调定义
 # 每个主题包含：bg_top / bg_bottom（渐变）、title（标题/强调正文）、subtitle（辅助文字）、
@@ -66,6 +66,7 @@ PALETTE = {
 }
 
 
+@functools.lru_cache(maxsize=32)
 def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     """加载字体，失败时按平台 fallback 系统黑体"""
     path = FONT_BOLD if bold else FONT_REGULAR
@@ -448,20 +449,38 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
         if not api_key:
             logger.warning("IMAGE_API_KEY / OPENAI_API_KEY 未配置，跳过 DALL-E")
         else:
-            try:
-                resp = requests.post(
-                    "https://api.openai.com/v1/images/generations",
-                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                    json={"model": "dall-e-3", "prompt": prompt, "size": "1024x1792", "n": 1},
-                    timeout=180,
-                )
-                resp.raise_for_status()
-                data = resp.json()
-                img_url = data["data"][0]["url"]
-                img_resp = _http_get_with_retry(img_url)
-                bg_img = Image.open(io.BytesIO(img_resp.content))
-            except Exception as e:
-                logger.warning("DALL-E API 失败: %s", e)
+            last_err = None
+            for attempt in range(3):
+                try:
+                    resp = requests.post(
+                        "https://api.openai.com/v1/images/generations",
+                        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                        json={"model": "dall-e-3", "prompt": prompt, "size": "1024x1792", "n": 1},
+                        timeout=180,
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+                    img_url = data["data"][0]["url"]
+                    img_resp = _http_get_with_retry(img_url)
+                    bg_img = Image.open(io.BytesIO(img_resp.content))
+                    break
+                except requests.exceptions.HTTPError as e:
+                    status = e.response.status_code if e.response else 0
+                    if status == 429 or 500 <= status < 600:
+                        last_err = e
+                        wait = 2 ** attempt
+                        logger.warning("DALL-E API 请求失败 (HTTP %s)，%d秒后重试 (%d/3)", status, wait, attempt + 1)
+                        time.sleep(wait)
+                        continue
+                    raise
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                    last_err = e
+                    wait = 2 ** attempt
+                    logger.warning("DALL-E API 请求失败 (%s)，%d秒后重试 (%d/3)", type(e).__name__, wait, attempt + 1)
+                    time.sleep(wait)
+            else:
+                if last_err:
+                    logger.warning("DALL-E API 最终失败: %s", last_err)
 
     else:
         logger.warning("不支持的 IMAGE_PROVIDER: %s", IMAGE_PROVIDER)

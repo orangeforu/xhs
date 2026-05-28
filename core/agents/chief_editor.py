@@ -144,26 +144,44 @@ class ChiefEditor(BaseAgent):
         grade = review.get("grade", "B")
         issues = review.get("issues", [])
 
-        # S/A级直接通过
-        if grade in ("S", "A") and verdict == "pass":
-            return {"action": "publish", "reason": f"{grade}级高质量内容"}
+        # S级直接通过
+        if grade == "S" and verdict == "pass":
+            return {"action": "publish", "reason": "S级爆款内容"}
 
-        # B级 + pass/conditional，且无严重 issues，可以通过
-        if grade == "B" and verdict in ("pass", "conditional") and len(issues) <= 2:
-            return {"action": "publish", "reason": f"B级内容可接受，issues={len(issues)}"}
+        # A级 + pass 直接通过；A级 + conditional 且 issues=0 也可通过
+        if grade == "A":
+            if verdict == "pass":
+                return {"action": "publish", "reason": "A级高质量内容"}
+            if verdict == "conditional" and len(issues) == 0:
+                return {"action": "publish", "reason": "A级内容，仅有优化建议无硬伤"}
 
-        # 死循环检测：连续3轮等级相同（如B-B-B），强制通过，避免越改越差
+        # B级：必须 0 issues 才能通过，有 issues 就重写
+        if grade == "B" and verdict in ("pass", "conditional") and len(issues) == 0:
+            return {"action": "publish", "reason": "B级内容无硬伤，可接受"}
+
+        # 死循环检测：连续3轮等级相同且为 B，强制给出不同方向再给一次机会
         if grade_history and len(grade_history) >= 3:
             last_three = grade_history[-3:]
-            if len(set(last_three)) == 1 and last_three[0] in ("S", "A", "B"):
-                return {"action": "publish", "reason": f"连续3轮等级均为{last_three[0]}，避免审核死循环，强制通过"}
+            if len(set(last_three)) == 1 and last_three[0] == "B":
+                # B-B-B 死循环：不再强制通过，而是要求换角度重写
+                if round_num < 4:
+                    return {
+                        "action": "revise",
+                        "feedback": "连续3轮均为B级，说明当前修改方向无效。请完全换一个叙事角度：如果之前是从'受害者的委屈'切入，这次试试'施害者的无意识'；如果之前是对话推动，这次试试动作细节推动。不要在原来的基础上微调。",
+                        "core_issue": "B级死循环：需要彻底换角度",
+                    }
+                else:
+                    # 最后一轮，B级死循环只能放弃
+                    return {"action": "abandon", "reason": "5轮迭代均为B级，选题或角度存在根本问题"}
 
         # 已达最大轮数
         if round_num >= 4:
-            if grade in ("S", "A", "B"):
-                return {"action": "publish", "reason": "已达最大迭代轮数(5轮)，内容可接受"}
+            if grade in ("S", "A"):
+                return {"action": "publish", "reason": "已达最大迭代轮数，内容质量可接受"}
+            elif grade == "B" and len(issues) == 0:
+                return {"action": "publish", "reason": "已达最大迭代轮数，B级无硬伤，可接受"}
             else:
-                return {"action": "abandon", "reason": "5轮迭代后仍未达到 publishable 标准"}
+                return {"action": "abandon", "reason": f"5轮迭代后仍为{grade}级且存在{len(issues)}个问题，放弃发布"}
 
         # 需要重写
         feedback = self._build_feedback(review)

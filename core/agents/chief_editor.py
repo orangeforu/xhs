@@ -23,6 +23,10 @@ class ChiefEditor(BaseAgent):
         inner_paths = []
         grade_history = []  # 记录每轮审核等级，防止死循环
 
+        # 每次创作流程开始时，重置所有 Agent 的记忆缓存，确保从磁盘加载最新数据
+        for agent in (writer, designer, artist, editor, community, self):
+            agent.reset_memory_cache()
+
         # ── Round 0: 初稿 ──
         logger.info("=" * 50)
         logger.info("主编启动创作流程: %s", brief["topic"])

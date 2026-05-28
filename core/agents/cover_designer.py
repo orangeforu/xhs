@@ -3,7 +3,7 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt
+from core.utils import load_prompt, extract_json_from_llm
 from core.image_generator import generate_cover_ai
 
 logger = get_logger(__name__)
@@ -141,13 +141,9 @@ class CoverDesigner(BaseAgent):
 
     def _parse_design(self, raw: str) -> dict:
         """从 LLM 输出中解析 JSON 设计方案。"""
-        # 尝试提取 JSON 块
-        m = re.search(r'\{.*\}', raw, re.DOTALL)
-        if m:
-            try:
-                return json.loads(m.group())
-            except json.JSONDecodeError:
-                pass
+        parsed = extract_json_from_llm(raw)
+        if parsed:
+            return parsed
 
         # fallback: 手动解析
         design = {"title": "", "subtitle": "", "style": "warm_grey", "prompt": "", "visual_anchor": "", "rationale": ""}

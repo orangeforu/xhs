@@ -138,7 +138,7 @@ def _draw_gradient_bg(draw: ImageDraw.ImageDraw, width: int, height: int, c1: tu
         b = int(c1[2] * (1 - ratio) + c2[2] * ratio)
         pixels.append((r, g, b))
     strip.putdata(pixels)
-    gradient = strip.resize((width, height), Image.BILINEAR)
+    gradient = strip.resize((width, height), Image.Resampling.BILINEAR)
     draw._image.paste(gradient, (0, 0))
 
 
@@ -490,7 +490,7 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
         return generate_cover_template(title, subtitle, style=style, output_path=output_path)
 
     # 调整尺寸
-    bg_img = bg_img.resize((COVER_WIDTH, COVER_HEIGHT), Image.LANCZOS)
+    bg_img = bg_img.resize((COVER_WIDTH, COVER_HEIGHT), Image.Resampling.LANCZOS)
     bg_img = bg_img.convert("RGBA")
 
     # 底部渐变遮罩（让文字清晰可读）

@@ -149,6 +149,7 @@ def _score_topic(topic: dict, history: dict, recent_generated: list[dict]) -> di
 def smart_select(
     topic_pool: list[dict] | None = None,
     exclude_statuses: list[str] | None = None,
+    recent_generated: list[dict] | None = None,
 ) -> tuple[dict | None, dict]:
     """
     智能选出最优选题。
@@ -162,6 +163,9 @@ def smart_select(
     if exclude_statuses is None:
         exclude_statuses = ["published", "archived"]
 
+    if recent_generated is None:
+        recent_generated = []
+
     # 过滤掉已发布/已归档的
     candidates = [t for t in topic_pool if t.get("status") not in exclude_statuses]
 
@@ -174,7 +178,7 @@ def smart_select(
     # 对每个候选选题评分
     scored = []
     for topic in candidates:
-        scores = _score_topic(topic, history, recent_generated=[])
+        scores = _score_topic(topic, history, recent_generated=recent_generated)
         scored.append((topic, scores))
 
     # 按总分排序

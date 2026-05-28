@@ -2,7 +2,7 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt
+from core.utils import load_prompt, extract_json_from_llm
 
 logger = get_logger(__name__)
 
@@ -83,14 +83,8 @@ class CommunityManager(BaseAgent):
 
     def _parse_comments_json(self, raw: str) -> dict:
         """从 LLM 输出中解析 JSON。"""
-        m = re.search(r'\{.*\}', raw, re.DOTALL)
-        if m:
-            try:
-                import json
-                return json.loads(m.group())
-            except Exception:
-                pass
-        return {}
+        parsed = extract_json_from_llm(raw)
+        return parsed if parsed else {}
 
     def handle(self, message: Message):
         pass

@@ -152,6 +152,33 @@ def save_performance_json(data: dict) -> None:
     _atomic_write_json(path, data)
 
 
+def update_note_performance(topic: str, metrics: dict) -> bool:
+    """更新单篇笔记的运营数据（按 topic 匹配）。
+
+    metrics 示例: {"likes": 100, "collects": 50, "comments": 20, "shares": 10, "exposure": 5000}
+    返回是否找到并更新了该笔记。
+    """
+    data = load_performance_json()
+    for note in data.get("notes", []):
+        if note.get("topic") == topic:
+            for key in ("likes", "collects", "comments", "shares", "exposure"):
+                if key in metrics:
+                    note[key] = int(metrics[key])
+            # 重算 grade
+            likes = note.get("likes", 0)
+            if likes > 1500:
+                note["grade"] = "S"
+            elif likes >= 800:
+                note["grade"] = "A"
+            elif likes >= 200:
+                note["grade"] = "B"
+            else:
+                note["grade"] = "C"
+            save_performance_json(data)
+            return True
+    return False
+
+
 def load_calendar_json() -> dict:
     """加载内容日历 JSON，不存在时返回空模板。"""
     path = DATA_DIR / "calendar.json"

@@ -3,7 +3,7 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt
+from core.utils import load_prompt, extract_json_from_llm
 
 logger = get_logger(__name__)
 
@@ -113,33 +113,26 @@ needs_relayout: 如果排版或分页有问题，标记为 true
         try:
             reader_prompt_filled = self.reader_prompt.replace("{note_content}", note_content)
             raw = self.think(reader_prompt_filled, temperature=0.5, max_tokens=1500)
-            # 提取 JSON（非贪婪匹配，避免多 JSON 对象混淆）
-            m = re.search(r'\{[^{}]*\}', raw, re.DOTALL)
-            if m:
-                return json.loads(m.group())
+            parsed = extract_json_from_llm(raw)
+            if parsed:
+                return parsed
         except Exception as e:
             logger.warning("读者体验审核失败（不影响主审核）: %s", e)
         return None
 
     def _parse_review(self, raw: str) -> dict:
         """解析 LLM 输出的审核 JSON。"""
-        # 尝试提取 JSON 块（非贪婪匹配）
-        m = re.search(r'\{[^{}]*\}', raw, re.DOTALL)
-        if m:
-            try:
-                parsed = json.loads(m.group())
-                # 标准化
-                parsed.setdefault("verdict", "conditional")
-                parsed.setdefault("grade", "B")
-                parsed.setdefault("issues", [])
-                parsed.setdefault("suggestions", [])
-                parsed.setdefault("strengths", [])
-                parsed.setdefault("overall_comment", "")
-                parsed.setdefault("needs_redesign", False)
-                parsed.setdefault("needs_relayout", False)
-                return parsed
-            except json.JSONDecodeError:
-                pass
+        parsed = extract_json_from_llm(raw)
+        if parsed:
+            parsed.setdefault("verdict", "conditional")
+            parsed.setdefault("grade", "B")
+            parsed.setdefault("issues", [])
+            parsed.setdefault("suggestions", [])
+            parsed.setdefault("strengths", [])
+            parsed.setdefault("overall_comment", "")
+            parsed.setdefault("needs_redesign", False)
+            parsed.setdefault("needs_relayout", False)
+            return parsed
 
         logger.warning("审核结果 JSON 解析失败，回退文本解析")
         # fallback 文本解析

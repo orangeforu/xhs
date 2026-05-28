@@ -13,9 +13,9 @@ import re
 from datetime import datetime, timezone
 
 from core.config import get_logger, init, load_topics_json, save_topics_json, load_calendar_json, PROJECT_ROOT
-from core.agents.orchestrator import Orchestrator, _write_note_file
+from core.agents.orchestrator import Orchestrator
 from core.topic_selector import smart_select, smart_batch
-from core.utils import clean_md as _clean_md, extract_visual_style as _extract_visual_style
+from core.utils import clean_md as _clean_md, write_note_file
 
 logger = get_logger(__name__)
 

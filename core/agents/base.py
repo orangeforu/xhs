@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Callable
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import json
 import threading
 
 from core.config import get_logger
@@ -62,6 +61,20 @@ class MessageBus:
     def subscribe(self, agent_name: str, callback: Callable[[Message], None]):
         with self._lock:
             self.subscribers.setdefault(agent_name, []).append(callback)
+
+    def unsubscribe(self, agent_name: str, callback: Callable[[Message], None] | None = None):
+        """取消订阅。callback=None 时移除该 agent 的所有回调。"""
+        with self._lock:
+            if agent_name not in self.subscribers:
+                return
+            if callback is None:
+                del self.subscribers[agent_name]
+            else:
+                self.subscribers[agent_name] = [
+                    cb for cb in self.subscribers[agent_name] if cb is not callback
+                ]
+                if not self.subscribers[agent_name]:
+                    del self.subscribers[agent_name]
 
     def publish(self, message: Message):
         with self._lock:

@@ -203,6 +203,21 @@ def generate_topics(total: int = 100, trending_keywords: list[str] | None = None
     all_topics: list[dict] = []
     all_titles: list[str] = []
 
+    def _process_batch(batch: list[dict]) -> None:
+        """处理一批选题，去重后加入结果列表。"""
+        for t in batch:
+            title = t.get("topic", "")
+            # 精确去重
+            if title in all_titles:
+                logger.info("跳过精确重复选题: %s", title)
+                continue
+            # 相似度去重
+            if any(_is_similar(title, existing) for existing in all_titles):
+                logger.info("跳过相似选题: %s", title)
+                continue
+            all_topics.append(t)
+            all_titles.append(title)
+
     for batch_idx in range(num_batches):
         remaining = total - len(all_topics)
         if remaining <= 0:
@@ -210,18 +225,7 @@ def generate_topics(total: int = 100, trending_keywords: list[str] | None = None
 
         try:
             batch = generate_topics_batch(batch_idx, all_titles, trending_keywords)
-            for t in batch:
-                title = t.get("topic", "")
-                # 精确去重
-                if title in all_titles:
-                    logger.info("跳过精确重复选题: %s", title)
-                    continue
-                # 相似度去重
-                if any(_is_similar(title, existing) for existing in all_titles):
-                    logger.info("跳过相似选题: %s", title)
-                    continue
-                all_topics.append(t)
-                all_titles.append(title)
+            _process_batch(batch)
         except Exception as e:
             logger.error("第%d批生成失败: %s", batch_idx + 1, e)
             if batch_idx < num_batches - 1:
@@ -229,14 +233,7 @@ def generate_topics(total: int = 100, trending_keywords: list[str] | None = None
                 time.sleep(3)
                 try:
                     batch = generate_topics_batch(batch_idx, all_titles, trending_keywords)
-                    for t in batch:
-                        title = t.get("topic", "")
-                        if title in all_titles:
-                            continue
-                        if any(_is_similar(title, existing) for existing in all_titles):
-                            continue
-                        all_topics.append(t)
-                        all_titles.append(title)
+                    _process_batch(batch)
                 except Exception as e2:
                     logger.error("重试失败: %s", e2)
 

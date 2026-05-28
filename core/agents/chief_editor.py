@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from core.agents.base import BaseAgent, MessageBus, Message, MessageType
+from core.agents.base import BaseAgent, MessageBus, Message
 from core.config import get_logger
 from core.utils import load_prompt, extract_visual_style
 
@@ -46,12 +46,12 @@ class ChiefEditor(BaseAgent):
                 style_override = brief.get("series_style", "")
                 parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so)))
             else:
-                parallel_tasks.append(("design", lambda: design_result))
+                parallel_tasks.append(("design", lambda dr=design_result: dr))
 
             if round_num == 0 or (review and review.get("needs_relayout")):
                 parallel_tasks.append(("layout", lambda rn=round_num: artist.layout(draft["content"], style=self._extract_style(draft["content"]), out_dir=out_dir, round_num=rn)))
             else:
-                parallel_tasks.append(("layout", lambda: inner_paths))
+                parallel_tasks.append(("layout", lambda ip=inner_paths: ip))
 
             parallel_tasks.append(("review", lambda rn=round_num: editor.review(draft["content"], round_num=rn)))
 
@@ -62,7 +62,12 @@ class ChiefEditor(BaseAgent):
                 for future in as_completed(futures):
                     name = futures[future]
                     try:
-                        results[name] = future.result()
+                        results[name] = future.result(timeout=300)
+                    except FuturesTimeoutError:
+                        logger.error("并行任务 %s 超时（300s），取消任务", name)
+                        future.cancel()
+                        task_errors[name] = TimeoutError(f"任务 {name} 超时")
+                        results[name] = None
                     except Exception as e:
                         logger.error("并行任务 %s 失败: %s", name, e)
                         task_errors[name] = e

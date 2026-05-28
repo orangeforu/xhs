@@ -34,5 +34,6 @@ class LayoutArtist(BaseAgent):
 
     def handle(self, message: Message):
         if message.msg_type == MessageType.DRAFT:
-            # 收到 draft 更新，记录
-            pass
+            # 收到 draft 更新，记录字数
+            content = message.content.get("content", "")
+            logger.debug("排版美工收到稿件，字数约 %d", len(content))

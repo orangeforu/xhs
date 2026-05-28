@@ -87,4 +87,8 @@ class CommunityManager(BaseAgent):
         return parsed if parsed else {}
 
     def handle(self, message: Message):
-        pass
+        """处理消息总线消息。"""
+        if message.msg_type == MessageType.REVIEW:
+            # 记录审核结果，了解内容质量
+            grade = message.content.get("grade", "B")
+            logger.debug("评论运营收到审核结果: grade=%s", grade)

@@ -23,14 +23,14 @@ def calc_interaction_rate(note: dict) -> float:
     return total / exposure
 
 
-def calc_formula_stats(notes: list[dict]) -> dict:
-    """按标题公式分组统计平均数据。"""
+def _calc_group_stats(notes: list[dict], group_key: str, default_label: str = "未知") -> dict:
+    """按指定字段分组统计平均数据（通用实现）。"""
     stats: dict[str, dict] = {}
     for n in notes:
-        formula = n.get("title_formula", "未知")
-        if formula not in stats:
-            stats[formula] = {"count": 0, "total_likes": 0, "total_collects": 0, "total_comments": 0, "total_shares": 0, "total_engagement": 0.0}
-        s = stats[formula]
+        group = n.get(group_key, default_label)
+        if group not in stats:
+            stats[group] = {"count": 0, "total_likes": 0, "total_collects": 0, "total_comments": 0, "total_shares": 0, "total_engagement": 0.0}
+        s = stats[group]
         s["count"] += 1
         s["total_likes"] += n.get("likes", 0)
         s["total_collects"] += n.get("collects", 0)
@@ -39,24 +39,16 @@ def calc_formula_stats(notes: list[dict]) -> dict:
         rate = calc_interaction_rate(n)
         s["total_engagement"] += rate
     return stats
+
+
+def calc_formula_stats(notes: list[dict]) -> dict:
+    """按标题公式分组统计平均数据。"""
+    return _calc_group_stats(notes, "title_formula")
 
 
 def calc_pillar_stats(notes: list[dict]) -> dict:
     """按内容支柱分组统计平均数据。"""
-    stats: dict[str, dict] = {}
-    for n in notes:
-        pillar = n.get("pillar", "未知")
-        if pillar not in stats:
-            stats[pillar] = {"count": 0, "total_likes": 0, "total_collects": 0, "total_comments": 0, "total_shares": 0, "total_engagement": 0.0}
-        s = stats[pillar]
-        s["count"] += 1
-        s["total_likes"] += n.get("likes", 0)
-        s["total_collects"] += n.get("collects", 0)
-        s["total_comments"] += n.get("comments", 0)
-        s["total_shares"] += n.get("shares", 0)
-        rate = calc_interaction_rate(n)
-        s["total_engagement"] += rate
-    return stats
+    return _calc_group_stats(notes, "pillar")
 
 
 def check_compliance(content: str, title: str, tags: list[str], image_count: int) -> dict:

@@ -1,5 +1,5 @@
 import json
-from pathlib import Path
+import threading
 from typing import Any
 
 from core.config import DATA_DIR, get_logger, _atomic_write_json
@@ -15,6 +15,7 @@ class AgentMemory:
     def __init__(self, agent_name: str):
         self.agent_name = agent_name
         self.path = AGENT_MEMORY_DIR / f"{agent_name}.json"
+        self._lock = threading.Lock()
         self.data = self._load()
 
     def _load(self) -> dict:
@@ -44,50 +45,74 @@ class AgentMemory:
     def record_success(self, context: dict):
         # 去重：同一 topic 不重复记录
         topic = context.get("topic", "")
-        self.data["success_patterns"] = [
-            p for p in self.data["success_patterns"] if p.get("topic") != topic
-        ]
-        self.data["success_patterns"].append(context)
-        self.data["success_patterns"] = self.data["success_patterns"][-10:]
-        self.data["success_count"] += 1
-        self.data["total_runs"] += 1
+        with self._lock:
+            self.data["success_patterns"] = [
+                p for p in self.data["success_patterns"] if p.get("topic") != topic
+            ]
+            self.data["success_patterns"].append(context)
+            self.data["success_patterns"] = self.data["success_patterns"][-10:]
+            self.data["success_count"] += 1
+            self.data["total_runs"] += 1
         self.save()
 
     def record_failure(self, context: dict):
         # 去重：同一 topic 不重复记录
         topic = context.get("topic", "")
-        self.data["failure_patterns"] = [
-            p for p in self.data["failure_patterns"] if p.get("topic") != topic
-        ]
-        self.data["failure_patterns"].append(context)
-        self.data["failure_patterns"] = self.data["failure_patterns"][-10:]
-        self.data["total_runs"] += 1
+        with self._lock:
+            self.data["failure_patterns"] = [
+                p for p in self.data["failure_patterns"] if p.get("topic") != topic
+            ]
+            self.data["failure_patterns"].append(context)
+            self.data["failure_patterns"] = self.data["failure_patterns"][-10:]
+            self.data["total_runs"] += 1
         self.save()
 
     def record_mediocre(self, context: dict):
         """记录 B 级平庸内容，用于学习什么内容只是'及格'。"""
         key = "mediocre_patterns"
-        if key not in self.data:
-            self.data[key] = []
         topic = context.get("topic", "")
-        self.data[key] = [
-            p for p in self.data[key] if p.get("topic") != topic
-        ]
-        self.data[key].append(context)
-        self.data[key] = self.data[key][-10:]
-        self.data["total_runs"] += 1
+        with self._lock:
+            if key not in self.data:
+                self.data[key] = []
+            self.data[key] = [
+                p for p in self.data[key] if p.get("topic") != topic
+            ]
+            self.data[key].append(context)
+            self.data[key] = self.data[key][-10:]
+            self.data["total_runs"] += 1
         self.save()
 
     def add_collaboration_note(self, partner: str, note: str):
-        notes = self.data.setdefault("collaboration_notes", {})
-        partner_notes = notes.setdefault(partner, [])
-        partner_notes.append(note)
-        notes[partner] = partner_notes[-5:]
+        with self._lock:
+            notes = self.data.setdefault("collaboration_notes", {})
+            partner_notes = notes.setdefault(partner, [])
+            partner_notes.append(note)
+            notes[partner] = partner_notes[-5:]
         self.save()
 
     def update_style_preference(self, key: str, value: Any):
-        self.data.setdefault("style_preferences", {})[key] = value
+        with self._lock:
+            self.data.setdefault("style_preferences", {})[key] = value
         self.save()
+
+    @staticmethod
+    def _format_pattern(p: dict) -> str:
+        """将 pattern dict 格式化为人类可读的单行摘要。"""
+        topic = p.get("topic", "未知选题")
+        grade = p.get("grade", "")
+        formula = p.get("formula", "")
+        pillar = p.get("pillar", "")
+        rounds = p.get("rounds_used", "")
+        parts = [f"「{topic}」"]
+        if grade:
+            parts.append(f"等级{grade}")
+        if formula:
+            parts.append(f"公式{formula}")
+        if pillar:
+            parts.append(f"支柱{pillar}")
+        if rounds:
+            parts.append(f"{rounds}轮")
+        return "，".join(parts)
 
     def get_context(self) -> str:
         """生成记忆上下文文本，注入到 prompt 中。"""
@@ -96,18 +121,18 @@ class AgentMemory:
         if self.data.get("success_patterns"):
             parts.append("【你过去成功的经验 — 保持这些做法】")
             for p in self.data["success_patterns"][-3:]:
-                parts.append(f"- {json.dumps(p, ensure_ascii=False)}")
+                parts.append(f"- {self._format_pattern(p)}")
 
         if self.data.get("failure_patterns"):
             parts.append("【你过去失败的教训 — 避免重蹈覆辙】")
             for p in self.data["failure_patterns"][-3:]:
-                parts.append(f"- {json.dumps(p, ensure_ascii=False)}")
+                parts.append(f"- {self._format_pattern(p)}")
             parts.append("请特别注意：以上失败案例中的问题，在本次创作中必须避免。")
 
         if self.data.get("mediocre_patterns"):
             parts.append("【过去表现平庸的内容 — 这些内容及格但没有引爆，思考如何超越】")
             for p in self.data["mediocre_patterns"][-3:]:
-                parts.append(f"- {json.dumps(p, ensure_ascii=False)}")
+                parts.append(f"- {self._format_pattern(p)}")
 
         if self.data.get("style_preferences"):
             parts.append("【你积累的风格偏好】")

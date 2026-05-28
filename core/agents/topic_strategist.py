@@ -83,4 +83,8 @@ class TopicStrategist(BaseAgent):
         }
 
     def handle(self, message: Message):
-        pass
+        """处理消息总线消息。"""
+        if message.msg_type == MessageType.DECISION:
+            # 记录主编决策，用于后续选题策略参考
+            decision = message.content
+            logger.debug("选题策划师收到主编决策: %s", decision.get("action", "unknown"))

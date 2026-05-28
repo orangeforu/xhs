@@ -4,7 +4,6 @@ import os
 import platform
 import subprocess
 import tempfile
-import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -42,12 +41,30 @@ if platform.system() in ("Linux", "Darwin"):
     def _unlock_file(f) -> None:
         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 else:
-    # Windows fallback：使用 lockfile 机制
+    # Windows: 使用 msvcrt 文件锁
+    import msvcrt
+
     def _lock_file(f, exclusive: bool = True) -> None:
-        pass  # TODO: Windows 下可引入 pywin32 或 filelock
+        mode = msvcrt.LK_NBLCK if exclusive else msvcrt.LK_NBRLCK
+        try:
+            msvcrt.locking(f.fileno(), mode, 1)
+        except OSError:
+            # 如果锁被占用，重试
+            import time
+            for _ in range(10):
+                time.sleep(0.1)
+                try:
+                    msvcrt.locking(f.fileno(), mode, 1)
+                    return
+                except OSError:
+                    continue
+            raise
 
     def _unlock_file(f) -> None:
-        pass
+        try:
+            msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -93,9 +110,29 @@ def open_folder(path: str) -> None:
         subprocess.run(["xdg-open", path], check=False)
 
 
-def _atomic_write_json(path: Path, data: dict) -> None:
-    """原子写入 JSON：先写临时文件再 rename，避免并发写入导致数据损坏。"""
+def _atomic_write_json(path: Path, data: dict, with_lock: bool = True) -> None:
+    """原子写入 JSON：先写临时文件再 rename，避免并发写入导致数据损坏。
+
+    Args:
+        with_lock: 是否使用文件锁保护写入（默认 True）
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
+
+    if with_lock:
+        # 使用 .lock 文件作为锁文件，避免对同一个文件同时读写
+        lock_path = path.with_suffix(".lock")
+        with open(lock_path, "w") as lock_f:
+            _lock_file(lock_f, exclusive=True)
+            try:
+                _write_json_atomic(path, data)
+            finally:
+                _unlock_file(lock_f)
+    else:
+        _write_json_atomic(path, data)
+
+
+def _write_json_atomic(path: Path, data: dict) -> None:
+    """实际的原子写入逻辑。"""
     fd, tmp_path = tempfile.mkstemp(suffix=".json", dir=str(path.parent))
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -122,9 +159,9 @@ def load_topics_json() -> dict:
 
 
 def save_topics_json(data: dict) -> None:
-    """保存选题池 JSON。"""
+    """保存选题池 JSON（带锁保护）。"""
     path = DATA_DIR / "topics.json"
-    _atomic_write_json(path, data)
+    _atomic_write_json(path, data, with_lock=True)
 
 
 def load_performance_json() -> dict:
@@ -147,20 +184,15 @@ def load_performance_json() -> dict:
 
 
 def save_performance_json(data: dict) -> None:
-    """保存发布数据 JSON。"""
+    """保存发布数据 JSON（带锁保护）。"""
     path = DATA_DIR / "performance.json"
-    _atomic_write_json(path, data)
+    _atomic_write_json(path, data, with_lock=True)
 
 
 def _grade_from_likes(likes: int) -> str:
-    """根据点赞数计算等级（与 publish_helpers.calculate_grade 逻辑一致）。"""
-    if likes > 1500:
-        return "S"
-    elif likes >= 800:
-        return "A"
-    elif likes >= 200:
-        return "B"
-    return "C"
+    """根据点赞数计算等级。委托给 publish_helpers.calculate_grade。"""
+    from core.publish_helpers import calculate_grade
+    return calculate_grade(likes)
 
 
 def update_note_performance(topic: str, metrics: dict) -> bool:

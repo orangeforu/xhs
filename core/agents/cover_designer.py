@@ -156,24 +156,27 @@ class CoverDesigner(BaseAgent):
         """从 LLM 输出中解析 JSON 设计方案。"""
         parsed = extract_json_from_llm(raw)
         if parsed:
-            return parsed
+            # 确保所有必需字段存在
+            design = {
+                "title": parsed.get("title", ""),
+                "subtitle": parsed.get("subtitle", ""),
+                "style": parsed.get("style", "warm_grey"),
+                "prompt": parsed.get("prompt", ""),
+                "visual_anchor": parsed.get("visual_anchor", ""),
+                "rationale": parsed.get("rationale", ""),
+            }
+            return design
 
-        # fallback: 手动解析
+        # fallback: 使用正则提取 key-value 对
         design = {"title": "", "subtitle": "", "style": "warm_grey", "prompt": "", "visual_anchor": "", "rationale": ""}
 
-        for line in raw.split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            for key in design:
-                if f'"{key}"' in line or f"'{key}'" in line:
-                    # 找到 "key": 或 "key": 后提取值，避免冒号在值中被截断
-                    m = re.search(rf'["\']{key}["\']\s*[:：]\s*(.+)', line)
-                    if m:
-                        val = m.group(1).strip().rstrip(',').strip('"').strip("'")
-                        design[key] = val
+        for key in design:
+            # 匹配 "key": "value" 或 key: value 格式
+            m = re.search(rf'["\']?{key}["\']?\s*[:：]\s*["\']?(.+?)["\']?\s*[,}}\n]', raw, re.IGNORECASE)
+            if m:
+                design[key] = m.group(1).strip()
 
-        # 如果解析失败，用内容关键词兜底
+        # 兜底默认值
         if not design["title"]:
             design["title"] = "说不出口的话"
         if not design["subtitle"]:

@@ -221,8 +221,31 @@ with tab1:
 
                 with col2:
                     if st.button(f"📝 需要修改", key=f"edit_{t['id']}"):
-                        st.warning("请在下方输入修改意见，或直接编辑 docs/ 下的文件。")
-                        st.text_area("修改意见", key=f"feedback_{t['id']}")
+                        st.session_state[f"show_feedback_{t['id']}"] = True
+
+                    if st.session_state.get(f"show_feedback_{t['id']}"):
+                        feedback = st.text_area(
+                            "修改意见",
+                            key=f"feedback_{t['id']}",
+                            placeholder="请输入修改意见，点击「保存并重新生成」后将使用 feedback 重新创作..."
+                        )
+                        c1, c2 = st.columns(2)
+                        with c1:
+                            if st.button("💾 保存并重新生成", key=f"save_feedback_{t['id']}"):
+                                if feedback.strip():
+                                    # 保存 feedback 到 topics.json
+                                    t["feedback"] = feedback.strip()
+                                    t["status"] = "not_started"
+                                    save_topics_json(topics_data)
+                                    st.session_state.pop(f"show_feedback_{t['id']}", None)
+                                    st.success(f"修改意见已保存，选题已重置为待生成状态。请使用 pipeline.py --topic \"{t['topic']}\" 重新生成。")
+                                    st.rerun()
+                                else:
+                                    st.warning("请输入修改意见")
+                        with c2:
+                            if st.button("取消", key=f"cancel_feedback_{t['id']}"):
+                                st.session_state.pop(f"show_feedback_{t['id']}", None)
+                                st.rerun()
 
                 with col3:
                     if st.button(f"❌ 打回重写", key=f"reject_{t['id']}"):

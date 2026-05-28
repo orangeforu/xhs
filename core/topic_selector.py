@@ -3,8 +3,6 @@
 """
 
 import random
-from collections import Counter
-from datetime import datetime, timezone
 
 from core.config import get_logger, load_topics_json, load_performance_json
 

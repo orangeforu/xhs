@@ -160,7 +160,10 @@ needs_relayout: 如果排版或分页有问题，标记为 true
     def handle(self, message: Message):
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DRAFT:
-            pass
+            # 收到初稿，记录字数用于统计
+            content = message.content.get("content", "")
+            round_num = message.round_num
+            logger.debug("审核官收到第 %d 轮稿件，字数约 %d", round_num, len(content))
 
     def record_outcome(self, grade: str, topic: str):
         """记录审核结果。"""

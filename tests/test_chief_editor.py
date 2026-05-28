@@ -51,7 +51,7 @@ class TestMakeDecision(unittest.TestCase):
         grade_history = ["B", "B", "B"]
         result = self.ce._make_decision({}, None, review, 2, grade_history)
         self.assertEqual(result["action"], "revise")
-        self.assertIn("彻底换一个叙事角度", result["feedback"])
+        self.assertIn("换一个叙事角度", result["feedback"])
 
     def test_dead_loop_3_b_at_max_rounds_abandons(self):
         """B-B-B死循环在最后一轮应放弃。"""
@@ -73,10 +73,29 @@ class TestMakeDecision(unittest.TestCase):
         result = self.ce._make_decision({}, None, review, 2, grade_history)
         self.assertEqual(result["action"], "revise")
 
-    def test_max_rounds_publishes_s_a_b(self):
+    def test_max_rounds_publishes_s_a_b_no_issues(self):
+        """最大轮数时，B级无issues可接受，有issues则放弃。"""
         review = {"grade": "B", "verdict": "conditional", "issues": []}
         result = self.ce._make_decision({}, None, review, 4)
         self.assertEqual(result["action"], "publish")
+
+    def test_max_rounds_b_with_issues_abandons(self):
+        """最大轮数时，B级仍有issues则放弃。"""
+        review = {"grade": "B", "verdict": "conditional", "issues": [{"problem": "x"}]}
+        result = self.ce._make_decision({}, None, review, 4)
+        self.assertEqual(result["action"], "abandon")
+
+    def test_a_conditional_no_issues_publishes(self):
+        """A级+conditional+无issues可通过。"""
+        review = {"grade": "A", "verdict": "conditional", "issues": []}
+        result = self.ce._make_decision({}, None, review, 0)
+        self.assertEqual(result["action"], "publish")
+
+    def test_a_conditional_with_issues_revises(self):
+        """A级+conditional+有issues需重写。"""
+        review = {"grade": "A", "verdict": "conditional", "issues": [{"problem": "x"}]}
+        result = self.ce._make_decision({}, None, review, 0)
+        self.assertEqual(result["action"], "revise")
 
     def test_max_rounds_abandons_c(self):
         review = {"grade": "C", "verdict": "fail", "issues": [{"problem": "x"}]}

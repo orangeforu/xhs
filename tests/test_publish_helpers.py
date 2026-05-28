@@ -188,7 +188,7 @@ class TestExtractBodyForPublish(unittest.TestCase):
 
 class TestScoreTitle(unittest.TestCase):
     def test_optimal_title(self):
-        result = score_title("你有没有过这种感觉？💔", {})
+        result = score_title("你有没有过这种奇怪的感觉？💔", {})
         self.assertGreaterEqual(result["score"], 60)
         self.assertTrue(any("长度适中" in r for r in result["reasons"]))
 

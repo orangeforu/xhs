@@ -66,15 +66,15 @@ class MessageBus:
     def publish(self, message: Message):
         with self._lock:
             self.history.append(message)
-            targets = []
+            # 构建 targets 和 callbacks 快照，避免锁外遍历时状态变化
             if message.to_agent is None:
                 targets = [name for name in self.subscribers if name != message.from_agent]
             else:
                 targets = [message.to_agent]
+            # 复制每个 target 的 callbacks 列表
+            callbacks_snapshot = {t: list(self.subscribers.get(t, [])) for t in targets}
 
-        for target in targets:
-            with self._lock:
-                callbacks = list(self.subscribers.get(target, []))
+        for target, callbacks in callbacks_snapshot.items():
             for callback in callbacks:
                 try:
                     callback(message)

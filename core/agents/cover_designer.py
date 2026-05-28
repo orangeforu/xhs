@@ -1,4 +1,3 @@
-import json
 import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
@@ -9,6 +8,20 @@ from core.image_generator import generate_cover_ai
 logger = get_logger(__name__)
 
 ALL_STYLES = ["warm_grey", "twilight", "crimson", "mist", "cool", "blank"]
+
+# 视觉锚点关键词 — 故事中包含这些元素时，封面设计更容易出效果
+VISUAL_ANCHOR_KEYWORDS = [
+    # 空间场景
+    "窗边", "房间", "沙发", "床头", "桌子", "椅子", "门", "电梯",
+    # 光线氛围
+    "灯光", "阳光", "暖光", "台灯", "烛光", "黄昏", "清晨", "凌晨", "深夜",
+    # 物品道具
+    "咖啡", "杯子", "镜子", "手机", "屏幕", "外卖", "窗帘", "被子", "枕头",
+    # 交通出行
+    "地铁", "公交", "街道", "路灯",
+    # 天气自然
+    "雨", "雪", "风",
+]
 
 
 class CoverDesigner(BaseAgent):
@@ -174,7 +187,7 @@ class CoverDesigner(BaseAgent):
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DRAFT:
             draft_content = message.content.get("content", "")
-            has_anchor = any(kw in draft_content for kw in ["窗边", "灯光", "阳光", "咖啡", "杯子", "房间", "沙发", "床头", "镜子", "手机", "屏幕", "外卖", "雨", "雪", "风", "窗帘", "被子", "枕头", "桌子", "椅子", "门", "电梯", "地铁", "公交", "街道", "路灯", "黄昏", "清晨", "凌晨", "深夜", "暖光", "台灯", "烛光"])
+            has_anchor = any(kw in draft_content for kw in VISUAL_ANCHOR_KEYWORDS)
             if not has_anchor:
                 logger.info("封面设计师认为故事缺少视觉锚点，向写手发送请求")
                 self.send(

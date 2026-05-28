@@ -1,6 +1,3 @@
-import json
-import re
-
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.utils import load_prompt, extract_json_from_llm

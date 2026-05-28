@@ -19,16 +19,19 @@
 ## 决策标准
 
 **通过（发布）**：
-- 审核官 verdict 为 pass，且没有重大 issues
+- 审核官 grade 为 S 或 A，且没有重大 issues
+- 读者体验审核（review.md）的 discussion_potential 为 high 或 medium
 - 封面设计与内容情绪一致
 - 内页排版无技术问题
 
 **条件通过（发布但标记关注）**：
-- 审核官 verdict 为 conditional，issues 可以在发布前快速修复
+- 审核官 grade 为 B，verdict 为 pass/conditional，issues ≤ 2
+- 或审核官 verdict 为 conditional，issues 可以在发布前快速修复
 - 你判断这篇有爆款潜力，值得冒险
 
 **重写**：
 - 审核官 verdict 为 fail
+- 或读者体验审核 grade 低于技术审核 grade（说明写手和审核官形成了闭环，读者视角揭示了真实问题）
 - 或封面设计与内容严重不符
 - 你给出明确的重写方向（不是"重写"两个字，而是"重点解决第3页的情绪断层，增加一个感官细节"）
 

@@ -1,9 +1,12 @@
 import concurrent.futures
+import hashlib
 import io
 import os
 import platform
+import random
 import re
 import time
+from urllib.parse import quote
 
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -162,7 +165,6 @@ def _add_noise_texture(img: Image.Image, intensity: int = 4) -> Image.Image:
         img = img.convert("RGBA")
     tile_size = 100
     noise = Image.new("RGBA", (tile_size, tile_size), (0, 0, 0, 0))
-    import random
     pixels = []
     for _ in range(tile_size * tile_size):
         if random.random() < 0.12:
@@ -430,9 +432,10 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
     bg_img = None
 
     if IMAGE_PROVIDER == "pollinations":
-        encoded_prompt = requests.utils.quote(prompt)
+        encoded_prompt = quote(prompt)
         # 动态 seed：基于 prompt+title+subtitle 的 hash，保证同一篇笔记可复现，不同笔记不撞脸
-        dynamic_seed = abs(hash((prompt, title, subtitle))) % 100000
+        seed_input = f"{prompt}:{title}:{subtitle}".encode("utf-8")
+        dynamic_seed = int(hashlib.md5(seed_input).hexdigest()[:6], 16) % 100000
         image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1242&height=1660&nologo=true&seed={dynamic_seed}"
         try:
             resp = _http_get_with_retry(image_url)
@@ -571,7 +574,7 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
 # ═══════════════════════════════════════════════════════════
 
 # 视觉锚点符号（统一风格，不超过3种变体）
-ANCHOR_SYMBOLS = ["\u25cf", "\u25cb", "\u25cf"]  # solid circle, hollow circle, solid circle
+ANCHOR_SYMBOLS = ["\u25cf", "\u25cb", "\u25c6"]  # solid circle, hollow circle, solid diamond
 
 
 # 内页排版常量（供分页和渲染共用）
@@ -631,8 +634,46 @@ def _paginate_blocks(blocks: list) -> list:
     return pages
 
 
+# 需要过滤的元数据标记
+_SKIP_MARKERS = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
+_EMOJI_RE = re.compile(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+")
+_BOLD_RE = re.compile(r'\*\*(.*?)\*\*')
+
+
+def _parse_to_blocks(text: str) -> list[tuple[str, bool, bool]]:
+    """解析文本为 block 列表：(text, is_bold, is_separator)。集中管理过滤逻辑。"""
+    blocks = []
+    for raw in text.split('\n'):
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        if stripped == '---':
+            blocks.append(('', False, True))
+            continue
+        if any(m in stripped for m in _SKIP_MARKERS):
+            continue
+        if re.match(r'^话题标签[：:]', stripped):
+            continue
+        if re.match(r'^视觉风格[：:]', stripped):
+            continue
+        if re.match(r'\[Image\s*#\d+\]', stripped):
+            continue
+        if stripped in ('warm_grey', 'twilight', 'crimson', 'mist', 'cool', 'warm', 'blank'):
+            continue
+        words = stripped.split()
+        if words and all(w.startswith('#') for w in words):
+            continue
+        is_bold = bool(_BOLD_RE.search(stripped))
+        clean = _BOLD_RE.sub(lambda m: m.group(1), stripped).strip()
+        clean = _EMOJI_RE.sub('', clean).strip()
+        if clean:
+            blocks.append((clean, is_bold, False))
+    return blocks
+
+
 def generate_inner_page(text: str, page_num: int, total_pages: int, style: str = "warm_grey",
-                        output_path: str = "assets/inner_page.png") -> str | None:
+                        output_path: str = "assets/inner_page.png",
+                        pre_parsed_blocks: list | None = None) -> str | None:
     """把单页文字渲染成小红书风格内页图——呼吸感排版，左对齐，短段落，视觉锚点"""
     p = PALETTE.get(style, PALETTE["warm_grey"])
 
@@ -650,43 +691,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     if not text:
         return None
 
-    # 解析段落：保留 --- 分隔符、**加粗**标记
-    raw_paragraphs = text.split('\n')
-    blocks = []  # 每段是 (text, is_bold, is_separator)
-    for raw in raw_paragraphs:
-        stripped = raw.strip()
-        if not stripped:
-            continue
-        if stripped == '---':
-            blocks.append(('', False, True))
-            continue
-
-        # 严格过滤元数据行、话题标签行、图片占位符等
-        _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
-        if any(m in stripped for m in _skip_markers):
-            continue
-        if re.match(r'^话题标签[：:]', stripped):
-            continue
-        if re.match(r'^视觉风格[：:]', stripped):
-            continue
-        if re.match(r'\[Image\s*#\d+\]', stripped):
-            continue
-
-        # 过滤纯视觉风格标签值
-        if stripped in ('warm_grey', 'twilight', 'crimson', 'mist', 'cool', 'warm', 'blank'):
-            continue
-        # 过滤纯话题标签行（整行都是 #xxx 格式）
-        words = stripped.split()
-        if words and all(w.startswith('#') for w in words):
-            continue
-
-        # 支持行内 **bold** 标记，并移除不支持的 emoji
-        is_bold = bool(re.search(r'\*\*(.*?)\*\*', stripped))
-        clean = re.sub(r'\*\*(.*?)\*\*', lambda m: m.group(1), stripped).strip()
-        clean = re.sub(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+", '', clean).strip()
-        if clean:
-            blocks.append((clean, is_bold, False))
-
+    blocks = pre_parsed_blocks if pre_parsed_blocks is not None else _parse_to_blocks(text)
     if not blocks:
         return None
 
@@ -936,37 +941,9 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
         logger.warning("正文过滤后为空，跳过内页生成")
         return []
 
-    # 将所有行合并为一段文本（保留 --- 分隔符）
+    # 一次性解析为 blocks（消除重复解析）
     full_text = '\n'.join(all_lines)
-
-    # 解析 blocks（与 generate_inner_page 保持一致）
-    raw_paragraphs = full_text.split('\n')
-    blocks = []
-    for raw in raw_paragraphs:
-        stripped = raw.strip()
-        if not stripped:
-            continue
-        if stripped == '---':
-            blocks.append(('', False, True))
-            continue
-        _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
-        if any(m in stripped for m in _skip_markers):
-            continue
-        if re.match(r'^话题标签[：:]', stripped):
-            continue
-        if re.match(r'^视觉风格[：:]', stripped):
-            continue
-        if re.match(r'\[Image\s*#\d+\]', stripped):
-            continue
-        words = stripped.split()
-        if words and all(w.startswith('#') for w in words):
-            continue
-        # 支持行内 **bold** 标记，并移除不支持的 emoji
-        is_bold = bool(re.search(r'\*\*(.*?)\*\*', stripped))
-        clean = re.sub(r'\*\*(.*?)\*\*', lambda m: m.group(1), stripped).strip()
-        clean = re.sub(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+", '', clean).strip()
-        if clean:
-            blocks.append((clean, is_bold, False))
+    blocks = _parse_to_blocks(full_text)
 
     if not blocks:
         logger.warning("正文解析后无有效内容，跳过内页生成")
@@ -981,9 +958,11 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
 
     logger.info("📄 共 %d 页内页，开始生成...", total_pages)
 
+    # 预解析完成，传递 blocks 给渲染函数避免重复解析
     def _render_page(page_num: int) -> str | None:
         path = f"{out_dir}/inner_page_{page_num}.png"
-        return generate_inner_page(full_text, page_num, total_pages, style=style, output_path=path)
+        return generate_inner_page(full_text, page_num, total_pages, style=style,
+                                   output_path=path, pre_parsed_blocks=blocks)
 
     paths = []
     max_workers = min(4, total_pages)

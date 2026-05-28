@@ -4,11 +4,6 @@ Multi-Agent 创作编排器
 把 7 个专家 Agent 通过消息总线协作完成一篇笔记的创作。
 """
 
-import hashlib
-import os
-import re
-from datetime import datetime, timezone
-
 from core.agents import (
     MessageBus,
     EmotionalWriter,
@@ -19,7 +14,7 @@ from core.agents import (
     TopicStrategist,
     ChiefEditor,
 )
-from core.config import get_logger, PROJECT_ROOT
+from core.config import get_logger
 
 logger = get_logger(__name__)
 
@@ -64,28 +59,6 @@ class Orchestrator:
 
         result["brief"] = enriched_brief
         return result
-
-
-def _clean_md(text: str) -> str:
-    """去掉 Markdown 加粗、斜体、反引号等标记。"""
-    if not text:
-        return ""
-    t = text.strip()
-    t = re.sub(r"^[\s*_`]+|[\s*_`]+$", "", t)
-    return t.strip()
-
-
-def _extract_cover_info_from_design(design_result: dict) -> dict:
-    """从设计师的输出中提取封面信息（兼容旧 pipeline 格式）。"""
-    if not design_result or not design_result.get("design"):
-        return {"title": "", "subtitle": "", "prompt": "", "style": "warm_grey"}
-    d = design_result["design"]
-    return {
-        "title": d.get("title", ""),
-        "subtitle": d.get("subtitle", ""),
-        "prompt": d.get("prompt", ""),
-        "style": d.get("style", "warm_grey"),
-    }
 
 
 def _write_note_file(

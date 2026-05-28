@@ -3,6 +3,7 @@ from typing import Any, Callable
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
+import threading
 
 from core.config import get_logger
 from core.writer import _call_api, _extract_content
@@ -51,25 +52,30 @@ class Message:
 
 
 class MessageBus:
-    """发布/订阅消息总线，支持广播和点对点通信。"""
+    """发布/订阅消息总线，支持广播和点对点通信（线程安全）。"""
 
     def __init__(self):
         self.subscribers: dict[str, list[Callable[[Message], None]]] = {}
         self.history: list[Message] = []
+        self._lock = threading.Lock()
 
     def subscribe(self, agent_name: str, callback: Callable[[Message], None]):
-        self.subscribers.setdefault(agent_name, []).append(callback)
+        with self._lock:
+            self.subscribers.setdefault(agent_name, []).append(callback)
 
     def publish(self, message: Message):
-        self.history.append(message)
-        targets = []
-        if message.to_agent is None:
-            targets = [name for name in self.subscribers if name != message.from_agent]
-        else:
-            targets = [message.to_agent]
+        with self._lock:
+            self.history.append(message)
+            targets = []
+            if message.to_agent is None:
+                targets = [name for name in self.subscribers if name != message.from_agent]
+            else:
+                targets = [message.to_agent]
 
         for target in targets:
-            for callback in self.subscribers.get(target, []):
+            with self._lock:
+                callbacks = list(self.subscribers.get(target, []))
+            for callback in callbacks:
                 try:
                     callback(message)
                 except Exception as e:
@@ -82,7 +88,8 @@ class MessageBus:
         msg_type: MessageType | None = None,
         round_num: int | None = None,
     ) -> list[Message]:
-        result = list(self.history)
+        with self._lock:
+            result = list(self.history)
         if from_agent:
             result = [m for m in result if m.from_agent == from_agent]
         if to_agent:
@@ -110,6 +117,8 @@ class BaseAgent:
         self.system_prompt = system_prompt
         self.bus = bus
         self.session_memory: list[Message] = []  # 当前会话
+        self._memory_cache: str | None = None  # 同一轮迭代内缓存
+        self._memory_loaded: bool = False
         bus.subscribe(name, self._on_message)
 
     def _on_message(self, message: Message):
@@ -144,14 +153,16 @@ class BaseAgent:
         temperature: float = 0.7,
         max_tokens: int = 2500,
     ) -> str:
-        """调用 LLM 进行推理，自动注入持久化记忆上下文。"""
-        from core.agents.memory import AgentMemory
-        memory = AgentMemory(self.name)
-        memory_context = memory.get_context()
+        """调用 LLM 进行推理，自动注入持久化记忆上下文（同轮迭代内缓存）。"""
+        if not self._memory_loaded:
+            from core.agents.memory import AgentMemory
+            memory = AgentMemory(self.name)
+            self._memory_cache = memory.get_context()
+            self._memory_loaded = True
 
         full_prompt = prompt
-        if memory_context:
-            full_prompt = f"{memory_context}\n\n---\n\n{prompt}"
+        if self._memory_cache:
+            full_prompt = f"{self._memory_cache}\n\n---\n\n{prompt}"
 
         data = _call_api(
             messages=[
@@ -163,19 +174,25 @@ class BaseAgent:
         )
         return _extract_content(data)
 
+    def reset_memory_cache(self):
+        """重置记忆缓存，下次 think() 时重新从磁盘加载。用于新一轮迭代开始时。"""
+        self._memory_loaded = False
+        self._memory_cache = None
+
     def think_parallel(
         self,
         prompts: list[tuple[str, float, int]],  # (prompt, temperature, max_tokens)
     ) -> list[str]:
-        """并行调用多个 LLM 请求。"""
+        """并行调用多个 LLM 请求。失败的调用会抛出异常而非静默返回空字符串。"""
         results = [""] * len(prompts)
+        errors: list[Exception | None] = [None] * len(prompts)
 
         def _call(idx: int, prompt: str, temp: float, max_tok: int):
             try:
-                return idx, self.think(prompt, temperature=temp, max_tokens=max_tok)
+                return idx, self.think(prompt, temperature=temp, max_tokens=max_tok), None
             except Exception as e:
                 logger.error("并行 LLM 调用失败 [%d]: %s", idx, e)
-                return idx, ""
+                return idx, "", e
 
         with ThreadPoolExecutor(max_workers=min(4, len(prompts))) as executor:
             futures = {
@@ -183,7 +200,14 @@ class BaseAgent:
                 for i, (p, t, m) in enumerate(prompts)
             }
             for future in as_completed(futures):
-                idx, result = future.result()
+                idx, result, err = future.result()
                 results[idx] = result
+                errors[idx] = err
+
+        # 如果有任何调用失败，抛出聚合异常
+        failed = [(i, e) for i, e in enumerate(errors) if e is not None]
+        if failed:
+            msgs = [f"[{i}]: {e}" for i, e in failed]
+            raise RuntimeError(f"并行 LLM 调用有 {len(failed)} 个失败:\n" + "\n".join(msgs))
 
         return results

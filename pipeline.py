@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 
 from core.config import get_logger, init, load_topics_json, save_topics_json, PROJECT_ROOT
 from core.agents.orchestrator import Orchestrator, _write_note_file
+from core.topic_selector import smart_select, smart_batch
+from core.utils import clean_md as _clean_md, extract_visual_style as _extract_visual_style
 
 logger = get_logger(__name__)
 
@@ -21,15 +23,6 @@ logger = get_logger(__name__)
 # ═══════════════════════════════════════════════════════════
 # 向后兼容的辅助函数（旧 pipeline 提取逻辑，tests/app 仍依赖）
 # ═══════════════════════════════════════════════════════════
-
-def _clean_md(text: str) -> str:
-    """去掉Markdown加粗、斜体、反引号等标记。"""
-    if not text:
-        return ""
-    t = text.strip()
-    t = re.sub(r"^[\s*_`]+|[\s*_`]+$", "", t)
-    return t.strip()
-
 
 def _extract_cover_info(content: str) -> dict:
     """从AI生成的Markdown中提取封面信息。"""
@@ -138,26 +131,13 @@ def _sanitize_prompt(prompt: str) -> str:
         "gentle pastel tones",
         "emotional warmth",
     ]
+    # 重新检查替换后的 prompt，避免重复追加
+    lowered_after = prompt.lower()
     for safeguard in warm_safeguards:
-        if safeguard not in lowered:
+        if safeguard not in lowered_after:
             prompt += f", {safeguard}"
 
     return prompt.strip(", ")
-
-
-def _extract_visual_style(content: str) -> str:
-    """从AI生成的Markdown中提取视觉风格标签。"""
-    m = re.search(
-        r'[\[【\*]*(?:视觉风格|风格|style)[\]】\*]*[:：]\s*\n?\s*`?([a-z_]+)`?',
-        content,
-        re.IGNORECASE,
-    )
-    if m:
-        style = m.group(1).strip().lower()
-        valid_styles = {"warm_grey", "twilight", "crimson", "mist", "cool", "warm", "blank"}
-        if style in valid_styles:
-            return style
-    return "warm_grey"
 
 
 def _load_topic_pool() -> list[dict]:
@@ -189,10 +169,17 @@ def _prepare_out_dir(topic: str) -> str:
     return out_dir
 
 
-def generate(topic: str | None = None, index: int | None = None) -> dict | None:
+def generate(topic: str | None = None, index: int | None = None, smart: bool = False) -> dict | None:
     """生成单篇笔记 — Multi-Agent 协作模式。"""
     topic_pool = _load_topic_pool()
-    if topic:
+
+    if smart:
+        brief, scores = smart_select(topic_pool)
+        if not brief:
+            logger.error("智能选题失败：没有可用选题")
+            return None
+        logger.info("智能选题结果: %s", brief["topic"])
+    elif topic:
         brief = next((t for t in topic_pool if t["topic"] == topic), None)
         if not brief:
             logger.error("选题池中没有找到: %s", topic)
@@ -201,7 +188,7 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
     elif index is not None:
         brief = topic_pool[index % len(topic_pool)]
     else:
-        logger.error("请指定 --topic 或 --index")
+        logger.error("请指定 --topic、--index 或 --smart")
         return None
 
     out_dir = _prepare_out_dir(brief["topic"])
@@ -228,10 +215,14 @@ def generate(topic: str | None = None, index: int | None = None) -> dict | None:
     comments = result.get("comments", {})
     rounds = result.get("rounds", 1)
 
-    # 构建封面路径字典（兼容旧格式）
+    # 构建封面路径字典（支持 A/B 双封面）
     cover_paths = {}
-    if design and design.get("cover_path"):
-        cover_paths["ai"] = design["cover_path"]
+    if design:
+        # 优先使用 cover_paths（A/B 双方案）
+        if design.get("cover_paths"):
+            cover_paths = design["cover_paths"]
+        elif design.get("cover_path"):
+            cover_paths["ai"] = design["cover_path"]
 
     # 保存笔记文件
     output_file = os.path.join(out_dir, "note.md")
@@ -262,17 +253,24 @@ def list_topics() -> None:
         logger.info("[%d] %s %s (%s | %s | %s)", i, icon, t["topic"], t["title_formula"], t["target_interaction"], status)
 
 
-def batch_generate(max_count: int | None = None) -> None:
-    """批量生成所有未开始的选题。"""
+def batch_generate(max_count: int | None = None, smart: bool = False) -> None:
+    """批量生成选题。smart=True 时按智能排序选取。"""
     topic_pool = _load_topic_pool()
-    pending = [t for t in topic_pool if t.get("status") == "not_started"]
 
-    if not pending:
-        logger.info("没有待生成的选题，全部已完成。")
-        return
-
-    if max_count:
-        pending = pending[:max_count]
+    if smart:
+        count = max_count or 3
+        pending = smart_batch(count=count, topic_pool=topic_pool)
+        if not pending:
+            logger.info("没有可用的选题。")
+            return
+        logger.info("智能批量选题完成，共选出 %d 个选题", len(pending))
+    else:
+        pending = [t for t in topic_pool if t.get("status") == "not_started"]
+        if not pending:
+            logger.info("没有待生成的选题，全部已完成。")
+            return
+        if max_count:
+            pending = pending[:max_count]
 
     logger.info("批量生成开始，共 %d 篇待生成", len(pending))
     success = 0
@@ -302,6 +300,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="小红书AI创作流水线 — Multi-Agent 架构")
     parser.add_argument("--topic", type=str, help="指定选题")
     parser.add_argument("--index", type=int, help="选题索引")
+    parser.add_argument("--smart", action="store_true", help="智能选题（基于评分推荐最优选题）")
     parser.add_argument("--list", action="store_true", help="列出所有选题")
     parser.add_argument("--batch", action="store_true", help="批量生成所有未开始的选题")
     parser.add_argument("--max", type=int, help="批量生成时限制最大篇数")
@@ -310,6 +309,6 @@ if __name__ == "__main__":
     if args.list:
         list_topics()
     elif args.batch:
-        batch_generate(max_count=args.max)
+        batch_generate(max_count=args.max, smart=args.smart)
     else:
-        generate(topic=args.topic, index=args.index)
+        generate(topic=args.topic, index=args.index, smart=args.smart)

@@ -37,13 +37,13 @@ class TestExtractContent(unittest.TestCase):
         data = {"choices": [{}]}
         with self.assertRaises(ValueError) as ctx:
             _extract_content(data)
-        self.assertIn("缺少 content", str(ctx.exception))
+        self.assertIn("缺少 message", str(ctx.exception))
 
     def test_no_content(self):
         data = {"choices": [{"message": {}}]}
         with self.assertRaises(ValueError) as ctx:
             _extract_content(data)
-        self.assertIn("缺少 content", str(ctx.exception))
+        self.assertIn("缺少 message", str(ctx.exception))
 
     def test_content_is_none(self):
         data = {"choices": [{"message": {"content": None}}]}

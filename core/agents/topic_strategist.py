@@ -1,24 +1,18 @@
 import json
+import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
-from core.config import get_logger, PROMPTS_DIR, DATA_DIR
+from core.config import get_logger, load_performance_json
+from core.utils import load_prompt
 
 logger = get_logger(__name__)
-
-
-def _load_prompt(name: str) -> str:
-    path = PROMPTS_DIR / f"{name}.md"
-    if not path.exists():
-        raise FileNotFoundError(f"Prompt 文件不存在: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
 
 
 class TopicStrategist(BaseAgent):
     """选题策划师 Agent — 基于数据给出选题策略建议。"""
 
     def __init__(self, bus: MessageBus):
-        prompt = _load_prompt("agent_topic_strategist")
+        prompt = load_prompt("agent_topic_strategist")
         super().__init__("topic_strategist", prompt, bus)
 
     def enrich_brief(self, brief: dict, round_num: int = 0) -> dict:
@@ -33,11 +27,16 @@ class TopicStrategist(BaseAgent):
 - title_formula: {brief.get("title_formula", "问句式")}
 - target_interaction: {brief.get("target_interaction", "点赞")}
 - angle: {brief.get("angle", "")}
+- story_prototype: {brief.get("story_prototype", "")}
+- controversy_anchor: {brief.get("controversy_anchor", "")}
 
 **历史表现摘要**：
 {json.dumps(performance, ensure_ascii=False, indent=2)}
 
-请输出结构化的策略建议和 enriched brief。
+请输出结构化的策略建议和 enriched brief。特别关注：
+1. 故事原型是否足够有画面感？是否需要调整？
+2. 争议锚点是否能引发站队？是否有更强的争议角度？
+3. 基于历史数据，这个选题的标题公式和互动目标是否最优？
 """
         raw = self.think(prompt, temperature=0.6, max_tokens=1200)
 
@@ -46,8 +45,8 @@ class TopicStrategist(BaseAgent):
         enriched["_strategy_comment"] = raw
 
         # 尝试从 raw 中提取关键字段
-        for key in ["title_formula", "target_interaction", "angle", "emotional_hook", "visual_direction"]:
-            m = __import__('re').search(rf'{key}[：:]\s*(.+?)(?:\n|$)', raw, __import__('re').IGNORECASE)
+        for key in ["title_formula", "target_interaction", "angle", "emotional_hook", "visual_direction", "story_prototype", "controversy_anchor"]:
+            m = re.search(rf'{key}[：:]\s*(.+?)(?:\n|$)', raw, re.IGNORECASE)
             if m:
                 enriched[key] = m.group(1).strip()
 
@@ -63,33 +62,25 @@ class TopicStrategist(BaseAgent):
         return enriched
 
     def _load_performance_summary(self) -> dict:
-        """加载 performance 数据的摘要。"""
-        path = DATA_DIR / "performance.json"
-        if not path.exists():
-            return {"notes": [], "summary": {}}
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            notes = data.get("notes", [])
-            if not notes:
-                return {"notes": [], "summary": data.get("summary", {})}
-            # 生成摘要：按 title_formula 统计表现
-            formula_stats = {}
-            for n in notes:
-                formula = n.get("title_formula", "未知")
-                grade = n.get("grade", "B")
-                if formula not in formula_stats:
-                    formula_stats[formula] = {"count": 0, "grades": []}
-                formula_stats[formula]["count"] += 1
-                formula_stats[formula]["grades"].append(grade)
-            return {
-                "total_notes": len(notes),
-                "formula_stats": formula_stats,
-                "summary": data.get("summary", {}),
-            }
-        except Exception as e:
-            logger.warning("加载 performance 数据失败: %s", e)
-            return {"notes": [], "summary": {}}
+        """加载 performance 数据的摘要（使用 config 的原子读取）。"""
+        data = load_performance_json()
+        notes = data.get("notes", [])
+        if not notes:
+            return {"notes": [], "summary": data.get("summary", {})}
+        # 生成摘要：按 title_formula 统计表现
+        formula_stats = {}
+        for n in notes:
+            formula = n.get("title_formula", "未知")
+            grade = n.get("grade", "B")
+            if formula not in formula_stats:
+                formula_stats[formula] = {"count": 0, "grades": []}
+            formula_stats[formula]["count"] += 1
+            formula_stats[formula]["grades"].append(grade)
+        return {
+            "total_notes": len(notes),
+            "formula_stats": formula_stats,
+            "summary": data.get("summary", {}),
+        }
 
     def handle(self, message: Message):
         pass

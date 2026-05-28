@@ -2,30 +2,27 @@ import json
 import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
-from core.config import get_logger, PROMPTS_DIR
+from core.config import get_logger
+from core.utils import load_prompt
 from core.image_generator import generate_cover_ai, generate_cover_template
 
 logger = get_logger(__name__)
 
-
-def _load_prompt(name: str) -> str:
-    path = PROMPTS_DIR / f"{name}.md"
-    if not path.exists():
-        raise FileNotFoundError(f"Prompt 文件不存在: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+ALL_STYLES = ["warm_grey", "twilight", "crimson", "mist", "cool", "blank"]
 
 
 class CoverDesigner(BaseAgent):
-    """封面设计师 Agent — 基于全文情绪设计封面方案。"""
+    """封面设计师 Agent — 基于全文情绪设计封面方案，强制风格轮换。"""
 
     def __init__(self, bus: MessageBus):
-        prompt = _load_prompt("agent_cover_designer")
+        prompt = load_prompt("agent_cover_designer")
         super().__init__("cover_designer", prompt, bus)
 
     def design(self, note_content: str, round_num: int = 0, output_path: str = "") -> dict:
         """基于笔记全文设计封面方案并生成封面图。"""
-        # 调用 LLM 做设计决策
+        # 获取最近使用的风格，强制轮换
+        recent_styles = self._get_recent_styles()
+
         design_prompt = f"""请阅读以下小红书笔记的完整内容，为其设计封面方案。
 
 **笔记内容**：
@@ -35,51 +32,140 @@ class CoverDesigner(BaseAgent):
 {{"title": "...", "subtitle": "...", "style": "...", "prompt": "...", "visual_anchor": "...", "rationale": "..."}}
 
 要求：
-1. title 不超过12个字，3秒内能读完
+1. title 不超过12个字，3秒内能读完。必须具体，禁止"情感笔记""看完沉默了"等万能词
 2. subtitle 是一句悬念，不是解释标题
 3. style 必须是 warm_grey|twilight|crimson|mist|cool|blank 之一
 4. prompt 必须包含温暖安全词（soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth）
 5. visual_anchor 是从故事中提炼的1个具体画面元素
 6. rationale 说明设计思路
+
+**风格轮换要求**：最近使用过的风格是 {recent_styles}。请优先选择不同的风格，避免视觉同质化。如果故事情绪确实适合最近用过的风格，可以选择，但需要在 rationale 中说明理由。
 """
         raw = self.think(design_prompt, temperature=0.7, max_tokens=1200)
 
         # 解析 JSON
         design = self._parse_design(raw)
 
-        # 生成封面图
+        # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
+        design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
+
+        # 改进 fallback 标题
+        if design["title"] in ("情感笔记", ""):
+            design["title"] = self._extract_title_from_content(note_content)
+
+        # 生成封面图（A/B 双方案：AI + 模板）
         cover_path = None
+        cover_paths = {}
         if output_path:
+            import os
+            base_dir = os.path.dirname(output_path)
+            # A方案：AI 绘画封面
+            ai_path = os.path.join(base_dir, "cover_ai.png")
             try:
-                cover_path = generate_cover_ai(
+                ai_result = generate_cover_ai(
                     prompt=design["prompt"],
                     title=design["title"],
                     subtitle=design["subtitle"],
                     style=design.get("style", "warm_grey"),
-                    output_path=output_path,
+                    output_path=ai_path,
                 )
+                if ai_result:
+                    cover_paths["ai"] = ai_result
+                    cover_path = ai_result
             except Exception as e:
-                logger.warning("AI 封面生成失败，fallback 到模板: %s", e)
-                try:
-                    cover_path = generate_cover_template(
-                        title=design["title"],
-                        subtitle=design["subtitle"],
-                        style=design.get("style", "warm_grey"),
-                        output_path=output_path,
-                    )
-                except Exception as e2:
-                    logger.error("封面模板也生成失败: %s", e2)
+                logger.warning("AI 封面生成失败: %s", e)
+
+            # B方案：模板封面（与 AI 不同的风格，增加对比选择）
+            alt_style = self._pick_alt_style(design.get("style", "warm_grey"))
+            template_path = os.path.join(base_dir, "cover_template.png")
+            try:
+                template_result = generate_cover_template(
+                    title=design["title"],
+                    subtitle=design["subtitle"],
+                    style=alt_style,
+                    output_path=template_path,
+                )
+                if template_result:
+                    cover_paths["template"] = template_result
+                    if not cover_path:
+                        cover_path = template_result
+            except Exception as e:
+                logger.warning("模板封面生成失败: %s", e)
 
         result = {
             "design": design,
             "cover_path": cover_path,
+            "cover_paths": cover_paths,
             "round_num": round_num,
         }
 
         # 广播设计结果
         self.send(to_agent=None, msg_type=MessageType.DESIGN, content=result, round_num=round_num)
-        logger.info("封面设计师完成设计: style=%s", design.get("style"))
+        logger.info("封面设计师完成设计: style=%s (最近用过: %s)", design.get("style"), recent_styles)
         return result
+
+    def _get_recent_styles(self) -> list[str]:
+        """从记忆中获取最近 3 次使用的风格。"""
+        from core.agents.memory import AgentMemory
+        mem = AgentMemory(self.name)
+        # 从 success_patterns 和 mediocre_patterns 中提取最近的 style
+        recent = []
+        for pattern in reversed(mem.data.get("success_patterns", [])):
+            if "style" in pattern:
+                recent.append(pattern["style"])
+        for pattern in reversed(mem.data.get("mediocre_patterns", [])):
+            if "style" in pattern:
+                recent.append(pattern["style"])
+        return recent[:3]
+
+    @staticmethod
+    def _pick_alt_style(primary_style: str) -> str:
+        """为 B 方案选一个与主风格不同的模板风格。"""
+        # 风格对比映射：给定主风格，选一个视觉差异大的
+        contrast_map = {
+            "warm_grey": "crimson",
+            "twilight": "warm",
+            "crimson": "cool",
+            "mist": "warm_grey",
+            "cool": "twilight",
+            "warm": "mist",
+            "blank": "warm_grey",
+        }
+        alt = contrast_map.get(primary_style, "warm")
+        return alt
+
+    @staticmethod
+    def _enforce_rotation(style: str, recent_styles: list[str]) -> str:
+        """如果最近 2 次都用了同一个风格，强制换一个。"""
+        if len(recent_styles) < 2:
+            return style
+        if recent_styles[0] == recent_styles[1] == style:
+            # 连续3次同一风格，强制换
+            alternatives = [s for s in ALL_STYLES if s != style]
+            # 优先选择从未用过的
+            for alt in alternatives:
+                if alt not in recent_styles:
+                    logger.info("风格轮换: %s -> %s (避免连续3次相同)", style, alt)
+                    return alt
+            # 都用过了，选一个最近没用的
+            logger.info("风格轮换: %s -> %s (避免连续3次相同)", style, alternatives[0])
+            return alternatives[0]
+        return style
+
+    @staticmethod
+    def _extract_title_from_content(content: str) -> str:
+        """从内容中提取一个有意义的标题作为 fallback。"""
+        # 尝试找第一句对话或有冲击力的句子
+        lines = [l.strip() for l in content.split("\n") if l.strip() and not l.strip().startswith("#")]
+        for line in lines[:10]:
+            # 跳过元数据行
+            if any(kw in line for kw in ["【", "标题", "封面", "正文", "金句", "互动", "话题", "视觉"]):
+                continue
+            # 取一个有冲击力的短句
+            clean = line.replace("**", "").replace("---", "").strip()
+            if 4 <= len(clean) <= 15:
+                return clean
+        return "说不出口的话"
 
     def _parse_design(self, raw: str) -> dict:
         """从 LLM 输出中解析 JSON 设计方案。"""
@@ -105,9 +191,9 @@ class CoverDesigner(BaseAgent):
 
         # 如果解析失败，用内容关键词兜底
         if not design["title"]:
-            design["title"] = "情感笔记"
+            design["title"] = "说不出口的话"
         if not design["subtitle"]:
-            design["subtitle"] = "看完沉默了"
+            design["subtitle"] = "有些话，藏在心里太久了"
         if not design["prompt"]:
             design["prompt"] = "A soft emotional aesthetic scene, warm lighting, minimalist, cozy atmosphere, gentle pastel tones, emotional warmth"
 
@@ -116,9 +202,7 @@ class CoverDesigner(BaseAgent):
     def handle(self, message: Message):
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DRAFT:
-            # 收到写手的新 draft，自动分析是否需要补充视觉锚点
             draft_content = message.content.get("content", "")
-            # 检查是否有足够的视觉锚点（具体场景、物品、光线）
             has_anchor = any(kw in draft_content for kw in ["窗边", "灯光", "阳光", "咖啡", "杯子", "房间", "沙发", "床头", "镜子", "手机", "屏幕", "外卖", "雨", "雪", "风", "窗帘", "被子", "枕头", "桌子", "椅子", "门", "电梯", "地铁", "公交", "街道", "路灯", "路灯", "黄昏", "清晨", "凌晨", "深夜", "暖光", "台灯", "烛光"])
             if not has_anchor:
                 logger.info("封面设计师认为故事缺少视觉锚点，向写手发送请求")
@@ -140,5 +224,4 @@ class CoverDesigner(BaseAgent):
         elif grade == "C":
             mem.record_failure(context)
         else:
-            mem.data["total_runs"] = mem.data.get("total_runs", 0) + 1
-            mem.save()
+            mem.record_mediocre(context)

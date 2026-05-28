@@ -1,24 +1,17 @@
 import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
-from core.config import get_logger, PROMPTS_DIR
+from core.config import get_logger
+from core.utils import load_prompt
 
 logger = get_logger(__name__)
-
-
-def _load_prompt(name: str) -> str:
-    path = PROMPTS_DIR / f"{name}.md"
-    if not path.exists():
-        raise FileNotFoundError(f"Prompt 文件不存在: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
 
 
 class CommunityManager(BaseAgent):
     """评论运营 Agent — 生成发布后用于引导互动的预设评论。"""
 
     def __init__(self, bus: MessageBus):
-        prompt = _load_prompt("agent_community")
+        prompt = load_prompt("agent_community")
         super().__init__("community_manager", prompt, bus)
 
     def generate_comments(self, note_content: str, round_num: int = 0) -> dict:

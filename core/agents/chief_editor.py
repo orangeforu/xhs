@@ -14,7 +14,7 @@ class ChiefEditor(BaseAgent):
         prompt = load_prompt("agent_chief_editor")
         super().__init__("chief_editor", prompt, bus)
 
-    def orchestrate(self, brief, writer, designer, artist, editor, community, out_dir: str) -> dict:
+    def orchestrate(self, brief, writer, designer, artist, editor, community, out_dir: str, user_feedback: str = "") -> dict:
         """主流程编排。最多5轮迭代。"""
         round_num = 0
         draft = None
@@ -32,7 +32,8 @@ class ChiefEditor(BaseAgent):
         logger.info("主编启动创作流程: %s", brief["topic"])
         logger.info("=" * 50)
 
-        draft = writer.write(brief, round_num=0)
+        # 如果有用户反馈，作为第一轮的 feedback 传入
+        draft = writer.write(brief, round_num=0, feedback=user_feedback if user_feedback else None)
 
         # ── 迭代循环 ──
         while round_num < 5:
@@ -157,14 +158,11 @@ class ChiefEditor(BaseAgent):
         if grade == "S" and verdict == "pass":
             return {"action": "publish", "reason": "S级爆款内容"}
 
-        # A级 + pass 直接通过；A级 + conditional 且 issues=0 也可通过
-        if grade == "A":
-            if verdict == "pass":
-                return {"action": "publish", "reason": "A级高质量内容"}
-            if verdict == "conditional" and len(issues) == 0:
-                return {"action": "publish", "reason": "A级内容，仅有优化建议无硬伤"}
+        # A级：必须 0 issues 才能通过（收紧标准，防止通胀）
+        if grade == "A" and verdict in ("pass", "conditional") and len(issues) == 0:
+            return {"action": "publish", "reason": "A级内容，无硬伤"}
 
-        # B级：必须 0 issues 才能通过，有 issues 就重写
+        # B级：必须 0 issues 才能通过
         if grade == "B" and verdict in ("pass", "conditional") and len(issues) == 0:
             return {"action": "publish", "reason": "B级内容无硬伤，可接受"}
 

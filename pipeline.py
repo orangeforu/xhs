@@ -191,6 +191,11 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
         logger.error("请指定 --topic、--index 或 --smart")
         return None
 
+    # 读取用户反馈（如有）
+    user_feedback = brief.pop("feedback", "")
+    if user_feedback:
+        logger.info("检测到用户反馈: %s", user_feedback[:100])
+
     out_dir = _prepare_out_dir(brief["topic"])
     logger.info("=" * 60)
     logger.info("Multi-Agent 创作启动: %s", brief["topic"])
@@ -207,7 +212,7 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
 
     # 创建编排器，启动 7-Agent 协作流程
     orchestrator = Orchestrator()
-    result = orchestrator.run(brief, out_dir)
+    result = orchestrator.run(brief, out_dir, user_feedback=user_feedback)
 
     if result.get("status") == "abandoned":
         logger.warning("创作被主编放弃: %s", result.get("reason", "未知原因"))

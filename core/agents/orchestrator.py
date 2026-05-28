@@ -32,9 +32,14 @@ class Orchestrator:
         self.strategist = TopicStrategist(self.bus)
         self.chief = ChiefEditor(self.bus)
 
-    def run(self, brief: dict, out_dir: str) -> dict:
+    def run(self, brief: dict, out_dir: str, user_feedback: str = "") -> dict:
         """
         执行完整的多 Agent 创作流程。
+
+        Args:
+            brief: 选题 brief
+            out_dir: 输出目录
+            user_feedback: 用户修改反馈（来自审核工作台的"需要修改"）
 
         Returns:
             dict: 包含 draft, design, inner_paths, review, comments, rounds, status
@@ -55,6 +60,7 @@ class Orchestrator:
             editor=self.editor,
             community=self.community,
             out_dir=out_dir,
+            user_feedback=user_feedback,
         )
 
         result["brief"] = enriched_brief

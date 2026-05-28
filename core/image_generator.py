@@ -933,36 +933,8 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
     # 策略：找到 【金句】 或 # 金句 的位置，截断其后的内容
     body = re.split(r'\n\s*(?:\*?【金句】\*?|#{1,6}\s*\[?金句\]?)', body, maxsplit=1)[0]
 
-    # 保留 --- 分隔符，收集所有正文行
-    all_lines = []
-    for line in body.split('\n'):
-        stripped = line.strip()
-        _skip_markers = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
-        if any(m in stripped for m in _skip_markers):
-            continue
-        if stripped.startswith('#') and not stripped.startswith('##'):
-            continue
-        if stripped.startswith('【') and '】' in stripped:
-            continue
-        if re.match(r'^话题标签[：:]', stripped):
-            continue
-        if re.match(r'^视觉风格[：:]', stripped):
-            continue
-        if re.match(r'\[Image\s*#\d+\]', stripped):
-            continue
-        # 过滤纯话题标签行
-        words = stripped.split()
-        if words and all(w.startswith('#') for w in words):
-            continue
-        all_lines.append(stripped)
-
-    if not all_lines:
-        logger.warning("正文过滤后为空，跳过内页生成")
-        return []
-
-    # 一次性解析为 blocks（消除重复解析）
-    full_text = '\n'.join(all_lines)
-    blocks = _parse_to_blocks(full_text)
+    # 直接交给 _parse_to_blocks 统一过滤（元数据标记、标签行、纯话题标签等）
+    blocks = _parse_to_blocks(body)
 
     if not blocks:
         logger.warning("正文解析后无有效内容，跳过内页生成")
@@ -980,7 +952,7 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
     # 预解析完成，传递 blocks 给渲染函数避免重复解析
     def _render_page(page_num: int) -> str | None:
         path = f"{out_dir}/inner_page_{page_num}.png"
-        return generate_inner_page(full_text, page_num, total_pages, style=style,
+        return generate_inner_page(body, page_num, total_pages, style=style,
                                    output_path=path, pre_parsed_blocks=blocks)
 
     paths = []

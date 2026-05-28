@@ -32,4 +32,18 @@
 
 ## 输出格式
 
-直接输出评论内容，每条之间用空行分隔。不要编号，不要加引号。
+严格按以下 JSON 格式输出，不要输出其他内容：
+```json
+{
+  "comments": [
+    {"type": "resonance", "text": "评论内容"},
+    {"type": "discussion_starter", "text": "评论内容"},
+    {"type": "controversy", "text": "评论内容"},
+    {"type": "supplement", "text": "评论内容"},
+    {"type": "tag_friend", "text": "评论内容"}
+  ],
+  "reply_templates": ["博主回复模板1", "博主回复模板2", "博主回复模板3"]
+}
+```
+
+type 可选值：resonance（情感共鸣）、discussion_starter（引导讨论）、controversy（制造站队）、supplement（补充故事）、tag_friend（@好友）。

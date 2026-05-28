@@ -40,3 +40,15 @@ published/
 
 # Pytest
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Build artifacts
+*.egg-info
+*.egg
+dist/
+build/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/

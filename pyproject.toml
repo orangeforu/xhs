@@ -32,6 +32,10 @@ convention = "google"
 [tool.ruff.isort]
 known-first-party = ["core"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true

@@ -235,7 +235,7 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
 
     # 保存笔记文件
     output_file = os.path.join(out_dir, "note.md")
-    _write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds)
+    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds)
     logger.info("已保存到: %s", output_file)
 
     # 更新选题状态

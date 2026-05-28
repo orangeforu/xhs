@@ -191,8 +191,9 @@ class BaseAgent:
 
     def reset_memory_cache(self):
         """重置记忆缓存，下次 think() 时重新从磁盘加载。用于新一轮迭代开始时。"""
-        self._memory_loaded = False
-        self._memory_cache = None
+        with self._memory_lock:
+            self._memory_loaded = False
+            self._memory_cache = None
 
     def think_parallel(
         self,

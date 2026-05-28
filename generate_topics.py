@@ -351,8 +351,8 @@ def main():
             generated = sum(1 for t in all_data["topics"] if t.get("status") == "generated")
             not_started = sum(1 for t in all_data["topics"] if t.get("status") in ("not_started", None, ""))
             print(f"\n选题池总计: {total} 个 | 已生成: {generated} | 待生成: {not_started}")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("加载选题池统计失败: %s", e)
 
         print("\n" + "=" * 60)
         print("  使用 python pipeline.py --list 查看完整选题池")

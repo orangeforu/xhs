@@ -150,12 +150,14 @@ def load_topics_json() -> dict:
         raise FileNotFoundError(
             f"选题池文件不存在: {path}。请先创建 data/topics.json。"
         )
-    with open(path, "r", encoding="utf-8") as f:
-        _lock_file(f, exclusive=False)
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=False)
         try:
-            return json.load(f)
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
         finally:
-            _unlock_file(f)
+            _unlock_file(lock_f)
 
 
 def save_topics_json(data: dict) -> None:
@@ -175,12 +177,14 @@ def load_performance_json() -> dict:
             "b_grade_count": 0, "c_grade_count": 0,
             "current_streak_underperform": 0,
         }}
-    with open(path, "r", encoding="utf-8") as f:
-        _lock_file(f, exclusive=False)
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=False)
         try:
-            return json.load(f)
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
         finally:
-            _unlock_file(f)
+            _unlock_file(lock_f)
 
 
 def save_performance_json(data: dict) -> None:
@@ -218,12 +222,14 @@ def load_calendar_json() -> dict:
     path = DATA_DIR / "calendar.json"
     if not path.exists():
         return {"weeks": {}, "series": {}}
-    with open(path, "r", encoding="utf-8") as f:
-        _lock_file(f, exclusive=False)
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=False)
         try:
-            return json.load(f)
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
         finally:
-            _unlock_file(f)
+            _unlock_file(lock_f)
 
 
 def save_calendar_json(data: dict) -> None:

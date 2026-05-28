@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch
 
 from core.topic_selector import _avg_grade_score, _score_topic, smart_select, smart_batch
 from generate_topics import _extract_keywords, _is_similar

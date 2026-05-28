@@ -53,7 +53,7 @@ def _call_api(
             wait = 2 ** attempt
             logger.warning("API 请求失败 (%s)，%d秒后重试 (%d/%d)", type(e).__name__, wait, attempt + 1, retries)
             time.sleep(wait)
-        except (json.JSONDecodeError, ValueError) as e:
+        except json.JSONDecodeError as e:
             # API 返回了非 JSON 响应（如 HTML 错误页面），可重试
             last_err = e
             wait = 2 ** attempt

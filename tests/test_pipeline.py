@@ -1,9 +1,8 @@
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from pipeline import _clean_md, _extract_cover_info, _sanitize_prompt, _update_topic_status
 from core.utils import extract_visual_style as _extract_visual_style

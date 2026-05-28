@@ -1,8 +1,5 @@
 """Tests for write_note_file and format_review — 笔记文件写入和审核格式化。"""
 
-import json
-import os
-
 from core.utils import format_review, write_note_file
 
 

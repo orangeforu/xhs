@@ -127,7 +127,7 @@ def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, ma
     return merged
 
 
-def _draw_gradient_bg(draw: ImageDraw.ImageDraw, width: int, height: int, c1: tuple[int, int, int], c2: tuple[int, int, int]) -> None:
+def _draw_gradient_bg(img: Image.Image, width: int, height: int, c1: tuple[int, int, int], c2: tuple[int, int, int]) -> None:
     """绘制线性渐变背景（生成 1px 宽渐变条再拉伸，比逐行绘制快 100 倍）"""
     strip = Image.new("RGB", (1, height))
     pixels = []
@@ -139,7 +139,7 @@ def _draw_gradient_bg(draw: ImageDraw.ImageDraw, width: int, height: int, c1: tu
         pixels.append((r, g, b))
     strip.putdata(pixels)
     gradient = strip.resize((width, height), Image.Resampling.BILINEAR)
-    draw._image.paste(gradient, (0, 0))
+    img.paste(gradient, (0, 0))
 
 
 def _add_center_glow(img: Image.Image, palette: dict) -> Image.Image:
@@ -164,13 +164,15 @@ def _add_noise_texture(img: Image.Image, intensity: int = 4) -> Image.Image:
     """叠加极淡的噪点纹理，模拟纸质质感。"""
     if img.mode != "RGBA":
         img = img.convert("RGBA")
+    # 使用局部 Random 实例避免多线程共享全局 random 状态
+    rng = random.Random()
     tile_size = 100
     noise = Image.new("RGBA", (tile_size, tile_size), (0, 0, 0, 0))
     pixels = []
     for _ in range(tile_size * tile_size):
-        if random.random() < 0.12:
-            v = random.randint(-intensity, intensity)
-            a = random.randint(2, 5)
+        if rng.random() < 0.12:
+            v = rng.randint(-intensity, intensity)
+            a = rng.randint(2, 5)
             pixels.append((128 + v, 128 + v, 128 + v, a))
         else:
             pixels.append((0, 0, 0, 0))
@@ -213,7 +215,7 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
     draw = ImageDraw.Draw(img)
 
     if style in ("warm", "cool", "warm_grey", "twilight", "crimson", "mist", "blank"):
-        _draw_gradient_bg(draw, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
+        _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
     elif style == "chat":
         # 微信聊天背景
         draw.rectangle([(0, 0), (COVER_WIDTH, COVER_HEIGHT)], fill=(235, 235, 235))
@@ -224,7 +226,7 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
         time_font = _get_font(24)
         draw.text((COVER_WIDTH // 2 - 60, 55), "下午 3:42", font=time_font, fill=(150, 150, 150))
     elif style == "number":
-        _draw_gradient_bg(draw, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
+        _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
 
     # 装饰性大面积色块（仅非 chat/blank 风格）
     if style not in ("chat", "blank"):
@@ -697,8 +699,8 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     p = PALETTE.get(style, PALETTE["warm_grey"])
 
     img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (*p["bg_top"], 255))
+    _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
     draw = ImageDraw.Draw(img)
-    _draw_gradient_bg(draw, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
 
     # 叠加 center glow 和纸质噪点
     img = _add_center_glow(img, p)
@@ -811,7 +813,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                 try:
                     bbox = large_font.getbbox(line)
                     lw = bbox[2] - bbox[0]
-                except Exception:
+                except (AttributeError, TypeError):
                     lw = 0
                 x = (COVER_WIDTH - lw) // 2
                 draw.text((x, y), line, font=large_font, fill=p["highlight"])
@@ -826,7 +828,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                 try:
                     bbox = font.getbbox(line)
                     lw = bbox[2] - bbox[0]
-                except Exception:
+                except (AttributeError, TypeError):
                     lw = 0
                 max_line_w = max(max_line_w, lw)
             block_h = line_count * line_height
@@ -891,7 +893,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     try:
         bbox = page_font.getbbox(page_text)
         tw = bbox[2] - bbox[0]
-    except Exception:
+    except (AttributeError, TypeError):
         tw = 0
     page_y = COVER_HEIGHT - 70
     # 页码上方细线装饰

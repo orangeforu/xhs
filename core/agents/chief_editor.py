@@ -39,7 +39,8 @@ class ChiefEditor(BaseAgent):
 
             if round_num == 0 or (review and review.get("needs_redesign")):
                 cover_path = f"{out_dir}/cover_ai.png"
-                parallel_tasks.append(("design", lambda: designer.design(draft["content"], round_num=round_num, output_path=cover_path)))
+                style_override = brief.get("series_style", "")
+                parallel_tasks.append(("design", lambda: designer.design(draft["content"], round_num=round_num, output_path=cover_path, style_override=style_override)))
             else:
                 parallel_tasks.append(("design", lambda: design_result))
 

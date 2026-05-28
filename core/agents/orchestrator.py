@@ -91,8 +91,31 @@ def _write_note_file(
                 f.write(f"- {path}\n")
         if preset_comments.get("comments"):
             f.write("\n## 预设评论（发布后使用）\n\n")
-            for c in preset_comments["comments"]:
-                f.write(f"- {c}\n")
+            # 优先使用分类评论
+            classified = preset_comments.get("comments_classified", [])
+            if classified:
+                type_labels = {
+                    "discussion_starter": "引导讨论",
+                    "controversy": "制造站队",
+                    "resonance": "情感共鸣",
+                    "supplement": "补充故事",
+                    "tag_friend": "@好友",
+                }
+                for c in classified:
+                    if isinstance(c, dict):
+                        label = type_labels.get(c.get("type", ""), c.get("type", ""))
+                        f.write(f"- [{label}] {c['text']}\n")
+                    else:
+                        f.write(f"- {c}\n")
+            else:
+                for c in preset_comments["comments"]:
+                    f.write(f"- {c}\n")
+            # 回复模板
+            reply_templates = preset_comments.get("reply_templates", [])
+            if reply_templates:
+                f.write("\n### 博主回复模板\n\n")
+                for r in reply_templates:
+                    f.write(f"- {r}\n")
 
 
 def _format_review(review: dict) -> str:

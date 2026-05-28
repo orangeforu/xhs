@@ -152,6 +152,25 @@ def save_performance_json(data: dict) -> None:
     _atomic_write_json(path, data)
 
 
+def load_calendar_json() -> dict:
+    """加载内容日历 JSON，不存在时返回空模板。"""
+    path = DATA_DIR / "calendar.json"
+    if not path.exists():
+        return {"weeks": {}, "series": {}}
+    with open(path, "r", encoding="utf-8") as f:
+        _lock_file(f, exclusive=False)
+        try:
+            return json.load(f)
+        finally:
+            _unlock_file(f)
+
+
+def save_calendar_json(data: dict) -> None:
+    """保存内容日历 JSON。"""
+    path = DATA_DIR / "calendar.json"
+    _atomic_write_json(path, data)
+
+
 def init() -> None:
     """初始化项目：创建目录、校验环境变量和字体。在入口文件中显式调用。"""
     ensure_dirs()

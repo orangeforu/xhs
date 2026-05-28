@@ -2,7 +2,7 @@ import os
 import glob
 import re
 import shutil
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import streamlit as st
 
@@ -12,6 +12,8 @@ from core.config import (
     save_topics_json,
     load_performance_json,
     save_performance_json,
+    load_calendar_json,
+    save_calendar_json,
     open_folder,
 )
 
@@ -220,7 +222,7 @@ def _extract_title_candidates(content: str) -> list[str]:
 
 def _extract_body_for_publish(content: str) -> str:
     """提取并格式化正文，适合小红书发布。"""
-    m = re.search(r"【正文】\s*(.+?)(?=## 预设评论|$)", content, re.DOTALL)
+    m = re.search(r"【正文】\s*(.+?)(?=## 审核结果|## 预设评论|## 封面|$)", content, re.DOTALL)
     if not m:
         return ""
     body = m.group(1).strip()
@@ -268,7 +270,7 @@ if st.sidebar.button("📁 打开项目文件夹"):
     open_folder(os.path.dirname(os.path.abspath(__file__)))
 
 # ── Main Tabs ──
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📝 待审核笔记", "📚 选题池", "📖 创作标准", "📈 数据复盘", "🚀 一键发布助手"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📝 待审核笔记", "📚 选题池", "📖 创作标准", "📈 数据复盘", "📅 内容日历", "🚀 一键发布助手"])
 
 # Tab 1: 待审核笔记
 with tab1:
@@ -698,8 +700,204 @@ with tab4:
                     st.success(f"{topic} 数据已保存！")
                     st.rerun()
 
-# Tab 5: 一键发布助手
+# Tab 5: 内容日历
 with tab5:
+    st.header("📅 内容日历")
+
+    calendar_data = load_calendar_json()
+
+    # 获取当前周
+    today = datetime.now()
+    current_week = today.strftime("%Y-W%W")
+    current_weekday = today.weekday()  # 0=Monday
+
+    # 计算本周起止日期
+    week_start = today - timedelta(days=current_weekday)
+    week_end = week_start + timedelta(days=6)
+
+    st.subheader(f"本周 {week_start.strftime('%m/%d')} - {week_end.strftime('%m/%d')}")
+
+    # 支柱列表
+    PILLARS = ["亲密关系洞察", "自我成长", "社交关系", "情绪疗愈", "生活态度"]
+    TIME_SLOTS = {
+        "morning": "🌅 早间 (7-9点)",
+        "noon": "☀️ 午间 (12-14点)",
+        "evening": "🌙 晚间 (20-23点)",
+    }
+
+    # 加载本周计划
+    week_data = calendar_data.setdefault("weeks", {}).get(current_week, {"days": {}})
+
+    # 编辑本周计划
+    for day_offset in range(7):
+        day_date = week_start + timedelta(days=day_offset)
+        day_key = day_date.strftime("%Y-%m-%d")
+        weekday_names = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+        day_name = weekday_names[day_offset]
+        is_today = day_offset == current_weekday
+
+        day_data = week_data["days"].get(day_key, {"slots": {}})
+
+        with st.expander(f"{'👉 ' if is_today else ''}{day_name} {day_date.strftime('%m/%d')}", expanded=is_today):
+            for slot_key, slot_label in TIME_SLOTS.items():
+                slot_data = day_data["slots"].get(slot_key, {})
+                cols = st.columns([1, 2, 2, 1])
+                with cols[0]:
+                    st.caption(slot_label)
+                with cols[1]:
+                    topic = st.text_input(
+                        "选题",
+                        value=slot_data.get("topic", ""),
+                        key=f"cal_{day_key}_{slot_key}_topic",
+                        label_visibility="collapsed",
+                        placeholder="输入选题...",
+                    )
+                with cols[2]:
+                    pillar = st.selectbox(
+                        "支柱",
+                        [""] + PILLARS,
+                        index=PILLARS.index(slot_data.get("pillar", "")) + 1 if slot_data.get("pillar", "") in PILLARS else 0,
+                        key=f"cal_{day_key}_{slot_key}_pillar",
+                        label_visibility="collapsed",
+                    )
+                with cols[3]:
+                    status = slot_data.get("status", "planned")
+                    status_icon = {"planned": "⬜", "generated": "📝", "published": "✅"}.get(status, "⬜")
+                    st.caption(status_icon)
+
+                # 保存到 day_data
+                if topic or pillar:
+                    day_data["slots"][slot_key] = {
+                        "topic": topic,
+                        "pillar": pillar,
+                        "status": slot_data.get("status", "planned"),
+                    }
+
+            week_data["days"][day_key] = day_data
+
+    # 保存日历
+    calendar_data["weeks"][current_week] = week_data
+
+    if st.button("💾 保存本周日历"):
+        save_calendar_json(calendar_data)
+        st.success("日历已保存！")
+
+    # ── 支柱均衡检测 ──
+    st.divider()
+    st.subheader("📊 本周支柱分布")
+
+    pillar_counts = {}
+    for day_data in week_data.get("days", {}).values():
+        for slot_data in day_data.get("slots", {}).values():
+            p = slot_data.get("pillar", "")
+            if p:
+                pillar_counts[p] = pillar_counts.get(p, 0) + 1
+
+    total_planned = sum(pillar_counts.values())
+    if total_planned > 0:
+        cols = st.columns(len(PILLARS))
+        for i, pillar in enumerate(PILLARS):
+            count = pillar_counts.get(pillar, 0)
+            ratio = count / total_planned
+            with cols[i]:
+                st.metric(pillar[:4], f"{count}篇", f"{ratio:.0%}")
+                if ratio > 0.4:
+                    st.warning("偏重")
+                elif ratio == 0 and total_planned > 2:
+                    st.caption("缺失")
+
+        # 均衡度评估
+        max_ratio = max(pillar_counts.values()) / total_planned if total_planned > 0 else 0
+        if max_ratio > 0.5:
+            st.warning(f"⚠️ 支柱分布不均，最大占比 {max_ratio:.0%}。建议增加其他支柱内容。")
+        elif len([p for p in PILLARS if pillar_counts.get(p, 0) > 0]) >= 3:
+            st.success("✅ 支柱分布均衡，继续保持。")
+    else:
+        st.info("本周暂无排期，请在上方填写选题计划。")
+
+    # ── 发布时间建议 ──
+    st.divider()
+    st.subheader("⏰ 发布时间建议")
+
+    if performance.get("notes"):
+        time_analysis = {}
+        for n in performance["notes"]:
+            pub_time = n.get("published_at", "")
+            if not pub_time:
+                continue
+            try:
+                dt = datetime.fromisoformat(pub_time.replace("Z", "+00:00"))
+                hour = dt.hour
+                if 7 <= hour < 9:
+                    slot = "早间 (7-9点)"
+                elif 12 <= hour < 14:
+                    slot = "午间 (12-14点)"
+                elif 20 <= hour < 23:
+                    slot = "晚间 (20-23点)"
+                else:
+                    slot = "其他时段"
+                if slot not in time_analysis:
+                    time_analysis[slot] = {"count": 0, "total_likes": 0}
+                time_analysis[slot]["count"] += 1
+                time_analysis[slot]["total_likes"] += n.get("likes", 0)
+            except (ValueError, TypeError):
+                pass
+
+        if time_analysis:
+            for slot, data in sorted(time_analysis.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1), reverse=True):
+                avg = data["total_likes"] / data["count"] if data["count"] > 0 else 0
+                st.caption(f"**{slot}**：{data['count']}篇 | 平均点赞 {avg:.0f}")
+            best_slot = max(time_analysis.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+            st.success(f"💡 最佳发布时段：**{best_slot[0]}**（平均点赞 {best_slot[1]['total_likes']/best_slot[1]['count']:.0f}）")
+    else:
+        st.info("暂无发布数据，积累数据后会推荐最佳发布时间。")
+
+    # ── 系列配置 ──
+    st.divider()
+    st.subheader("📚 系列管理")
+
+    VISUAL_STYLES = ["warm_grey", "twilight", "crimson", "mist", "cool", "blank"]
+    series_data = calendar_data.setdefault("series", {})
+
+    # 现有系列列表
+    if series_data:
+        for series_name, series_info in series_data.items():
+            cols = st.columns([3, 2, 1])
+            with cols[0]:
+                st.markdown(f"**{series_name}**")
+            with cols[1]:
+                current_style = series_info.get("style", "warm_grey")
+                st.caption(f"视觉风格: {current_style}")
+            with cols[2]:
+                st.caption(f"{series_info.get('count', 0)}篇")
+
+    # 添加/编辑系列
+    with st.expander("添加/编辑系列"):
+        new_series_name = st.text_input("系列名称", key="new_series_name", placeholder="如：不敢说出口的话")
+        new_series_style = st.selectbox(
+            "绑定视觉风格",
+            VISUAL_STYLES,
+            index=VISUAL_STYLES.index(series_data.get(new_series_name, {}).get("style", "warm_grey")) if new_series_name in series_data else 0,
+            key="new_series_style",
+        )
+        new_series_desc = st.text_input("系列描述", key="new_series_desc", placeholder="简短描述系列主题")
+
+        if st.button("💾 保存系列配置") and new_series_name:
+            series_data[new_series_name] = {
+                "style": new_series_style,
+                "description": new_series_desc,
+                "count": series_data.get(new_series_name, {}).get("count", 0),
+            }
+            calendar_data["series"] = series_data
+            save_calendar_json(calendar_data)
+            st.success(f"系列「{new_series_name}」已保存，绑定风格: {new_series_style}")
+            st.rerun()
+
+    # 使用说明
+    st.info("💡 系列绑定视觉风格后，该系列下的所有笔记将自动使用指定风格生成封面，保持视觉一致性。")
+
+# Tab 6: 一键发布助手
+with tab6:
     st.header("🚀 一键发布助手")
     st.caption("选择笔记 → 挑选标题 → 复制正文 → 按顺序上传图片 → 粘贴预设评论")
 

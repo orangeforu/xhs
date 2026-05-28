@@ -4,7 +4,7 @@ import re
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.utils import load_prompt
-from core.image_generator import generate_cover_ai, generate_cover_template
+from core.image_generator import generate_cover_ai
 
 logger = get_logger(__name__)
 
@@ -18,7 +18,7 @@ class CoverDesigner(BaseAgent):
         prompt = load_prompt("agent_cover_designer")
         super().__init__("cover_designer", prompt, bus)
 
-    def design(self, note_content: str, round_num: int = 0, output_path: str = "") -> dict:
+    def design(self, note_content: str, round_num: int = 0, output_path: str = "", style_override: str = "") -> dict:
         """基于笔记全文设计封面方案并生成封面图。"""
         # 获取最近使用的风格，强制轮换
         recent_styles = self._get_recent_styles()
@@ -46,20 +46,25 @@ class CoverDesigner(BaseAgent):
         # 解析 JSON
         design = self._parse_design(raw)
 
-        # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
-        design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
+        # 系列风格绑定：如果指定了 style_override，优先使用
+        if style_override and style_override in ALL_STYLES:
+            design["style"] = style_override
+            logger.info("使用系列绑定风格: %s", style_override)
+        else:
+            # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
+            design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
 
         # 改进 fallback 标题
         if design["title"] in ("情感笔记", ""):
             design["title"] = self._extract_title_from_content(note_content)
 
-        # 生成封面图（A/B 双方案：AI + 模板）
+        # 生成封面图（只生成 AI 封面，符合平台策略）
         cover_path = None
         cover_paths = {}
         if output_path:
             import os
             base_dir = os.path.dirname(output_path)
-            # A方案：AI 绘画封面
+            # AI 绘画封面
             ai_path = os.path.join(base_dir, "cover_ai.png")
             try:
                 ai_result = generate_cover_ai(
@@ -74,23 +79,6 @@ class CoverDesigner(BaseAgent):
                     cover_path = ai_result
             except Exception as e:
                 logger.warning("AI 封面生成失败: %s", e)
-
-            # B方案：模板封面（与 AI 不同的风格，增加对比选择）
-            alt_style = self._pick_alt_style(design.get("style", "warm_grey"))
-            template_path = os.path.join(base_dir, "cover_template.png")
-            try:
-                template_result = generate_cover_template(
-                    title=design["title"],
-                    subtitle=design["subtitle"],
-                    style=alt_style,
-                    output_path=template_path,
-                )
-                if template_result:
-                    cover_paths["template"] = template_result
-                    if not cover_path:
-                        cover_path = template_result
-            except Exception as e:
-                logger.warning("模板封面生成失败: %s", e)
 
         result = {
             "design": design,
@@ -117,22 +105,6 @@ class CoverDesigner(BaseAgent):
             if "style" in pattern:
                 recent.append(pattern["style"])
         return recent[:3]
-
-    @staticmethod
-    def _pick_alt_style(primary_style: str) -> str:
-        """为 B 方案选一个与主风格不同的模板风格。"""
-        # 风格对比映射：给定主风格，选一个视觉差异大的
-        contrast_map = {
-            "warm_grey": "crimson",
-            "twilight": "warm",
-            "crimson": "cool",
-            "mist": "warm_grey",
-            "cool": "twilight",
-            "warm": "mist",
-            "blank": "warm_grey",
-        }
-        alt = contrast_map.get(primary_style, "warm")
-        return alt
 
     @staticmethod
     def _enforce_rotation(style: str, recent_styles: list[str]) -> str:
@@ -186,8 +158,11 @@ class CoverDesigner(BaseAgent):
                 continue
             for key in design:
                 if f'"{key}"' in line or f"'{key}'" in line:
-                    val = line.split(":", 1)[-1].strip().strip(',').strip('"').strip("'")
-                    design[key] = val
+                    # 找到 "key": 或 "key": 后提取值，避免冒号在值中被截断
+                    m = re.search(rf'["\']{key}["\']\s*[:：]\s*(.+)', line)
+                    if m:
+                        val = m.group(1).strip().rstrip(',').strip('"').strip("'")
+                        design[key] = val
 
         # 如果解析失败，用内容关键词兜底
         if not design["title"]:
@@ -203,7 +178,7 @@ class CoverDesigner(BaseAgent):
         """处理消息总线消息。"""
         if message.msg_type == MessageType.DRAFT:
             draft_content = message.content.get("content", "")
-            has_anchor = any(kw in draft_content for kw in ["窗边", "灯光", "阳光", "咖啡", "杯子", "房间", "沙发", "床头", "镜子", "手机", "屏幕", "外卖", "雨", "雪", "风", "窗帘", "被子", "枕头", "桌子", "椅子", "门", "电梯", "地铁", "公交", "街道", "路灯", "路灯", "黄昏", "清晨", "凌晨", "深夜", "暖光", "台灯", "烛光"])
+            has_anchor = any(kw in draft_content for kw in ["窗边", "灯光", "阳光", "咖啡", "杯子", "房间", "沙发", "床头", "镜子", "手机", "屏幕", "外卖", "雨", "雪", "风", "窗帘", "被子", "枕头", "桌子", "椅子", "门", "电梯", "地铁", "公交", "街道", "路灯", "黄昏", "清晨", "凌晨", "深夜", "暖光", "台灯", "烛光"])
             if not has_anchor:
                 logger.info("封面设计师认为故事缺少视觉锚点，向写手发送请求")
                 self.send(

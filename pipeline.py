@@ -12,7 +12,7 @@ import os
 import re
 from datetime import datetime, timezone
 
-from core.config import get_logger, init, load_topics_json, save_topics_json, PROJECT_ROOT
+from core.config import get_logger, init, load_topics_json, save_topics_json, load_calendar_json, PROJECT_ROOT
 from core.agents.orchestrator import Orchestrator, _write_note_file
 from core.topic_selector import smart_select, smart_batch
 from core.utils import clean_md as _clean_md, extract_visual_style as _extract_visual_style
@@ -195,6 +195,15 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
     logger.info("=" * 60)
     logger.info("Multi-Agent 创作启动: %s", brief["topic"])
     logger.info("=" * 60)
+
+    # 查找系列风格绑定
+    calendar = load_calendar_json()
+    series_config = calendar.get("series", {})
+    for series_name, series_info in series_config.items():
+        if series_name in brief.get("topic", ""):
+            brief["series_style"] = series_info.get("style", "")
+            logger.info("匹配系列「%s」，绑定风格: %s", series_name, brief["series_style"])
+            break
 
     # 创建编排器，启动 7-Agent 协作流程
     orchestrator = Orchestrator()

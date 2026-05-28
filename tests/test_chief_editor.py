@@ -23,8 +23,15 @@ class TestMakeDecision(unittest.TestCase):
         result = self.ce._make_decision({}, None, review, 0)
         self.assertEqual(result["action"], "publish")
 
-    def test_b_grade_pass_few_issues_publishes(self):
+    def test_b_grade_pass_few_issues_revises(self):
+        """B级有issues必须重写，不能及格就发。"""
         review = {"grade": "B", "verdict": "pass", "issues": [{"problem": "x"}]}
+        result = self.ce._make_decision({}, None, review, 0)
+        self.assertEqual(result["action"], "revise")
+
+    def test_b_grade_pass_zero_issues_publishes(self):
+        """B级无issues可接受。"""
+        review = {"grade": "B", "verdict": "pass", "issues": []}
         result = self.ce._make_decision({}, None, review, 0)
         self.assertEqual(result["action"], "publish")
 
@@ -38,14 +45,23 @@ class TestMakeDecision(unittest.TestCase):
         result = self.ce._make_decision({}, None, review, 0)
         self.assertEqual(result["action"], "revise")
 
-    def test_dead_loop_3_same_grades_forces_publish(self):
+    def test_dead_loop_3_same_b_grades_triggers_angle_change(self):
+        """B-B-B死循环应要求换角度重写，不再强制通过。"""
         review = {"grade": "B", "verdict": "conditional", "issues": [{"problem": "a"}, {"problem": "b"}, {"problem": "c"}]}
         grade_history = ["B", "B", "B"]
         result = self.ce._make_decision({}, None, review, 2, grade_history)
-        self.assertEqual(result["action"], "publish")
-        self.assertIn("死循环", result["reason"])
+        self.assertEqual(result["action"], "revise")
+        self.assertIn("彻底换一个叙事角度", result["feedback"])
 
-    def test_dead_loop_only_triggers_for_s_a_b(self):
+    def test_dead_loop_3_b_at_max_rounds_abandons(self):
+        """B-B-B死循环在最后一轮应放弃。"""
+        review = {"grade": "B", "verdict": "conditional", "issues": [{"problem": "a"}]}
+        grade_history = ["B", "B", "B"]
+        result = self.ce._make_decision({}, None, review, 4, grade_history)
+        self.assertEqual(result["action"], "abandon")
+
+    def test_dead_loop_c_c_c_revises(self):
+        """C-C-C不触发死循环保护，正常重写。"""
         review = {"grade": "C", "verdict": "fail", "issues": [{"problem": "x"}]}
         grade_history = ["C", "C", "C"]
         result = self.ce._make_decision({}, None, review, 2, grade_history)

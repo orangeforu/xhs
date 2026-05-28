@@ -1,8 +1,47 @@
 """公共工具函数 — 消除各模块间的重复代码。"""
 
+import json
 import re
 
 from core.config import PROMPTS_DIR
+
+
+def extract_json_from_llm(raw: str) -> dict | None:
+    """从 LLM 输出中稳健提取第一个 JSON 对象。
+
+    通过括号深度匹配处理嵌套对象，不会因 ``re.search(r'\\{[^{}]*\\}')`` 而
+    在 ``{"a": [{"b": 1}]}`` 这类嵌套结构上失败。
+    """
+    start = raw.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    in_string = False
+    escape_next = False
+    for i in range(start, len(raw)):
+        ch = raw[i]
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\":
+            if in_string:
+                escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(raw[start : i + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
 
 
 def load_prompt(name: str) -> str:

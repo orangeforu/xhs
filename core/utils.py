@@ -129,6 +129,7 @@ def write_note_file(
     inner_paths: list,
     preset_comments: dict,
     rounds: int = 1,
+    title_eval: list | None = None,
 ) -> None:
     """将笔记及相关产物写入 Markdown 文件（兼容旧格式，确保 app.py 正则解析正常）。"""
     with open(output_file, "w", encoding="utf-8") as f:
@@ -140,6 +141,17 @@ def write_note_file(
         if review.get("overall_comment"):
             f.write(f"**审核评语**: {review['overall_comment']}\n\n")
         f.write(format_review(review))
+        # 标题评分
+        if title_eval:
+            f.write("\n\n## 标题评分\n\n")
+            for i, t in enumerate(title_eval):
+                marker = "🏆 推荐" if i == 0 else ""
+                f.write(f"- **{t['title']}** — {t['score']}分（{t['level']}级）{marker}\n")
+                if t.get("reasons"):
+                    for r in t["reasons"][:2]:
+                        f.write(f"  - {r}\n")
+            if title_eval[0].get("improved"):
+                f.write(f"\n**AI 改进建议**: {title_eval[0]['improved']}\n")
         if cover_paths:
             f.write("\n\n## 封面文件\n\n")
             for name, path in cover_paths.items():

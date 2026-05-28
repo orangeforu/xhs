@@ -284,6 +284,7 @@ def main() -> None:
     parser.add_argument("--append", action="store_true", default=True, help="追加到已有选题池（默认开启）")
     parser.add_argument("--replace", action="store_true", help="替换整个选题池")
     parser.add_argument("--trending", type=str, help="热点关键词，逗号分隔（如：裁员,独居,断亲）")
+    parser.add_argument("--auto-trending", action="store_true", help="自动抓取当前热点关键词")
     args = parser.parse_args()
 
     print("\n" + "=" * 60)
@@ -298,7 +299,16 @@ def main() -> None:
         logger.info("已备份旧选题到 %s", backup_path)
 
     trending_keywords = None
-    if args.trending:
+    if args.auto_trending:
+        from core.trend_detector import get_trending_keywords
+        trending_keywords = get_trending_keywords()
+        if trending_keywords:
+            print(f"\n🔥 自动抓取到 {len(trending_keywords)} 个热点关键词:")
+            for kw in trending_keywords:
+                print(f"  - {kw}")
+        else:
+            print("\n⚠️ 未抓取到热点关键词，使用默认选题策略")
+    elif args.trending:
         trending_keywords = [kw.strip() for kw in args.trending.split(",") if kw.strip()]
         logger.info("热点关键词: %s", trending_keywords)
 

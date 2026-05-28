@@ -219,6 +219,32 @@ class TestScoreTitle(unittest.TestCase):
         result = score_title("短标题💔", {})
         self.assertIn(result["level"], ["S", "A", "B", "C"])
 
+    def test_formula_diversity_penalty(self):
+        """同一公式近期使用过多应降分。"""
+        # 3 篇近期都用问句式
+        perf = {"notes": [
+            {"title_formula": "问句式"},
+            {"title_formula": "问句式"},
+            {"title_formula": "问句式"},
+            {"title_formula": "概念解读式"},
+            {"title_formula": "观点冲击式"},
+        ]}
+        result_with_penalty = score_title("你有没有过这种感觉？💔", perf)
+        result_without = score_title("你有没有过这种感觉？💔", {})
+        # 有惩罚时分数应该更低
+        self.assertLess(result_with_penalty["score"], result_without["score"])
+        self.assertTrue(any("缺乏多样性" in r or "已用" in r for r in result_with_penalty["reasons"]))
+
+    def test_no_penalty_for_unique_formula(self):
+        """近期公式不重复时不应降分。"""
+        perf = {"notes": [
+            {"title_formula": "问句式"},
+            {"title_formula": "概念解读式"},
+            {"title_formula": "观点冲击式"},
+        ]}
+        result = score_title("你有没有过这种感觉？💔", perf)
+        self.assertFalse(any("缺乏多样性" in r for r in result["reasons"]))
+
 
 if __name__ == "__main__":
     unittest.main()

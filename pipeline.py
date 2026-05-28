@@ -238,9 +238,22 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
         elif design.get("cover_path"):
             cover_paths["ai"] = design["cover_path"]
 
+    # LLM 标题评分
+    title_eval = None
+    try:
+        from core.publish_helpers import extract_title_candidates, evaluate_title_candidates
+        candidates = extract_title_candidates(draft.get("content", ""))
+        if candidates:
+            title_eval = evaluate_title_candidates(candidates, brief["topic"])
+            if title_eval:
+                best = title_eval[0]
+                logger.info("标题评分完成: 最佳「%s」(%d分, %s级)", best["title"], best["score"], best["level"])
+    except Exception as e:
+        logger.warning("标题评分失败（不影响主流程）: %s", e)
+
     # 保存笔记文件
     output_file = os.path.join(out_dir, "note.md")
-    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds)
+    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval)
     logger.info("已保存到: %s", output_file)
 
     # 更新选题状态

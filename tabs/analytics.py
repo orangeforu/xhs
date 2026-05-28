@@ -27,6 +27,16 @@ def _render_engagement_input(performance: dict):
 
     with st.expander(f"📝 录入互动数据（{len(needs_data)} 篇待录入）", expanded=False):
         st.caption("发布笔记后，将小红书后台的真实数据录入，系统会自动学习并优化后续选题和内容策略。")
+
+        # 批量导入
+        with st.expander("📋 批量导入（JSON 或 CSV）", expanded=False):
+            st.caption("JSON 格式: [{\"topic\": \"选题名\", \"likes\": 100, \"collects\": 50, \"comments\": 20, \"shares\": 10, \"exposure\": 5000}]")
+            st.caption("CSV 格式: topic,likes,collects,comments,shares,exposure")
+            batch_input = st.text_area("粘贴数据", height=150, key="batch_import_data")
+            if st.button("📥 导入", key="batch_import_btn"):
+                _handle_batch_import(batch_input, performance)
+
+        # 逐条录入
         for n in needs_data:
             topic = n.get("topic", "未知")
             st.markdown(f"**{topic}**")
@@ -53,6 +63,72 @@ def _render_engagement_input(performance: dict):
                 save_performance_json(performance)
                 st.success(f"{topic} 数据已保存！等级: {n['grade']}")
                 st.rerun()
+
+
+def _handle_batch_import(raw: str, performance: dict):
+    """处理批量数据导入。"""
+    import json as _json
+    raw = raw.strip()
+    if not raw:
+        st.warning("请输入数据")
+        return
+
+    notes = performance.get("notes", [])
+    updated = 0
+
+    # 尝试 JSON 格式
+    try:
+        data = _json.loads(raw)
+        if isinstance(data, list):
+            for item in data:
+                topic = item.get("topic", "")
+                for n in notes:
+                    if n.get("topic") == topic:
+                        n["likes"] = int(item.get("likes", 0))
+                        n["collects"] = int(item.get("collects", 0))
+                        n["comments"] = int(item.get("comments", 0))
+                        n["shares"] = int(item.get("shares", 0))
+                        n["exposure"] = int(item.get("exposure", 0))
+                        n["grade"] = _calculate_grade(n["likes"])
+                        updated += 1
+                        break
+            if updated:
+                _recalculate_summary(performance)
+                save_performance_json(performance)
+                st.success(f"成功导入 {updated} 条数据！")
+                st.rerun()
+                return
+    except _json.JSONDecodeError:
+        pass
+
+    # 尝试 CSV 格式
+    lines = raw.strip().split("\n")
+    for line in lines:
+        parts = line.strip().split(",")
+        if len(parts) < 6:
+            continue
+        topic = parts[0].strip()
+        for n in notes:
+            if n.get("topic") == topic:
+                try:
+                    n["likes"] = int(parts[1].strip())
+                    n["collects"] = int(parts[2].strip())
+                    n["comments"] = int(parts[3].strip())
+                    n["shares"] = int(parts[4].strip())
+                    n["exposure"] = int(parts[5].strip())
+                    n["grade"] = _calculate_grade(n["likes"])
+                    updated += 1
+                except ValueError:
+                    pass
+                break
+
+    if updated:
+        _recalculate_summary(performance)
+        save_performance_json(performance)
+        st.success(f"成功导入 {updated} 条数据！")
+        st.rerun()
+    else:
+        st.error("未匹配到任何选题。请检查格式和选题名称是否与已发布笔记一致。")
 
 
 def render_analytics_tab(cb_tripped: bool = False, cb_streak: int = 0):

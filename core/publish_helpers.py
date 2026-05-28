@@ -1,6 +1,11 @@
 """发布辅助纯函数 — 从 app.py 提取，便于独立测试。"""
 
+import json
 import re
+
+from core.config import get_logger
+
+logger = get_logger(__name__)
 
 
 def calculate_grade(likes: int) -> str:
@@ -228,3 +233,95 @@ def score_title(title: str, performance: dict) -> dict:
         "reasons": reasons,
         "level": "S" if score >= 85 else "A" if score >= 70 else "B" if score >= 50 else "C",
     }
+
+
+def evaluate_title_llm(title: str, topic: str = "") -> dict:
+    """用 LLM 评估标题的"停下来看"概率。
+
+    Args:
+        title: 待评估的标题
+        topic: 选题描述（可选，提供上下文）
+
+    Returns:
+        {"score": 0-100, "reasons": [...], "improved": "改进版标题"}
+    """
+    from core.writer import _call_api, _extract_content
+
+    context_hint = f"\n**选题背景**：{topic}" if topic else ""
+
+    prompt = f"""你是小红书爆款标题专家。请评估以下标题的吸引力。
+
+**标题**：{title}{context_hint}
+
+请从 5 个维度评估（每项 0-20 分，总分 0-100）：
+
+1. **好奇心钩子**（0-20）：读完标题后，有没有"想点进去看答案"的冲动？
+2. **情绪触发**（0-20）：标题引发了什么情绪？强度如何？（愤怒/共鸣/好奇/焦虑/向往）
+3. **人群匹配**（0-20）：是否让特定人群有"这说的就是我"的感觉？
+4. **截图传播力**（0-20）：会不会被截图发给闺蜜/朋友圈？
+5. **竞争力**（0-20）：在同类标题中是否突出？有没有被淹没的风险？
+
+请严格按 JSON 格式输出：
+```json
+{{
+  "score": 78,
+  "dimensions": {{
+    "curiosity": 16,
+    "emotion": 15,
+    "targeting": 16,
+    "shareability": 15,
+    "competition": 16
+  }},
+  "reasons": ["原因1", "原因2", "原因3"],
+  "improved": "如果标题有明显改进空间，给出改进版；否则留空"
+}}
+```"""
+
+    try:
+        data = _call_api(
+            messages=[
+                {"role": "system", "content": "你是小红书爆款标题专家，擅长评估标题的吸引力和传播力。"},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.3,
+            max_tokens=800,
+        )
+        raw = _extract_content(data)
+
+        # 提取 JSON
+        json_match = re.search(r'```json\s*(.*?)\s*```', raw, re.DOTALL)
+        json_str = json_match.group(1) if json_match else raw.strip()
+
+        parsed = json.loads(json_str)
+        score = max(0, min(100, int(parsed.get("score", 50))))
+
+        return {
+            "score": score,
+            "dimensions": parsed.get("dimensions", {}),
+            "reasons": parsed.get("reasons", []),
+            "improved": parsed.get("improved", ""),
+            "level": "S" if score >= 85 else "A" if score >= 70 else "B" if score >= 50 else "C",
+        }
+    except Exception as e:
+        logger.warning("LLM 标题评估失败: %s", e)
+        return {"score": 50, "dimensions": {}, "reasons": ["评估失败"], "improved": "", "level": "B"}
+
+
+def evaluate_title_candidates(candidates: list[str], topic: str = "") -> list[dict]:
+    """评估多个标题候选，返回按分数排序的结果。
+
+    Args:
+        candidates: 标题候选列表
+        topic: 选题描述
+
+    Returns:
+        [{"title": "...", "score": 85, ...}, ...] 按分数降序
+    """
+    results = []
+    for title in candidates:
+        result = evaluate_title_llm(title, topic)
+        result["title"] = title
+        results.append(result)
+
+    results.sort(key=lambda x: x["score"], reverse=True)
+    return results

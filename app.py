@@ -193,6 +193,82 @@ def _sync_agent_memory(performance: dict) -> None:
         pass  # 静默失败，不影响 UI
 
 
+def _score_title(title: str, performance: dict) -> dict:
+    """给标题打分，返回分数和分析。"""
+    notes = performance.get("notes", [])
+    score = 50  # 基础分
+    reasons = []
+
+    # 1. 长度评分（12-18字最佳）
+    length = len(title)
+    if 12 <= length <= 18:
+        score += 15
+        reasons.append("长度适中")
+    elif length < 12:
+        score += 5
+        reasons.append("偏短，信息量可能不足")
+    elif length > 20:
+        score -= 10
+        reasons.append("超长，可能被截断")
+
+    # 2. emoji 检测
+    emoji_count = len(re.findall(r'[\U0001F300-\U0001F9FF\U00002600-\U000027B0]', title))
+    if 1 <= emoji_count <= 2:
+        score += 10
+        reasons.append("emoji 数量合适")
+    elif emoji_count == 0:
+        score -= 5
+        reasons.append("缺少 emoji")
+
+    # 3. 句式特征
+    if "？" in title or "?" in title:
+        score += 8
+        reasons.append("问句式，易引发好奇")
+    if any(kw in title for kw in ["才", "终于", "突然", "竟然", "居然"]):
+        score += 5
+        reasons.append("含转折词，有悬念")
+    if any(kw in title for kw in ["最", "第一", "唯一", "绝了"]):
+        score += 5
+        reasons.append("含极端词，有冲击力")
+
+    # 4. 基于历史公式表现调整
+    if notes:
+        # 判断标题属于哪种公式
+        if "？" in title or "?" in title:
+            formula = "问句式"
+        elif any(kw in title for kw in ["指南", "方法", "步骤", "个"]):
+            formula = "方法承诺式"
+        elif any(kw in title for kw in ["才", "终于", "其实", "原来"]):
+            formula = "概念解读式"
+        else:
+            formula = "观点冲击式"
+
+        formula_notes = [n for n in notes if n.get("title_formula") == formula]
+        if formula_notes:
+            avg_likes = sum(n.get("likes", 0) for n in formula_notes) / len(formula_notes)
+            if avg_likes > 500:
+                score += 10
+                reasons.append(f"{formula}历史表现优秀（均赞{avg_likes:.0f}）")
+            elif avg_likes < 200:
+                score -= 5
+                reasons.append(f"{formula}历史表现一般（均赞{avg_likes:.0f}）")
+
+    # 5. 负面特征检测
+    negative_patterns = ["看完沉默", "情感笔记", "建议收藏", "必看", "震惊"]
+    for pattern in negative_patterns:
+        if pattern in title:
+            score -= 15
+            reasons.append(f"含低质词「{pattern}」")
+
+    score = max(0, min(100, score))
+
+    return {
+        "score": score,
+        "reasons": reasons,
+        "level": "S" if score >= 85 else "A" if score >= 70 else "B" if score >= 50 else "C",
+    }
+
+
 def _check_circuit_breaker() -> tuple[bool, int]:
     """检查是否触发熔断：连续3篇C级。返回 (是否熔断, 连续C级数)。"""
     notes = performance.get("notes", [])
@@ -715,6 +791,101 @@ with tab4:
                     st.success(f"{topic} 数据已保存！")
                     st.rerun()
 
+    # ── 运营周报 ──
+    if notes:
+        st.divider()
+        st.subheader("📋 运营周报")
+
+        from datetime import timedelta
+
+        now = datetime.now()
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+
+        # 本周数据
+        this_week_notes = []
+        for n in notes:
+            pub = n.get("published_at", "")
+            if not pub:
+                continue
+            try:
+                dt = datetime.fromisoformat(pub.replace("Z", "+00:00"))
+                if dt.replace(tzinfo=None) >= week_ago:
+                    this_week_notes.append(n)
+            except (ValueError, TypeError):
+                pass
+
+        if this_week_notes:
+            tw_likes = sum(n.get("likes", 0) for n in this_week_notes)
+            tw_collects = sum(n.get("collects", 0) for n in this_week_notes)
+            tw_comments = sum(n.get("comments", 0) for n in this_week_notes)
+
+            cols = st.columns(4)
+            with cols[0]:
+                st.metric("本周发布", f"{len(this_week_notes)}篇")
+            with cols[1]:
+                st.metric("本周点赞", f"{tw_likes:,}")
+            with cols[2]:
+                st.metric("本周收藏", f"{tw_collects:,}")
+            with cols[3]:
+                st.metric("本周评论", f"{tw_comments:,}")
+
+            # 本周最佳
+            best = max(this_week_notes, key=lambda n: n.get("likes", 0))
+            worst = min(this_week_notes, key=lambda n: n.get("likes", 0))
+            st.success(f"🏆 本周最佳：**{best.get('topic', '')}**（{best.get('likes', 0)} 赞）")
+            if best.get("topic") != worst.get("topic"):
+                st.warning(f"📉 本周最弱：**{worst.get('topic', '')}**（{worst.get('likes', 0)} 赞）")
+
+        # 近 30 天趋势
+        month_notes = []
+        for n in notes:
+            pub = n.get("published_at", "")
+            if not pub:
+                continue
+            try:
+                dt = datetime.fromisoformat(pub.replace("Z", "+00:00"))
+                if dt.replace(tzinfo=None) >= month_ago:
+                    month_notes.append(n)
+            except (ValueError, TypeError):
+                pass
+
+        if month_notes:
+            st.markdown("**近 30 天趋势**")
+            m_likes = sum(n.get("likes", 0) for n in month_notes)
+            m_collects = sum(n.get("collects", 0) for n in month_notes)
+            avg_likes = m_likes / len(month_notes) if month_notes else 0
+            avg_collects = m_collects / len(month_notes) if month_notes else 0
+
+            cols = st.columns(3)
+            with cols[0]:
+                st.caption(f"发布: {len(month_notes)}篇")
+            with cols[1]:
+                st.caption(f"平均点赞: {avg_likes:.0f}")
+            with cols[2]:
+                st.caption(f"平均收藏: {avg_collects:.0f}")
+
+        # 下周建议
+        st.markdown("**下周建议**")
+        recommendations = []
+
+        if formula_stats:
+            best_f = max(formula_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+            recommendations.append(f"增加 **{best_f[0]}** 选题比例（当前最有效公式）")
+
+        if pillar_stats:
+            best_p = max(pillar_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+            recommendations.append(f"主力支柱：**{best_p[0]}**")
+
+        if c_count >= 2:
+            recommendations.append(f"暂停发布，复盘 {c_count} 篇 C 级内容的问题")
+
+        if not recommendations:
+            recommendations.append("继续当前策略，保持发布节奏")
+
+        for rec in recommendations:
+            st.markdown(f"- {rec}")
+
 # Tab 5: 内容日历
 with tab5:
     st.header("📅 内容日历")
@@ -999,7 +1170,28 @@ with tab6:
             with col_left:
                 st.subheader("1️⃣ 选择标题")
                 if titles:
-                    selected_title = st.radio("推荐标题（选一个）", titles, index=0)
+                    # 标题评分
+                    title_scores = []
+                    for t in titles:
+                        ts = _score_title(t, performance)
+                        title_scores.append((t, ts))
+
+                    # 按分数排序显示
+                    title_scores.sort(key=lambda x: x[1]["score"], reverse=True)
+
+                    title_options = []
+                    for t, ts in title_scores:
+                        level_color = {"S": "🟢", "A": "🔵", "B": "🟡", "C": "🔴"}.get(ts["level"], "⚪")
+                        label = f"{level_color} [{ts['score']}分] {t}"
+                        title_options.append(label)
+
+                    selected_idx = st.radio("推荐标题（按评分排序）", range(len(title_options)), format_func=lambda i: title_options[i], index=0)
+                    selected_title = title_scores[selected_idx][0]
+
+                    # 显示评分详情
+                    with st.expander("评分详情"):
+                        for reason in title_scores[selected_idx][1]["reasons"]:
+                            st.caption(f"- {reason}")
                 else:
                     selected_title = st.text_input("自定义标题", value=selected_topic.get("topic", ""))
 

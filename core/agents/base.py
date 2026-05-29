@@ -130,13 +130,15 @@ class BaseAgent:
         self.system_prompt = system_prompt
         self.bus = bus
         self.session_memory: list[Message] = []  # 当前会话
+        self._session_lock = threading.Lock()  # 保护 session_memory
         self._memory_cache: str | None = None  # 同一轮迭代内缓存
         self._memory_loaded: bool = False
         self._memory_lock = threading.Lock()  # 保护 _memory_cache 和 _memory_loaded
         bus.subscribe(name, self._on_message)
 
     def _on_message(self, message: Message) -> None:
-        self.session_memory.append(message)
+        with self._session_lock:
+            self.session_memory.append(message)
         self.handle(message)
 
     def handle(self, message: Message) -> None:
@@ -158,7 +160,8 @@ class BaseAgent:
             round_num=round_num,
         )
         self.bus.publish(msg)
-        self.session_memory.append(msg)
+        with self._session_lock:
+            self.session_memory.append(msg)
         return msg
 
     def think(

@@ -28,13 +28,11 @@ class ContentEditor(BaseAgent):
 请以 JSON 格式输出：
 {{
   "verdict": "pass|conditional|fail",
-  "grade": "A|B|C",
+  "grade": "S|A|B|C",
   "issues": [{{"location": "...", "problem": "...", "suggestion": "..."}}],
   "suggestions": [{{"location": "...", "idea": "..."}}],
   "strengths": ["..."],
-  "overall_comment": "...",
-  "needs_redesign": false,
-  "needs_relayout": false
+  "overall_comment": "..."
 }}
 
 verdict 规则：
@@ -42,8 +40,11 @@ verdict 规则：
 - conditional: 有1-3个小问题，修改后可以发布
 - fail: 有重大结构性问题，必须重写
 
-needs_redesign: 如果封面设计与内容情绪可能不符（比如内容很温暖但缺少视觉锚点），标记为 true
-needs_relayout: 如果排版或分页有问题，标记为 true
+grade 规则（必须严格遵守正态分布 S:A:B:C ≈ 1:3:5:1）：
+- S: 上瘾爆款，读完会去搜博主其他内容
+- A: 惊艳好文，有1-2个亮点但不完美
+- B: 及格但平庸，缺乏惊喜
+- C: 有明显问题，需要重写
 """
         raw = self.think(review_prompt, temperature=0.3, max_tokens=2500)
         parsed = self._parse_review(raw)
@@ -117,6 +118,9 @@ needs_relayout: 如果排版或分页有问题，标记为 true
             logger.warning("读者体验审核失败（不影响主审核）: %s", e)
         return None
 
+    _VALID_GRADES = {"S", "A", "B", "C"}
+    _VALID_VERDICTS = {"pass", "conditional", "fail"}
+
     def _parse_review(self, raw: str) -> dict:
         """解析 LLM 输出的审核 JSON。"""
         parsed = extract_json_from_llm(raw)
@@ -129,22 +133,27 @@ needs_relayout: 如果排版或分页有问题，标记为 true
             parsed.setdefault("overall_comment", "")
             parsed.setdefault("needs_redesign", False)
             parsed.setdefault("needs_relayout", False)
+            # 校验 grade 和 verdict 值
+            if parsed["grade"] not in self._VALID_GRADES:
+                logger.warning("审核返回无效 grade=%s，回退为 B", parsed["grade"])
+                parsed["grade"] = "B"
+            if parsed["verdict"] not in self._VALID_VERDICTS:
+                logger.warning("审核返回无效 verdict=%s，回退为 conditional", parsed["verdict"])
+                parsed["verdict"] = "conditional"
             return parsed
 
         logger.warning("审核结果 JSON 解析失败，回退文本解析")
-        # fallback 文本解析
+        # fallback 文本解析 — 用 JSON 片段匹配而非简单子串
+        import re
         grade = "B"
-        if '"grade": "A"' in raw or "grade: A" in raw:
-            grade = "A"
-        elif '"grade": "C"' in raw or "grade: C" in raw:
-            grade = "C"
+        grade_match = re.search(r'"?grade"?\s*[:=]\s*"?([SABC])"?', raw, re.IGNORECASE)
+        if grade_match:
+            grade = grade_match.group(1).upper()
 
         verdict = "conditional"
-        if "verdict" in raw:
-            if "pass" in raw.lower():
-                verdict = "pass"
-            elif "fail" in raw.lower():
-                verdict = "fail"
+        verdict_match = re.search(r'"?verdict"?\s*[:=]\s*"?(pass|conditional|fail)"?', raw, re.IGNORECASE)
+        if verdict_match:
+            verdict = verdict_match.group(1).lower()
 
         return {
             "verdict": verdict,

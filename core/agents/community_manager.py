@@ -30,7 +30,7 @@ class CommunityManager(BaseAgent):
 
 **博主回复模板要求**：
 - 语气温暖、亲切，像闺蜜聊天
-- 每条不超过15字
+- 每条不超过25字，自然口语化
 
 请严格按以下 JSON 格式输出：
 {{
@@ -48,13 +48,17 @@ class CommunityManager(BaseAgent):
   ]
 }}"""
 
-        raw = self.think(prompt, temperature=0.7, max_tokens=1500)
+        raw = self.think(prompt, temperature=0.55, max_tokens=1500)
 
         # 解析 JSON
         parsed = self._parse_comments_json(raw)
 
         comments = parsed.get("comments", [])
         reply_templates = parsed.get("reply_templates", [])
+
+        # 验证评论数量
+        if len(comments) < 5:
+            logger.warning("评论数量不足（%d条），期望5-8条", len(comments))
 
         # fallback: 如果 JSON 解析失败，用旧逻辑
         if not comments:

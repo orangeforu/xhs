@@ -40,7 +40,8 @@ class AgentMemory:
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        _atomic_write_json(self.path, self.data)
+        with self._lock:
+            _atomic_write_json(self.path, self.data)
 
     def record_success(self, context: dict) -> None:
         # 去重：同一 topic 不重复记录

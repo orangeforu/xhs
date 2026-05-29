@@ -42,14 +42,15 @@ class ChiefEditor(BaseAgent):
             # 并行：封面设计、内页排版、内容审核
             parallel_tasks = []
 
-            if round_num == 0 or (review and review.get("needs_redesign")):
+            if round_num == 0:
                 cover_path = f"{out_dir}/cover_ai.png"
                 style_override = brief.get("series_style", "")
-                parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so)))
+                visual_dir = brief.get("visual_direction", "")
+                parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override, vd=visual_dir: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so, visual_direction=vd)))
             else:
                 parallel_tasks.append(("design", lambda dr=design_result: dr))
 
-            if round_num == 0 or (review and review.get("needs_relayout")):
+            if round_num == 0:
                 parallel_tasks.append(("layout", lambda rn=round_num: artist.layout(draft["content"], style=self._extract_style(draft["content"]), out_dir=out_dir, round_num=rn)))
             else:
                 parallel_tasks.append(("layout", lambda ip=inner_paths: ip))
@@ -116,7 +117,14 @@ class ChiefEditor(BaseAgent):
                 logger.info("主编决策: 重写 (第 %d 轮)，核心问题: %s", round_num, decision.get("core_issue", "详见反馈"))
                 draft = writer.write(brief, round_num=round_num, feedback=feedback)
             else:
-                break
+                logger.error("主编决策返回未知 action: %s，强制放弃", decision["action"])
+                return {
+                    "status": "abandoned",
+                    "reason": f"主编决策异常: {decision['action']}",
+                    "draft": draft,
+                    "review": review,
+                    "rounds": round_num + 1,
+                }
 
         # ── 生成预设评论 ──
         comments = community.generate_comments(draft["content"], round_num=round_num)
@@ -144,10 +152,12 @@ class ChiefEditor(BaseAgent):
             "rounds": round_num + 1,
         }
 
+    # 结构模板列表，C 级时要求切换
+    _STRUCTURE_TEMPLATES = ["经典金句前置", "对话开场", "倒叙冲击", "反问留白", "动作细节推动"]
+
     def _make_decision(self, draft, design_result, review, round_num, grade_history=None) -> dict:
         """主编做最终决策。"""
         if not review:
-            # 审核服务失败，给写手一个通用反馈要求重新生成
             return {"action": "revise", "feedback": "审核服务暂时不可用，请保持内容质量重新提交", "core_issue": "审核服务异常"}
 
         verdict = review.get("verdict", "conditional")
@@ -158,7 +168,7 @@ class ChiefEditor(BaseAgent):
         if grade == "S" and verdict == "pass":
             return {"action": "publish", "reason": "S级爆款内容"}
 
-        # A级：必须 0 issues 才能通过（收紧标准，防止通胀）
+        # A级：必须 0 issues 才能通过
         if grade == "A" and verdict in ("pass", "conditional") and len(issues) == 0:
             return {"action": "publish", "reason": "A级内容，无硬伤"}
 
@@ -166,20 +176,34 @@ class ChiefEditor(BaseAgent):
         if grade == "B" and verdict in ("pass", "conditional") and len(issues) == 0:
             return {"action": "publish", "reason": "B级内容无硬伤，可接受"}
 
-        # 死循环检测：连续3轮等级相同且为 B，强制给出不同方向再给一次机会
+        # 死循环检测：连续3轮等级相同
         if grade_history and len(grade_history) >= 3:
             last_three = grade_history[-3:]
-            if len(set(last_three)) == 1 and last_three[0] == "B":
-                # B-B-B 死循环：不再强制通过，而是要求换角度重写
-                if round_num < 4:
-                    return {
-                        "action": "revise",
-                        "feedback": "连续3轮均为B级，说明当前修改方向无效。请完全换一个叙事角度：如果之前是从'受害者的委屈'切入，这次试试'施害者的无意识'；如果之前是对话推动，这次试试动作细节推动。不要在原来的基础上微调。",
-                        "core_issue": "B级死循环：需要彻底换角度",
-                    }
-                else:
-                    # 最后一轮，B级死循环只能放弃
-                    return {"action": "abandon", "reason": "5轮迭代均为B级，选题或角度存在根本问题"}
+            if len(set(last_three)) == 1:
+                if last_three[0] == "B":
+                    if round_num < 4:
+                        return {
+                            "action": "revise",
+                            "feedback": "连续3轮均为B级，说明当前修改方向无效。请完全换一个叙事角度：如果之前是从'受害者的委屈'切入，这次试试'施害者的无意识'；如果之前是对话推动，这次试试动作细节推动。不要在原来的基础上微调。",
+                            "core_issue": "B级死循环：需要彻底换角度",
+                        }
+                    else:
+                        return {"action": "abandon", "reason": "5轮迭代均为B级，选题或角度存在根本问题"}
+                elif last_three[0] == "C" and round_num >= 3:
+                    return {"action": "abandon", "reason": "连续3轮C级，选题存在根本问题"}
+
+        # C 级：要求换结构模板重写（不是微调）
+        if grade == "C":
+            if round_num >= 3:
+                return {"action": "abandon", "reason": f"已达{round_num + 1}轮仍为C级，放弃"}
+            template_idx = round_num % len(self._STRUCTURE_TEMPLATES)
+            new_template = self._STRUCTURE_TEMPLATES[template_idx]
+            feedback = self._build_feedback(review)
+            return {
+                "action": "revise",
+                "feedback": f"【C级内容，需要结构性重写】\n当前结构无效，请切换到「{new_template}」结构重新创作。不要在原稿上修改，从零开始。\n\n{feedback}",
+                "core_issue": f"C级：切换到{new_template}结构",
+            }
 
         # 已达最大轮数
         if round_num >= 4:
@@ -190,8 +214,11 @@ class ChiefEditor(BaseAgent):
             else:
                 return {"action": "abandon", "reason": f"5轮迭代后仍为{grade}级且存在{len(issues)}个问题，放弃发布"}
 
-        # 需要重写
+        # B 级连续 2 轮：建议换标题公式
         feedback = self._build_feedback(review)
+        if grade == "B" and grade_history and len(grade_history) >= 2 and grade_history[-2] == "B":
+            feedback = "【B级连续2轮，尝试换标题公式】当前公式效果不佳，建议换一种标题公式重新包装同一个故事。\n\n" + feedback
+
         core_issue = issues[0]["problem"] if issues else "整体质量不达标"
 
         return {

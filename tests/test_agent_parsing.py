@@ -61,7 +61,7 @@ class TestContentEditorParseReview(unittest.TestCase):
         result = self.editor._parse_review(raw)
         self.assertEqual(result["verdict"], "conditional")  # default
         self.assertEqual(result["issues"], [])  # default
-        self.assertFalse(result["needs_redesign"])  # default
+        self.assertEqual(result["grade"], "A")  # preserved
 
 
 class TestCommunityManagerParseComments(unittest.TestCase):

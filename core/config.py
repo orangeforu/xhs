@@ -205,6 +205,7 @@ def update_note_performance(topic: str, metrics: dict) -> bool:
     metrics 示例: {"likes": 100, "collects": 50, "comments": 20, "shares": 10, "exposure": 5000}
     返回是否找到并更新了该笔记。
     """
+    from core.publish_helpers import recalculate_summary
     data = load_performance_json()
     for note in data.get("notes", []):
         if note.get("topic") == topic:
@@ -212,6 +213,7 @@ def update_note_performance(topic: str, metrics: dict) -> bool:
                 if key in metrics:
                     note[key] = int(metrics[key])
             note["grade"] = _grade_from_likes(note.get("likes", 0))
+            recalculate_summary(data)
             save_performance_json(data)
             return True
     return False

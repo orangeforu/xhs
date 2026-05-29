@@ -32,15 +32,20 @@ class CoverDesigner(BaseAgent):
         prompt = load_prompt("agent_cover_designer")
         super().__init__("cover_designer", prompt, bus)
 
-    def design(self, note_content: str, round_num: int = 0, output_path: str = "", style_override: str = "") -> dict:
+    def design(self, note_content: str, round_num: int = 0, output_path: str = "", style_override: str = "", visual_direction: str = "") -> dict:
         """基于笔记全文设计封面方案并生成封面图。"""
         # 获取最近使用的风格，强制轮换
         recent_styles = self._get_recent_styles()
+
+        direction_hint = ""
+        if visual_direction:
+            direction_hint = f"\n**内容策划建议的视觉方向**：{visual_direction}\n请参考这个方向，但根据实际内容做最终决定。"
 
         design_prompt = f"""请阅读以下小红书笔记的完整内容，为其设计封面方案。
 
 **笔记内容**：
 {note_content[:3000]}
+{direction_hint}
 
 请输出 JSON 格式的封面设计方案：
 {{"title": "...", "subtitle": "...", "style": "...", "prompt": "...", "visual_anchor": "...", "rationale": "..."}}

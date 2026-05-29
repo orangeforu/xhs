@@ -24,6 +24,25 @@ COVER_HEIGHT = 1660
 FONT_REGULAR = str(FONT_DIR / "NotoSansSC-Regular.ttf")
 FONT_BOLD = str(FONT_DIR / "NotoSansSC-Bold.ttf")
 
+# ── 内页排版常量（集中管理，供分页和渲染共用） ──
+LAYOUT = {
+    "base_font_size": 42,
+    "bold_extra": 4,                # 加粗比正文大 N pt
+    "line_height_ratio": 1.5,       # 行高 = 字号 × ratio
+    "para_spacing_ratio": 1.8,      # 段间距 = 字号 × ratio
+    "max_text_width_ratio": 0.55,   # 正文最大宽度 = 画宽 × ratio
+    "page_top": 280,                # 页面内容起始 y
+    "page_bottom_margin": 120,      # 页面底部留白
+    "margin_left": 140,             # 左边距
+    "separator_height_ratio": 0.5,  # 分隔线占行高的比例
+    "last_page_expand": True,       # 最后一页段间距均匀展开
+    "anchor_max_per_page": 3,       # 每页最多锚点数
+    "last_block_font_boost": 8,     # 最后一段字号放大
+    "last_block_max_chars": 24,     # 最后一段居中放大的字数上限
+    "page_number_font_size": 20,    # 页码字号
+    "page_number_y_offset": 70,     # 页码距底部
+}
+
 # 品牌色调定义
 # 每个主题包含：bg_top / bg_bottom（渐变）、title（标题/强调正文）、subtitle（辅助文字）、
 # accent（装饰色）、body（长正文，比 title 更柔和）、highlight（金句/高亮文字色）
@@ -67,27 +86,52 @@ PALETTE = {
 
 
 @functools.lru_cache(maxsize=32)
-def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    """加载字体，失败时按平台 fallback 系统黑体"""
+def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
+    """加载字体，失败时按平台 fallback 系统黑体。绝不返回 load_default()（bitmap 字体 getbbox 不准）。"""
     path = FONT_BOLD if bold else FONT_REGULAR
     try:
         return ImageFont.truetype(path, size)
     except OSError:
-        system = platform.system()
-        fallbacks = []
-        if system == "Darwin":
-            fallbacks = ["/System/Library/Fonts/STHeiti Medium.ttc"]
-        elif system == "Windows":
-            fallbacks = ["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/simhei.ttf"]
-        else:
-            fallbacks = ["/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-                         "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"]
-        for fb in fallbacks:
-            try:
-                return ImageFont.truetype(fb, size)
-            except OSError:
-                continue
-        return ImageFont.load_default()
+        logger.warning("字体文件缺失: %s，尝试系统 fallback", path)
+
+    system = platform.system()
+    fallbacks = []
+    if system == "Darwin":
+        fallbacks = [
+            "/System/Library/Fonts/PingFang.ttc",
+            "/System/Library/Fonts/STHeiti Medium.ttc",
+            "/System/Library/Fonts/Hiragino Sans GB.ttc",
+            "/Library/Fonts/Arial Unicode.ttf",
+        ]
+    elif system == "Windows":
+        fallbacks = [
+            "C:/Windows/Fonts/msyh.ttc",
+            "C:/Windows/Fonts/simhei.ttf",
+            "C:/Windows/Fonts/simsun.ttc",
+        ]
+    else:
+        fallbacks = [
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        ]
+    for fb in fallbacks:
+        try:
+            return ImageFont.truetype(fb, size)
+        except OSError:
+            continue
+
+    # 最终兜底：尝试 DejaVu（大多数 Linux 有），否则硬报错
+    for fb in ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]:
+        try:
+            return ImageFont.truetype(fb, size)
+        except OSError:
+            continue
+
+    raise OSError(
+        f"无法加载任何字体。请确保 assets/fonts/ 下有 NotoSansSC-Regular.ttf 和 NotoSansSC-Bold.ttf，"
+        f"或系统有中文字体（macOS: PingFang, Windows: msyh, Linux: NotoSansCJK）。"
+    )
 
 
 def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_width: int) -> list[str]:
@@ -114,11 +158,20 @@ def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, ma
             lines.append(current)
 
     # 合并被拆散的标点（避免句号、逗号等单独成行）
+    # 闭合标点：紧跟前文
+    _CLOSE_PUNCT = set('。，！？：；、）」】）》…—–·')
+    # 开放标点：不应出现在行首（需与前一行合并）
+    _OPEN_PUNCT = set('（「【《')
     merged = []
     i = 0
     while i < len(lines):
         line = lines[i]
-        if i + 1 < len(lines) and len(lines[i + 1]) == 1 and lines[i + 1] in '。，！？：；、）」】）':
+        # 情况1：下一行是单个闭合标点，合并到当前行
+        if i + 1 < len(lines) and len(lines[i + 1]) == 1 and lines[i + 1] in _CLOSE_PUNCT:
+            merged.append(line + lines[i + 1])
+            i += 2
+        # 情况2：当前行是单个开放标点，合并到下一行
+        elif len(line) == 1 and line in _OPEN_PUNCT and i + 1 < len(lines):
             merged.append(line + lines[i + 1])
             i += 2
         else:
@@ -185,16 +238,20 @@ def _add_noise_texture(img: Image.Image, intensity: int = 4) -> Image.Image:
     return Image.alpha_composite(img, full_noise)
 
 
-def _calc_font_size(text: str, max_width: int, target_size: int, min_size: int = 48) -> tuple[int, ImageFont.FreeTypeFont | ImageFont.ImageFont]:
-    """根据文字长度动态计算字号，确保不溢出"""
+def _calc_font_size(text: str, max_width: int, target_size: int, min_size: int = 48) -> tuple[int, ImageFont.FreeTypeFont]:
+    """根据文字动态计算字号。测量换行后最长行（而非整段），确保实际渲染不溢出。"""
     for size in range(target_size, min_size - 1, -4):
         font = _get_font(size, bold=True)
-        try:
-            bbox = font.getbbox(text)
-            w = bbox[2] - bbox[0]
-        except (AttributeError, TypeError):
-            w = 0
-        if w <= max_width:
+        wrapped = _wrap_text(text, font, max_width)
+        max_line_w = 0
+        for line in wrapped:
+            try:
+                bbox = font.getbbox(line)
+                w = bbox[2] - bbox[0]
+            except (AttributeError, TypeError):
+                w = 0
+            max_line_w = max(max_line_w, w)
+        if max_line_w <= max_width:
             return size, font
     return min_size, _get_font(min_size, bold=True)
 
@@ -600,17 +657,20 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
 ANCHOR_SYMBOLS = ["\u25cf", "\u25cb", "\u25c6"]  # solid circle, hollow circle, solid diamond
 
 
-# 内页排版常量（供分页和渲染共用）
-_BASE_FONT_SIZE = 42
-_LINE_HEIGHT = int(_BASE_FONT_SIZE * 1.5)
-_PARA_SPACING = int(_BASE_FONT_SIZE * 1.8)
-_MAX_TEXT_W = int(COVER_WIDTH * 0.55)
+# 从 LAYOUT 导出常用常量（供分页和渲染共用）
+_BASE_FONT_SIZE = LAYOUT["base_font_size"]
+_LINE_HEIGHT = int(_BASE_FONT_SIZE * LAYOUT["line_height_ratio"])
+_PARA_SPACING = int(_BASE_FONT_SIZE * LAYOUT["para_spacing_ratio"])
+_MAX_TEXT_W = int(COVER_WIDTH * LAYOUT["max_text_width_ratio"])
 
 
 def _paginate_blocks(blocks: list) -> list:
-    """将 blocks 分页，返回 list[list[block]]，不含渲染，只计算分页。"""
+    """将 blocks 分页，返回 list[list[block]]，不含渲染，只计算分页。
+
+    每个 block 是完整的段落（多行 wrap），不再拆成 3 行子块。
+    """
     body_font = _get_font(_BASE_FONT_SIZE, bold=False)
-    body_font_bold = _get_font(_BASE_FONT_SIZE + 4, bold=True)
+    body_font_bold = _get_font(_BASE_FONT_SIZE + LAYOUT["bold_extra"], bold=True)
     render_blocks = []
     for para_text, is_bold, is_sep in blocks:
         if is_sep:
@@ -618,15 +678,13 @@ def _paginate_blocks(blocks: list) -> list:
             continue
         font = body_font_bold if is_bold else body_font
         wrapped = _wrap_text(para_text, font, _MAX_TEXT_W)
-        sub_chunks = []
-        for i in range(0, len(wrapped), 3):
-            sub_chunks.append(wrapped[i:i+3])
-        for chunk in sub_chunks:
-            render_blocks.append((chunk, is_bold, len(chunk)))
+        # 整段作为一个 block，不再拆成 3 行子块
+        render_blocks.append((wrapped, is_bold, len(wrapped)))
 
-    y_start = 280
-    y_end = COVER_HEIGHT - 120
+    y_start = LAYOUT["page_top"]
+    y_end = COVER_HEIGHT - LAYOUT["page_bottom_margin"]
     usable_height = y_end - y_start
+    sep_height = int(_LINE_HEIGHT * LAYOUT["separator_height_ratio"])
 
     pages = []
     current_page = []
@@ -634,12 +692,12 @@ def _paginate_blocks(blocks: list) -> list:
     for item in render_blocks:
         tag, is_bold, line_count = item
         if tag == '__separator__':
-            if current_height + _LINE_HEIGHT // 2 > usable_height and current_page:
+            if current_height + sep_height > usable_height and current_page:
                 pages.append(current_page)
                 current_page = []
                 current_height = 0
             current_page.append(('__separator__', False, 0))
-            current_height += _LINE_HEIGHT // 2
+            current_height += sep_height
         else:
             block_height = line_count * _LINE_HEIGHT
             if current_page:
@@ -655,6 +713,20 @@ def _paginate_blocks(blocks: list) -> list:
     if current_page:
         pages.append(current_page)
     return pages
+
+
+def _calc_page_height(page_blocks: list) -> int:
+    """计算一页 blocks 的实际渲染高度（不含展开间距）。"""
+    h = 0
+    sep_height = int(_LINE_HEIGHT * LAYOUT["separator_height_ratio"])
+    for i, (tag, is_bold, line_count) in enumerate(page_blocks):
+        if tag == '__separator__':
+            h += sep_height
+        else:
+            if i > 0 and page_blocks[i - 1][0] != '__separator__':
+                h += _PARA_SPACING
+            h += line_count * _LINE_HEIGHT
+    return h
 
 
 # 需要过滤的元数据标记
@@ -700,14 +772,11 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     """把单页文字渲染成小红书风格内页图——呼吸感排版，左对齐，短段落，视觉锚点"""
     p = PALETTE.get(style, PALETTE["warm_grey"])
 
+    # 全程保持 RGBA，最后才转 RGB（避免颜色失真）
     img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (*p["bg_top"], 255))
     _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
-    draw = ImageDraw.Draw(img)
-
-    # 叠加 center glow 和纸质噪点
     img = _add_center_glow(img, p)
     img = _add_noise_texture(img, intensity=3)
-    img = img.convert("RGB")
     draw = ImageDraw.Draw(img)
 
     text = text.strip()
@@ -725,15 +794,15 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         return None
     page_blocks = pages[page_num - 1]
 
-    # 渲染参数
-    margin_left = 140
-    x_start = margin_left
+    # 渲染参数（从 LAYOUT 常量导出）
+    x_start = LAYOUT["margin_left"]
     base_font_size = _BASE_FONT_SIZE
     line_height = _LINE_HEIGHT
     para_spacing = _PARA_SPACING
     body_font = _get_font(base_font_size, bold=False)
-    body_font_bold = _get_font(base_font_size + 4, bold=True)
-    y_start = 280
+    body_font_bold = _get_font(base_font_size + LAYOUT["bold_extra"], bold=True)
+    y_start = LAYOUT["page_top"]
+    y_limit = COVER_HEIGHT - LAYOUT["page_bottom_margin"]
 
     # 绘制当前页
     y = y_start
@@ -750,39 +819,36 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
 
     # 最后一页：把剩余空间均匀分配到段落间距，让收尾更舒展
     actual_para_spacing = para_spacing
-    if page_num == total_pages:
-        raw_height = 0
-        has_content = False
-        for block in page_blocks:
-            tag, is_bold, line_count = block
-            if tag == '__separator__':
-                raw_height += line_height // 2
-            else:
-                raw_height += line_count * line_height
-                if has_content:
-                    raw_height += para_spacing
-                has_content = True
-        usable_height = (COVER_HEIGHT - 120) - y_start
+    if LAYOUT["last_page_expand"] and page_num == total_pages:
+        raw_height = _calc_page_height(page_blocks)
+        usable_height = y_limit - y_start
         remaining = usable_height - raw_height
         text_block_count = sum(1 for b in page_blocks if b[0] != '__separator__')
         if text_block_count > 1 and remaining > 0:
             actual_para_spacing = para_spacing + remaining // text_block_count
 
-    # 控制锚点密度：每页最多前 3 个文字段落显示锚点
+    # 控制锚点密度：每页最多前 N 个文字段落显示锚点
     text_block_indices = [i for i, b in enumerate(page_blocks) if b[0] != '__separator__']
-    anchor_allowed = set(text_block_indices[:3])
+    anchor_allowed = set(text_block_indices[:LAYOUT["anchor_max_per_page"]])
 
     # 正文色阶控制：首段/分隔符后使用 title 色，其余使用 body 色
     after_sep_or_first = True
 
     for block_idx, block in enumerate(page_blocks):
+        # 垂直溢出保护：超出页面边界时停止渲染
+        if y >= y_limit:
+            logger.warning("第 %d 页内容溢出 (y=%d >= %d)，截断剩余 %d 个 block",
+                           page_num, y, y_limit, len(page_blocks) - block_idx)
+            break
+
         tag, is_bold, line_count = block
         if tag == '__separator__':
-            sep_x1 = x_start
-            sep_x2 = x_start + 80
-            sep_y = y + line_height // 2 - 2
-            draw.rectangle([(sep_x1, sep_y), (sep_x2, sep_y + 2)], fill=p["accent"])
-            y += line_height // 2 + actual_para_spacing // 2
+            sep_height = int(line_height * LAYOUT["separator_height_ratio"])
+            draw.rectangle(
+                [(x_start, y + sep_height - 2), (x_start + 80, y + sep_height)],
+                fill=p["accent"],
+            )
+            y += sep_height + actual_para_spacing // 2
             after_sep_or_first = True
             continue
 
@@ -791,26 +857,24 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         # 最后一页最后一段：短句居中放大，作为视觉落点
         # 找到最后一个非 separator 的 block（忽略末尾的 separator）
         last_text_idx = max((i for i, b in enumerate(page_blocks) if b[0] != '__separator__'), default=-1)
-        is_last_block = (block_idx == len(page_blocks) - 1)
         is_last_text_block = (block_idx == last_text_idx)
         is_last_page = (page_num == total_pages)
-        is_short = line_count <= 2 and sum(len(line) for line in tag) <= 24
+        is_short = line_count <= 2 and sum(len(line) for line in tag) <= LAYOUT["last_block_max_chars"]
 
         if is_last_page and is_last_text_block and is_short:
             # 装饰细线
             decor_y = y - 20
-            decor_w = 50
             draw.rectangle(
-                [((COVER_WIDTH - decor_w) // 2, decor_y), ((COVER_WIDTH + decor_w) // 2, decor_y + 2)],
+                [((COVER_WIDTH - 50) // 2, decor_y), ((COVER_WIDTH + 50) // 2, decor_y + 2)],
                 fill=p["accent"],
             )
             y = decor_y + 30
 
             # 放大字号并居中
-            large_size = base_font_size + 8
+            large_size = base_font_size + LAYOUT["last_block_font_boost"]
             large_font = _get_font(large_size, bold=True)
             large_lines = _wrap_text(''.join(tag), large_font, _MAX_TEXT_W)
-            large_line_h = int(large_size * 1.5)
+            large_line_h = int(large_size * LAYOUT["line_height_ratio"])
             for line in large_lines:
                 try:
                     bbox = large_font.getbbox(line)
@@ -862,6 +926,8 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
             text_color = p["body"]
 
         for i, line in enumerate(tag):
+            if y >= y_limit:
+                break
             if i == 0 and use_anchor:
                 dot_x = x_start + dot_radius
                 dot_y_center = y + dot_radius
@@ -890,24 +956,25 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         after_sep_or_first = False
 
     # 底部页码
-    page_font = _get_font(20)
+    page_font = _get_font(LAYOUT["page_number_font_size"])
     page_text = f"— {page_num} / {total_pages} —"
     try:
         bbox = page_font.getbbox(page_text)
         tw = bbox[2] - bbox[0]
     except (AttributeError, TypeError):
         tw = 0
-    page_y = COVER_HEIGHT - 70
+    page_y = COVER_HEIGHT - LAYOUT["page_number_y_offset"]
     # 页码上方细线装饰
-    line_w = 30
     draw.rectangle(
-        [((COVER_WIDTH - line_w) // 2, page_y - 14), ((COVER_WIDTH + line_w) // 2, page_y - 12)],
+        [((COVER_WIDTH - 30) // 2, page_y - 14), ((COVER_WIDTH + 30) // 2, page_y - 12)],
         fill=p["accent"],
     )
     draw.text(((COVER_WIDTH - tw) // 2, page_y), page_text, font=page_font, fill=p["subtitle"])
 
+    # 全部文字绘制完成后才转 RGB（修复 RGBA→RGB 颜色失真）
+    final = img.convert("RGB")
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    img.save(output_path, quality=95)
+    final.save(output_path, quality=95)
     logger.info("内页图已保存: %s", output_path)
     return output_path
 

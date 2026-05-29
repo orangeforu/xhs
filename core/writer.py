@@ -1,16 +1,16 @@
 import json
-import os
+import random
 import time
 
 import requests
 
-from core.config import get_logger
+from core.config import get_logger, LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 
 logger = get_logger(__name__)
 
-DEFAULT_MODEL = os.getenv("LLM_MODEL", "kimi-k2-6")
-DEFAULT_BASE_URL = os.getenv("LLM_BASE_URL", os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1"))
-DEFAULT_API_KEY = os.getenv("LLM_API_KEY", os.getenv("KIMI_API_KEY", ""))
+DEFAULT_MODEL = LLM_MODEL
+DEFAULT_BASE_URL = LLM_BASE_URL
+DEFAULT_API_KEY = LLM_API_KEY
 
 
 def _call_api(
@@ -35,29 +35,28 @@ def _call_api(
     last_err = None
     for attempt in range(retries):
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=120)
+            resp = requests.post(url, headers=headers, json=payload, timeout=(10, 120))
             resp.raise_for_status()
             return resp.json()
         except requests.exceptions.HTTPError as e:
             status = e.response.status_code if e.response else 0
             if status == 429 or 500 <= status < 600:
                 last_err = e
-                wait = 2 ** attempt
-                logger.warning("API 请求失败 (HTTP %s)，%d秒后重试 (%d/%d)", status, wait, attempt + 1, retries)
+                wait = (2 ** attempt) * (0.5 + random.random())
+                logger.warning("API 请求失败 (HTTP %s)，%.1f秒后重试 (%d/%d)", status, wait, attempt + 1, retries)
                 time.sleep(wait)
                 continue
             else:
                 raise
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             last_err = e
-            wait = 2 ** attempt
-            logger.warning("API 请求失败 (%s)，%d秒后重试 (%d/%d)", type(e).__name__, wait, attempt + 1, retries)
+            wait = (2 ** attempt) * (0.5 + random.random())
+            logger.warning("API 请求失败 (%s)，%.1f秒后重试 (%d/%d)", type(e).__name__, wait, attempt + 1, retries)
             time.sleep(wait)
         except json.JSONDecodeError as e:
-            # API 返回了非 JSON 响应（如 HTML 错误页面），可重试
             last_err = e
-            wait = 2 ** attempt
-            logger.warning("API 返回非 JSON 响应，%d秒后重试 (%d/%d): %s", wait, attempt + 1, retries, e)
+            wait = (2 ** attempt) * (0.5 + random.random())
+            logger.warning("API 返回非 JSON 响应，%.1f秒后重试 (%d/%d): %s", wait, attempt + 1, retries, e)
             time.sleep(wait)
 
     if last_err is None:

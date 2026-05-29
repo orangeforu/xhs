@@ -274,6 +274,7 @@ class ChiefEditor(BaseAgent):
             mem.record_failure(context)
         else:
             mem.record_mediocre(context)
+        mem.flush()
 
     def handle(self, message: Message) -> None:
         pass

@@ -12,7 +12,10 @@ import os
 import re
 from datetime import datetime, timezone
 
-from core.config import get_logger, init, load_topics_json, save_topics_json, load_calendar_json, PROJECT_ROOT
+from core.config import (
+    get_logger, init, load_topics_json, save_topics_json, load_calendar_json,
+    PROJECT_ROOT, DATA_DIR, _atomic_write_json, _lock_file, _unlock_file,
+)
 from core.agents.orchestrator import Orchestrator
 from core.topic_selector import smart_select, smart_batch
 from core.utils import clean_md as _clean_md, write_note_file
@@ -137,7 +140,8 @@ def _sanitize_prompt(prompt: str) -> str:
         if safeguard not in lowered_after:
             prompt += f", {safeguard}"
 
-    return prompt.strip(", ")
+    # 去除尾部多余的逗号和空格（不用 strip 避免误删首字母）
+    return prompt.rstrip(", ").lstrip()
 
 
 def _load_topic_pool() -> list[dict]:
@@ -147,17 +151,27 @@ def _load_topic_pool() -> list[dict]:
 
 
 def _update_topic_status(topic_str: str, status: str, output_dir: str | None = None) -> None:
-    """更新选题状态并持久化到 topics.json。"""
-    data = load_topics_json()
-    for t in data.get("topics", []):
-        if t["topic"] == topic_str:
-            t["status"] = status
-            if status == "generated":
-                t["generated_at"] = datetime.now(timezone.utc).isoformat()
-            if output_dir:
-                t["output_dir"] = output_dir
-            break
-    save_topics_json(data)
+    """更新选题状态并持久化到 topics.json（原子读-改-写，带文件锁保护）。"""
+    import json as _json
+
+    path = DATA_DIR / "topics.json"
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=True)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = _json.load(f)
+            for t in data.get("topics", []):
+                if t["topic"] == topic_str:
+                    t["status"] = status
+                    if status == "generated":
+                        t["generated_at"] = datetime.now(timezone.utc).isoformat()
+                    if output_dir:
+                        t["output_dir"] = output_dir
+                    break
+            _atomic_write_json(path, data, with_lock=False)
+        finally:
+            _unlock_file(lock_f)
 
 
 def _prepare_out_dir(topic: str) -> str:
@@ -186,6 +200,9 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
             logger.info("可用选题: %s", [t["topic"] for t in topic_pool])
             return None
     elif index is not None:
+        if not topic_pool:
+            logger.error("选题池为空，无法按索引选取")
+            return None
         brief = topic_pool[index % len(topic_pool)]
     else:
         logger.error("请指定 --topic、--index 或 --smart")
@@ -222,7 +239,10 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
             "brief": brief,
         }
 
-    draft = result["draft"]
+    draft = result.get("draft")
+    if not draft:
+        logger.error("编排器未返回 draft，可能内部异常")
+        return None
     review = result["review"]
     design = result.get("design", {})
     inner_paths = result.get("inner_paths", [])
@@ -280,8 +300,10 @@ def list_topics() -> None:
         logger.info("[%d] %s %s (%s | %s | %s)", i, icon, t["topic"], t["title_formula"], t["target_interaction"], status)
 
 
-def batch_generate(max_count: int | None = None, smart: bool = False) -> None:
-    """批量生成选题。smart=True 时按智能排序选取。"""
+def batch_generate(max_count: int | None = None, smart: bool = False, workers: int = 1) -> None:
+    """批量生成选题。smart=True 时按智能排序选取。workers>1 时并行生成。"""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     topic_pool = _load_topic_pool()
 
     if smart:
@@ -299,25 +321,51 @@ def batch_generate(max_count: int | None = None, smart: bool = False) -> None:
         if max_count:
             pending = pending[:max_count]
 
-    logger.info("批量生成开始，共 %d 篇待生成", len(pending))
+    logger.info("批量生成开始，共 %d 篇待生成（workers=%d）", len(pending), workers)
     success = 0
     failed = 0
     abandoned = 0
 
-    for i, brief in enumerate(pending, 1):
-        logger.info("[%d/%d] 正在生成: %s", i, len(pending), brief["topic"])
-        try:
-            result = generate(topic=brief["topic"])
-            if result:
-                if result.get("status") == "abandoned":
-                    abandoned += 1
+    def _gen(idx: int, brief: dict) -> tuple[int, str, dict | None]:
+        logger.info("[%d/%d] 正在生成: %s", idx, len(pending), brief["topic"])
+        result = generate(topic=brief["topic"])
+        return idx, brief["topic"], result
+
+    if workers <= 1:
+        # 串行模式
+        for i, brief in enumerate(pending, 1):
+            try:
+                _, _, result = _gen(i, brief)
+                if result:
+                    if result.get("status") == "abandoned":
+                        abandoned += 1
+                    else:
+                        success += 1
                 else:
-                    success += 1
-            else:
+                    failed += 1
+            except Exception as e:
+                logger.error("生成失败: %s - %s", brief["topic"], e)
                 failed += 1
-        except Exception as e:
-            logger.error("生成失败: %s - %s", brief["topic"], e)
-            failed += 1
+    else:
+        # 并行模式
+        with ThreadPoolExecutor(max_workers=min(workers, len(pending))) as executor:
+            futures = {
+                executor.submit(_gen, i, brief): i
+                for i, brief in enumerate(pending, 1)
+            }
+            for future in as_completed(futures):
+                try:
+                    idx, topic, result = future.result()
+                    if result:
+                        if result.get("status") == "abandoned":
+                            abandoned += 1
+                        else:
+                            success += 1
+                    else:
+                        failed += 1
+                except Exception as e:
+                    logger.error("生成失败: %s", e)
+                    failed += 1
 
     logger.info("批量生成完成 — 成功: %d, 放弃: %d, 失败: %d", success, abandoned, failed)
 
@@ -331,11 +379,12 @@ if __name__ == "__main__":
     parser.add_argument("--list", action="store_true", help="列出所有选题")
     parser.add_argument("--batch", action="store_true", help="批量生成所有未开始的选题")
     parser.add_argument("--max", type=int, help="批量生成时限制最大篇数")
+    parser.add_argument("--workers", type=int, default=1, help="批量生成并行数（默认1，串行）")
     args = parser.parse_args()
 
     if args.list:
         list_topics()
     elif args.batch:
-        batch_generate(max_count=args.max, smart=args.smart)
+        batch_generate(max_count=args.max, smart=args.smart, workers=args.workers)
     else:
         generate(topic=args.topic, index=args.index, smart=args.smart)

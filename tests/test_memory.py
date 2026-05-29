@@ -79,6 +79,7 @@ class TestAgentMemory(unittest.TestCase):
     def test_atomic_save(self):
         mem = AgentMemory("test_agent")
         mem.record_success({"topic": "t1", "grade": "A"})
+        mem.flush()  # 脏标记模式需要显式 flush
         # 验证文件存在且是有效 JSON
         path = os.path.join(self.tmpdir, "test_agent.json")
         self.assertTrue(os.path.exists(path))

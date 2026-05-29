@@ -10,12 +10,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 统一日志配置
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
+# 日志配置 — 只在根 logger 无 handler 时添加，避免覆盖用户自定义配置
+_root_logger = logging.getLogger()
+if not _root_logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"))
+    _root_logger.addHandler(_handler)
+    _root_logger.setLevel(logging.INFO)
 
 PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
@@ -25,9 +26,12 @@ ASSETS_DIR = PROJECT_ROOT / "assets"
 FONT_DIR = ASSETS_DIR / "fonts"
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 
-# 图片生成配置
+# ── 集中管理的环境变量 ──
 IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "pollinations").lower()
 IMAGE_API_KEY = os.getenv("IMAGE_API_KEY", "")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("KIMI_API_KEY", "")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1"))
+LLM_MODEL = os.getenv("LLM_MODEL", "kimi-k2-6")
 
 
 # ── 跨平台文件锁 ──
@@ -200,23 +204,32 @@ def _grade_from_likes(likes: int) -> str:
 
 
 def update_note_performance(topic: str, metrics: dict) -> bool:
-    """更新单篇笔记的运营数据（按 topic 匹配）。
+    """更新单篇笔记的运营数据（按 topic 匹配，原子读-改-写）。
 
     metrics 示例: {"likes": 100, "collects": 50, "comments": 20, "shares": 10, "exposure": 5000}
     返回是否找到并更新了该笔记。
     """
     from core.publish_helpers import recalculate_summary
-    data = load_performance_json()
-    for note in data.get("notes", []):
-        if note.get("topic") == topic:
-            for key in ("likes", "collects", "comments", "shares", "exposure"):
-                if key in metrics:
-                    note[key] = int(metrics[key])
-            note["grade"] = _grade_from_likes(note.get("likes", 0))
-            recalculate_summary(data)
-            save_performance_json(data)
-            return True
-    return False
+
+    path = DATA_DIR / "performance.json"
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=True)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for note in data.get("notes", []):
+                if note.get("topic") == topic:
+                    for key in ("likes", "collects", "comments", "shares", "exposure"):
+                        if key in metrics:
+                            note[key] = int(metrics[key])
+                    note["grade"] = _grade_from_likes(note.get("likes", 0))
+                    recalculate_summary(data)
+                    _write_json_atomic(path, data)
+                    return True
+            return False
+        finally:
+            _unlock_file(lock_f)
 
 
 def load_calendar_json() -> dict:

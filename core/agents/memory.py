@@ -1,3 +1,4 @@
+import atexit
 import json
 import threading
 from typing import Any
@@ -8,15 +9,36 @@ logger = get_logger(__name__)
 
 AGENT_MEMORY_DIR = DATA_DIR / "agent_memory"
 
+# 全局注册表：所有 AgentMemory 实例在进程退出前 flush 未写数据
+_registry: list["AgentMemory"] = []
+_registry_lock = threading.Lock()
+
+
+def _flush_all() -> None:
+    """进程退出时 flush 所有 dirty 的 AgentMemory。"""
+    with _registry_lock:
+        instances = list(_registry)
+    for mem in instances:
+        mem.flush()
+
+
+atexit.register(_flush_all)
+
 
 class AgentMemory:
-    """Agent 跨会话持久化记忆。"""
+    """Agent 跨会话持久化记忆。支持脏标记批量写入，减少 I/O。"""
+
+    _GRADE_SCORE = {"S": 1.0, "A": 0.8, "B": 0.5, "C": 0.1}
 
     def __init__(self, agent_name: str):
         self.agent_name = agent_name
         self.path = AGENT_MEMORY_DIR / f"{agent_name}.json"
         self._lock = threading.Lock()
         self.data = self._load()
+        self._dirty = False
+        # 注册到全局表
+        with _registry_lock:
+            _registry.append(self)
 
     def _load(self) -> dict:
         if self.path.exists():
@@ -39,12 +61,20 @@ class AgentMemory:
         }
 
     def save(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        """标记为脏，延迟写入。调用 flush() 强制立即持久化。"""
+        self._dirty = True
+
+    def flush(self) -> None:
+        """立即将数据写入磁盘（仅在脏时写入）。"""
         with self._lock:
-            _atomic_write_json(self.path, self.data)
+            if not self._dirty:
+                return
+            self._dirty = False
+            data = self.data
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        _atomic_write_json(self.path, data)
 
     def record_success(self, context: dict) -> None:
-        # 去重：同一 topic 不重复记录
         topic = context.get("topic", "")
         with self._lock:
             self.data["success_patterns"] = [
@@ -54,10 +84,9 @@ class AgentMemory:
             self.data["success_patterns"] = self.data["success_patterns"][-10:]
             self.data["success_count"] += 1
             self.data["total_runs"] += 1
-        self.save()
+            self._dirty = True
 
     def record_failure(self, context: dict) -> None:
-        # 去重：同一 topic 不重复记录
         topic = context.get("topic", "")
         with self._lock:
             self.data["failure_patterns"] = [
@@ -66,7 +95,7 @@ class AgentMemory:
             self.data["failure_patterns"].append(context)
             self.data["failure_patterns"] = self.data["failure_patterns"][-10:]
             self.data["total_runs"] += 1
-        self.save()
+            self._dirty = True
 
     def record_mediocre(self, context: dict) -> None:
         """记录 B 级平庸内容，用于学习什么内容只是'及格'。"""
@@ -81,7 +110,7 @@ class AgentMemory:
             self.data[key].append(context)
             self.data[key] = self.data[key][-10:]
             self.data["total_runs"] += 1
-        self.save()
+            self._dirty = True
 
     def add_collaboration_note(self, partner: str, note: str) -> None:
         with self._lock:
@@ -89,12 +118,12 @@ class AgentMemory:
             partner_notes = notes.setdefault(partner, [])
             partner_notes.append(note)
             notes[partner] = partner_notes[-5:]
-        self.save()
+            self._dirty = True
 
     def update_style_preference(self, key: str, value: Any) -> None:
         with self._lock:
             self.data.setdefault("style_preferences", {})[key] = value
-        self.save()
+            self._dirty = True
 
     @staticmethod
     def _format_pattern(p: dict) -> str:
@@ -179,25 +208,24 @@ class AgentMemory:
             if pillar:
                 pillar_stats.setdefault(pillar, []).append(grade)
 
-        # 更新公式表现
-        for formula, grades in formula_stats.items():
-            avg_score = sum({"S": 1.0, "A": 0.8, "B": 0.5, "C": 0.1}.get(g, 0.5) for g in grades) / len(grades)
-            self.data.setdefault("formula_performance", {})[formula] = {
-                "count": len(grades),
-                "avg_score": round(avg_score, 2),
-                "grades": grades[-5:],  # 只保留最近5个
-            }
+        with self._lock:
+            for formula, grades in formula_stats.items():
+                avg_score = sum(self._GRADE_SCORE.get(g, 0.5) for g in grades) / len(grades)
+                self.data.setdefault("formula_performance", {})[formula] = {
+                    "count": len(grades),
+                    "avg_score": round(avg_score, 2),
+                    "grades": grades[-5:],
+                }
 
-        # 更新支柱表现
-        for pillar, grades in pillar_stats.items():
-            avg_score = sum({"S": 1.0, "A": 0.8, "B": 0.5, "C": 0.1}.get(g, 0.5) for g in grades) / len(grades)
-            self.data.setdefault("pillar_performance", {})[pillar] = {
-                "count": len(grades),
-                "avg_score": round(avg_score, 2),
-                "grades": grades[-5:],
-            }
+            for pillar, grades in pillar_stats.items():
+                avg_score = sum(self._GRADE_SCORE.get(g, 0.5) for g in grades) / len(grades)
+                self.data.setdefault("pillar_performance", {})[pillar] = {
+                    "count": len(grades),
+                    "avg_score": round(avg_score, 2),
+                    "grades": grades[-5:],
+                }
+            self._dirty = True
 
-        self.save()
         logger.info("已从 %d 篇发布数据中学习公式和支柱表现", len(notes))
 
     def get_performance_insights(self) -> str:

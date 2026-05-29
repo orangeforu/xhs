@@ -73,14 +73,17 @@ published_count = sum(1 for t in topics if t.get("status") == "published")
 
 
 def _check_circuit_breaker() -> tuple[bool, int]:
-    """检查是否触发熔断：连续3篇C级。返回 (是否熔断, 连续C级数)。"""
+    """检查是否触发熔断：最近3篇全部C级（不足3篇时也检查）。返回 (是否熔断, 连续C级数)。"""
     notes = performance.get("notes", [])
     if not notes:
         return False, 0
     recent = [n for n in notes if n.get("likes", 0) > 0 or n.get("grade") in ("S", "A", "B", "C")]
     recent.sort(key=lambda x: x.get("published_at", ""), reverse=True)
+    if not recent:
+        return False, 0
+    check_count = min(3, len(recent))
     streak = 0
-    for n in recent[:3]:
+    for n in recent[:check_count]:
         grade = n.get("grade", "")
         if not grade or grade == "pending":
             grade = _calculate_grade(n.get("likes", 0))
@@ -88,7 +91,8 @@ def _check_circuit_breaker() -> tuple[bool, int]:
             streak += 1
         else:
             break
-    return streak >= 3, streak
+    # 所有被检查的笔记都是 C 级即触发熔断
+    return streak == check_count and check_count >= 1, streak
 
 
 cb_tripped, cb_streak = _check_circuit_breaker()

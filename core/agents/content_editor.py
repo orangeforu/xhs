@@ -185,3 +185,4 @@ grade 规则（必须严格遵守正态分布 S:A:B:C ≈ 1:3:5:1）：
             mem.record_failure(context)
         else:
             mem.record_mediocre(context)
+        mem.flush()

@@ -217,3 +217,4 @@ class CoverDesigner(BaseAgent):
             mem.record_failure(context)
         else:
             mem.record_mediocre(context)
+        mem.flush()

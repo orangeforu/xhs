@@ -124,6 +124,7 @@ class TestUpdateTopicStatus(unittest.TestCase):
     def test_updates_status(self):
         tmp = tempfile.mkdtemp()
         topics_path = Path(tmp) / "topics.json"
+        lock_path = topics_path.with_suffix(".lock")
         data = {
             "topics": [
                 {"topic": "测试A", "status": "not_started"},
@@ -131,14 +132,15 @@ class TestUpdateTopicStatus(unittest.TestCase):
             ]
         }
         topics_path.write_text(json.dumps(data, ensure_ascii=False))
+        lock_path.touch()
 
-        with patch("pipeline.load_topics_json", return_value=json.loads(json.dumps(data))):
-            with patch("pipeline.save_topics_json") as mock_save:
-                _update_topic_status("测试A", "generated", "/tmp/out")
-                saved = mock_save.call_args[0][0]
-                self.assertEqual(saved["topics"][0]["status"], "generated")
-                self.assertEqual(saved["topics"][0]["output_dir"], "/tmp/out")
-                self.assertIsNotNone(saved["topics"][0]["generated_at"])
+        with patch("pipeline.DATA_DIR", Path(tmp)):
+            _update_topic_status("测试A", "generated", "/tmp/out")
+            with open(topics_path, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+            self.assertEqual(saved["topics"][0]["status"], "generated")
+            self.assertEqual(saved["topics"][0]["output_dir"], "/tmp/out")
+            self.assertIsNotNone(saved["topics"][0]["generated_at"])
 
         import shutil
         shutil.rmtree(tmp, ignore_errors=True)

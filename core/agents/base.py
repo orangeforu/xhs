@@ -41,11 +41,13 @@ class Message:
 
     @classmethod
     def from_dict(cls, data: dict) -> "Message":
+        if "from_agent" not in data or "msg_type" not in data:
+            raise ValueError(f"Message 缺少必填字段: 需要 'from_agent' 和 'msg_type'，收到 {list(data.keys())}")
         return cls(
             from_agent=data["from_agent"],
             to_agent=data.get("to_agent"),
             msg_type=MessageType(data["msg_type"]),
-            content=data["content"],
+            content=data.get("content", {}),
             round_num=data.get("round_num", 0),
         )
 
@@ -102,15 +104,13 @@ class MessageBus:
         round_num: int | None = None,
     ) -> list[Message]:
         with self._lock:
-            result = list(self.history)
-        if from_agent:
-            result = [m for m in result if m.from_agent == from_agent]
-        if to_agent:
-            result = [m for m in result if m.to_agent == to_agent or m.to_agent is None]
-        if msg_type:
-            result = [m for m in result if m.msg_type == msg_type]
-        if round_num is not None:
-            result = [m for m in result if m.round_num == round_num]
+            result = [
+                m for m in self.history
+                if (from_agent is None or m.from_agent == from_agent)
+                and (to_agent is None or m.to_agent == to_agent or m.to_agent is None)
+                and (msg_type is None or m.msg_type == msg_type)
+                and (round_num is None or m.round_num == round_num)
+            ]
         return result
 
     def get_last_message(
@@ -159,9 +159,13 @@ class BaseAgent:
             content=content,
             round_num=round_num,
         )
+        # publish 会触发所有订阅者的 _on_message（包括自己），所以不再重复 append
         self.bus.publish(msg)
-        with self._session_lock:
-            self.session_memory.append(msg)
+        # 如果 publish 没有触发自己的回调（比如没有订阅自己），手动记录
+        if to_agent != self.name and to_agent is not None:
+            # 点对点发给别人的消息，不会触发自己的回调，需要手动记录
+            with self._session_lock:
+                self.session_memory.append(msg)
         return msg
 
     def think(

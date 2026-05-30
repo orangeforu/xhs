@@ -218,9 +218,9 @@
         "穿搭技巧"
       ],
       "pillar": "生活态度",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T15:41:46.117378+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/停止精致穷我的365天不重样穿搭靠的是这3个消费心法_b236"
     },
     {
       "id": 14,
@@ -235,9 +235,9 @@
         "生活技巧"
       ],
       "pillar": "生活态度",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T16:33:19.076683+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/独居后才懂安全感不是有人陪而是这5个保命小东西_eefa"
     },
     {
       "id": 15,
@@ -252,9 +252,9 @@
         "自我和解"
       ],
       "pillar": "生活态度",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T15:49:08.431508+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/我戒掉了伪自律开始理直气壮地浪费时间人生反而松弛了_6d67"
     },
     {
       "id": 16,
@@ -269,9 +269,9 @@
         "自我认知"
       ],
       "pillar": "生活态度",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T15:57:13.688727+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/精致穷背后是你未被看见的匮乏感和补偿心理_774d"
     },
     {
       "id": 17,
@@ -286,9 +286,9 @@
         "正念"
       ],
       "pillar": "情绪疗愈",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T16:03:42.972550+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/焦虑发作时立刻能用的5分钟着陆急救法_00b6"
     },
     {
       "id": 18,
@@ -303,9 +303,9 @@
         "停止内耗"
       ],
       "pillar": "情绪疗愈",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T16:07:19.836586+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77"
     },
     {
       "id": 19,
@@ -337,9 +337,9 @@
         "情绪疗愈"
       ],
       "pillar": "情绪疗愈",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-05-29T16:24:58.184377+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/自我接纳不是一句口号每天对着镜子做这1件小事就够了_f77c"
     }
   ]
 }

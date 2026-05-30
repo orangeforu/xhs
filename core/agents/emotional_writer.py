@@ -70,6 +70,7 @@ class EmotionalWriter(BaseAgent):
 
     def write(self, brief: dict, round_num: int = 0, feedback: str = "") -> dict:
         """创作或重写笔记。带内容守卫：禁词命中时自动重试一次。"""
+        feedback = feedback or ""
         user_prompt = self._build_write_prompt(brief, feedback)
         content = self.think(user_prompt, temperature=0.8, max_tokens=2800)
 
@@ -77,7 +78,7 @@ class EmotionalWriter(BaseAgent):
         guard_issues = _check_content_guard(content)
         if guard_issues and round_num == 0:
             logger.warning("内容守卫命中 %d 个问题，自动重试: %s", len(guard_issues), guard_issues[:3])
-            retry_feedback = feedback + "\n\n【系统自动检测到以下问题，请务必避免】\n" + "\n".join(f"- {i}" for i in guard_issues)
+            retry_feedback = (feedback or "") + "\n\n【系统自动检测到以下问题，请务必避免】\n" + "\n".join(f"- {i}" for i in guard_issues)
             retry_prompt = self._build_write_prompt(brief, retry_feedback)
             content = self.think(retry_prompt, temperature=0.6, max_tokens=2800)
             guard_issues = _check_content_guard(content)
@@ -126,7 +127,7 @@ class EmotionalWriter(BaseAgent):
 6. 总字数控制在500-800字，**总页数3-5页（不含封面）**。不要为了凑页数注水，内容讲完了就结束。
 
 **输出格式**：
-1. 【标题候选】3-4个标题，覆盖情绪宣泄型/认知反差型/场景代入型/人群点名，每个带1-2个emoji
+1. 【标题候选】3-4个标题（直接写标题本身，不要加"情绪宣泄型：""认知反差型："等分类前缀），每个带1-2个emoji
 2. 【封面页】大字标题 + 情绪钩子小字 + 背景建议（中文描述 + 英文AI绘画prompt）
    封面氛围要求：整体必须是温暖、柔和、有呼吸感。即使故事情绪偏悲伤，也要用"暖调中的孤独""温柔的光影"方向。
    英文 prompt 中必须包含 "soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"。

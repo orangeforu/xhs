@@ -107,21 +107,26 @@ class CoverDesigner(BaseAgent):
         cover_paths = {}
         if output_path:
             base_dir = os.path.dirname(output_path)
-            # AI 绘画封面
             ai_path = os.path.join(base_dir, "cover_ai.png")
-            try:
-                ai_result = generate_cover_ai(
-                    prompt=design["prompt"],
-                    title=design["title"],
-                    subtitle=design["subtitle"],
-                    style=design.get("style", "warm_grey"),
-                    output_path=ai_path,
-                )
-                if ai_result:
-                    cover_paths["ai"] = ai_result
-                    cover_path = ai_result
-            except Exception as e:
-                logger.warning("AI 封面生成失败: %s", e)
+            # 封面已存在则跳过（每次生成都有API费用）
+            if os.path.exists(ai_path):
+                logger.info("封面已存在，跳过生成: %s", ai_path)
+                cover_path = ai_path
+                cover_paths["ai"] = ai_path
+            else:
+                try:
+                    ai_result = generate_cover_ai(
+                        prompt=design["prompt"],
+                        title=design["title"],
+                        subtitle=design["subtitle"],
+                        style=design.get("style", "warm_grey"),
+                        output_path=ai_path,
+                    )
+                    if ai_result:
+                        cover_paths["ai"] = ai_result
+                        cover_path = ai_result
+                except Exception as e:
+                    logger.warning("AI 封面生成失败: %s", e)
 
         result = {
             "design": design,

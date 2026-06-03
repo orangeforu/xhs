@@ -40,6 +40,10 @@ def _parse_to_blocks(text: str) -> list[tuple[str, bool, bool]]:
             continue
         if re.match(r'\[Image\s*#\d+\]', stripped):
             continue
+        if re.match(r'^[（(]第?\d+页[）)]', stripped):
+            continue
+        if re.match(r'^第\d+页', stripped):
+            continue
         if stripped in ('warm_grey', 'twilight', 'crimson', 'mist', 'cool', 'warm', 'blank'):
             continue
         words = stripped.split()

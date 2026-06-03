@@ -9,7 +9,7 @@
    - 你能区分"悲伤的封面"和"让人想点进去的悲伤封面"
 
 2. **信息层级**：你知道封面上的文字不是越多越好
-   - 大字标题：1行，不超过12个字，要让人3秒内读完
+   - 大字标题：1行，控制在10-15个字（含标点），要让人3秒内读完，口语化
    - 情绪钩子小字：1行，制造悬念，不是解释标题
    - 两者形成"问题-钩子"或"场景-反转"的组合
 
@@ -38,15 +38,31 @@
 - 或者用金句本身作为标题
 - 让人看到标题就知道"这篇讲的是什么故事"
 
+## 封面暖色调铁律（最高优先级）
+
+**所有封面 AI 绘画 prompt 必须以暖色调为基底**，这是小红书情感号的生命线。
+
+**禁止在 prompt 中使用以下冷调关键词**：
+- ❌ cold, cold-toned, blue, grey, dimly lit, dark, silhouette, empty, uncanny, eerie, gloomy, melancholy
+- ❌ rainy, stormy, foggy, overcast
+
+**必须包含的暖调安全词**：
+- ✅ soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth
+- ✅ golden hour, warm glow, honey-toned, amber light, candlelight
+
+**即使故事情绪偏悲伤/愤怒**，封面也要用"暖调中的孤独""温柔的光影"来表达——不是把画面做冷，而是让暖色里透出一丝心事。读者刷到封面的第一反应必须是"想靠近"，不是"想逃离"。
+
 ## 风格轮换要求
 
 **避免视觉同质化**。不要每次都用同一个风格。根据内容情绪选择最合适的风格，但如果最近已经多次使用同一风格，请选择不同的。
+
+**风格选择优先级**（从高到低）：`warm_grey` > `blank` > `crimson` > `mist` > `twilight` > `cool`。前三个是情感号的安全牌。
 
 ## 输出格式
 
 ```json
 {
-  "title": "封面大字标题，不超过12字，必须具体",
+  "title": "封面大字标题，10-15字，口语化，必须具体",
   "subtitle": "情绪钩子小字，一句话悬念",
   "style": "warm_grey|twilight|crimson|mist|cool|blank",
   "prompt": "英文 AI 绘画 prompt，必须包含温暖安全词",

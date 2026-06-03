@@ -177,6 +177,8 @@ def load_performance_json() -> dict:
         return {"notes": [], "summary": {
             "total_published": 0, "total_likes": 0, "total_collects": 0,
             "total_comments": 0, "total_shares": 0, "total_exposure": 0,
+            "total_views": 0, "total_followers_gained": 0,
+            "avg_ctr": 0.0, "avg_view_duration": 0.0,
             "s_grade_count": 0, "a_grade_count": 0,
             "b_grade_count": 0, "c_grade_count": 0,
             "current_streak_underperform": 0,
@@ -203,10 +205,18 @@ def _grade_from_likes(likes: int) -> str:
     return calculate_grade(likes)
 
 
+_METRIC_KEYS = (
+    "likes", "collects", "comments", "shares", "exposure",
+    "views", "cover_ctr", "followers_gained", "avg_view_duration", "danmaku",
+)
+
+
 def update_note_performance(topic: str, metrics: dict) -> bool:
     """更新单篇笔记的运营数据（按 topic 匹配，原子读-改-写）。
 
-    metrics 示例: {"likes": 100, "collects": 50, "comments": 20, "shares": 10, "exposure": 5000}
+    metrics 支持字段:
+      likes, collects, comments, shares, exposure,
+      views, cover_ctr, followers_gained, avg_view_duration, danmaku
     返回是否找到并更新了该笔记。
     """
     from core.publish_helpers import recalculate_summary
@@ -220,9 +230,9 @@ def update_note_performance(topic: str, metrics: dict) -> bool:
                 data = json.load(f)
             for note in data.get("notes", []):
                 if note.get("topic") == topic:
-                    for key in ("likes", "collects", "comments", "shares", "exposure"):
+                    for key in _METRIC_KEYS:
                         if key in metrics:
-                            note[key] = int(metrics[key])
+                            note[key] = metrics[key] if isinstance(metrics[key], str) else int(metrics[key])
                     note["grade"] = _grade_from_likes(note.get("likes", 0))
                     recalculate_summary(data)
                     _write_json_atomic(path, data)

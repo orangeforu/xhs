@@ -211,68 +211,101 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
     return output_path
 
 
+def _try_pollinations(prompt: str) -> Image.Image | None:
+    """尝试 Pollinations API（免费，无需 key）。"""
+    encoded_prompt = quote(prompt)
+    seed_input = prompt.encode("utf-8")
+    dynamic_seed = int(hashlib.md5(seed_input).hexdigest()[:6], 16) % 100000
+    image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1242&height=1660&nologo=true&seed={dynamic_seed}"
+    try:
+        resp = _http_get_with_retry(image_url, retries=2, timeout=30)
+        return Image.open(io.BytesIO(resp.content))
+    except Exception as e:
+        logger.warning("Pollinations API 失败: %s", e)
+        return None
+
+
+def _try_siliconflow(prompt: str) -> Image.Image | None:
+    """尝试 SiliconFlow API（国内可用，免费额度）。"""
+    api_key = os.getenv("SILICONFLOW_API_KEY", "")
+    if not api_key:
+        return None
+    try:
+        resp = requests.post(
+            "https://api.siliconflow.cn/v1/images/generations",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": "Tongyi-MAI/Z-Image-Turbo",
+                "prompt": prompt,
+                "image_size": "768x1024",
+            },
+            timeout=120,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        img_url = data["images"][0]["url"]
+        img_resp = _http_get_with_retry(img_url, retries=2, timeout=60)
+        return Image.open(io.BytesIO(img_resp.content))
+    except Exception as e:
+        logger.warning("SiliconFlow API 失败: %s", e)
+        return None
+
+
+def _try_dalle(prompt: str) -> Image.Image | None:
+    """尝试 DALL-E API。"""
+    api_key = os.getenv("IMAGE_API_KEY", os.getenv("OPENAI_API_KEY", ""))
+    if not api_key:
+        return None
+    last_err = None
+    for attempt in range(3):
+        try:
+            resp = requests.post(
+                "https://api.openai.com/v1/images/generations",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={"model": "dall-e-3", "prompt": prompt, "size": "1024x1792", "n": 1},
+                timeout=180,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            img_url = data["data"][0]["url"]
+            img_resp = _http_get_with_retry(img_url)
+            return Image.open(io.BytesIO(img_resp.content))
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response else 0
+            if status == 429 or 500 <= status < 600:
+                last_err = e
+                wait = (2 ** attempt) * (0.5 + random.random())
+                logger.warning("DALL-E API 请求失败 (HTTP %s)，%.1f秒后重试 (%d/3)", status, wait, attempt + 1)
+                time.sleep(wait)
+                continue
+            raise
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            last_err = e
+            wait = (2 ** attempt) * (0.5 + random.random())
+            logger.warning("DALL-E API 请求失败 (%s)，%.1f秒后重试 (%d/3)", type(e).__name__, wait, attempt + 1)
+            time.sleep(wait)
+    if last_err:
+        logger.warning("DALL-E API 最终失败: %s", last_err)
+    return None
+
+
 def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm_grey", output_path: str = "assets/cover_ai.png") -> str:
-    """AI 绘画封面，支持 pollinations / dalle，失败时 fallback 到模板。"""
+    """AI 绘画封面，按优先级尝试多个 provider，全部失败时 fallback 到模板。"""
     logger.info("正在生成AI绘画封面...")
     logger.info("背景prompt: %s...", prompt[:80])
 
     p = PALETTE.get(style, PALETTE["warm_grey"])
     bg_img = None
 
-    if IMAGE_PROVIDER == "pollinations":
-        encoded_prompt = quote(prompt)
-        seed_input = f"{prompt}:{title}:{subtitle}".encode("utf-8")
-        dynamic_seed = int(hashlib.md5(seed_input).hexdigest()[:6], 16) % 100000
-        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1242&height=1660&nologo=true&seed={dynamic_seed}"
-        try:
-            resp = _http_get_with_retry(image_url)
-            bg_img = Image.open(io.BytesIO(resp.content))
-        except (requests.exceptions.RequestException, OSError, Image.UnidentifiedImageError) as e:
-            logger.warning("Pollinations API 失败: %s", e)
-
-    elif IMAGE_PROVIDER == "dalle":
-        api_key = os.getenv("IMAGE_API_KEY", os.getenv("OPENAI_API_KEY", ""))
-        if not api_key:
-            logger.warning("IMAGE_API_KEY / OPENAI_API_KEY 未配置，跳过 DALL-E")
-        else:
-            last_err = None
-            for attempt in range(3):
-                try:
-                    resp = requests.post(
-                        "https://api.openai.com/v1/images/generations",
-                        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                        json={"model": "dall-e-3", "prompt": prompt, "size": "1024x1792", "n": 1},
-                        timeout=180,
-                    )
-                    resp.raise_for_status()
-                    data = resp.json()
-                    img_url = data["data"][0]["url"]
-                    img_resp = _http_get_with_retry(img_url)
-                    bg_img = Image.open(io.BytesIO(img_resp.content))
-                    break
-                except requests.exceptions.HTTPError as e:
-                    status = e.response.status_code if e.response else 0
-                    if status == 429 or 500 <= status < 600:
-                        last_err = e
-                        wait = (2 ** attempt) * (0.5 + random.random())
-                        logger.warning("DALL-E API 请求失败 (HTTP %s)，%.1f秒后重试 (%d/3)", status, wait, attempt + 1)
-                        time.sleep(wait)
-                        continue
-                    raise
-                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                    last_err = e
-                    wait = (2 ** attempt) * (0.5 + random.random())
-                    logger.warning("DALL-E API 请求失败 (%s)，%.1f秒后重试 (%d/3)", type(e).__name__, wait, attempt + 1)
-                    time.sleep(wait)
-            else:
-                if last_err:
-                    logger.warning("DALL-E API 最终失败: %s", last_err)
-
-    else:
-        logger.warning("不支持的 IMAGE_PROVIDER: %s", IMAGE_PROVIDER)
+    # 按优先级尝试：pollinations → siliconflow（国内 fallback）→ dalle
+    providers = [_try_pollinations, _try_siliconflow, _try_dalle]
+    for provider in providers:
+        bg_img = provider(prompt)
+        if bg_img is not None:
+            break
 
     if bg_img is None:
-        logger.info("使用模板合成作为fallback...")
+        logger.info("所有 AI 图片 API 均失败，使用模板合成作为fallback...")
         return generate_cover_template(title, subtitle, style=style, output_path=output_path)
 
     bg_img = bg_img.resize((COVER_WIDTH, COVER_HEIGHT), Image.Resampling.LANCZOS)

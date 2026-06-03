@@ -28,6 +28,15 @@ def calc_interaction_rate(note: dict) -> float:
     return total / exposure
 
 
+def calc_engagement_rate(note: dict) -> float:
+    """计算互动率（基于观看量）= (点赞+收藏+评论+分享) / 观看量。"""
+    views = note.get("views", 0)
+    if not views:
+        return 0.0
+    total = note.get("likes", 0) + note.get("collects", 0) + note.get("comments", 0) + note.get("shares", 0)
+    return total / views
+
+
 def _calc_group_stats(notes: list[dict], group_key: str, default_label: str = "未知") -> dict:
     """按指定字段分组统计平均数据（通用实现）。"""
     stats: dict[str, dict] = {}
@@ -112,6 +121,14 @@ def recalculate_summary(performance: dict) -> None:
     summary["total_comments"] = sum(n.get("comments", 0) for n in notes)
     summary["total_shares"] = sum(n.get("shares", 0) for n in notes)
     summary["total_exposure"] = sum(n.get("exposure", 0) for n in notes)
+    summary["total_views"] = sum((n.get("views") or 0) for n in notes)
+    summary["total_followers_gained"] = sum((n.get("followers_gained") or 0) for n in notes)
+    # 平均点击率
+    ctr_notes = [n for n in notes if n.get("cover_ctr") is not None]
+    summary["avg_ctr"] = round(sum(n["cover_ctr"] for n in ctr_notes) / len(ctr_notes), 2) if ctr_notes else 0.0
+    # 平均观看时长
+    dur_notes = [n for n in notes if n.get("avg_view_duration") is not None]
+    summary["avg_view_duration"] = round(sum(n["avg_view_duration"] for n in dur_notes) / len(dur_notes), 1) if dur_notes else 0.0
     summary["s_grade_count"] = sum(1 for n in notes if n.get("grade") == "S")
     summary["a_grade_count"] = sum(1 for n in notes if n.get("grade") == "A")
     summary["b_grade_count"] = sum(1 for n in notes if n.get("grade") == "B")

@@ -10,6 +10,20 @@ logger = get_logger(__name__)
 
 ALL_STYLES = ["warm_grey", "twilight", "crimson", "mist", "cool", "blank"]
 
+# 风格权重 — 暖色调优先，冷色调降权
+_STYLE_WEIGHTS = {
+    "warm_grey": 4,
+    "blank": 3,
+    "crimson": 3,
+    "mist": 2,
+    "twilight": 1,
+    "cool": 1,
+}
+
+# 冷调风格 — 如果 LLM 选了冷调且没有强理由，自动替换为暖调
+_COLD_STYLES = {"twilight", "cool", "mist"}
+_WARM_FALLBACK = {"warm_grey": 1, "blank": 1, "crimson": 1}
+
 # 视觉锚点关键词 — 故事中包含这些元素时，封面设计更容易出效果
 VISUAL_ANCHOR_KEYWORDS = [
     # 空间场景
@@ -65,6 +79,9 @@ class CoverDesigner(BaseAgent):
         # 解析 JSON
         design = self._parse_design(raw)
 
+        # 暖调 prompt 校验：确保 AI 绘画 prompt 包含暖调安全词
+        design["prompt"] = self._ensure_warm_prompt(design.get("prompt", ""))
+
         # 系列风格绑定：如果指定了 style_override，优先使用
         if style_override and style_override in ALL_STYLES:
             design["style"] = style_override
@@ -72,6 +89,14 @@ class CoverDesigner(BaseAgent):
         else:
             # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
             design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
+
+        # 冷调风格降权：如果选了冷调风格，有概率替换为暖调
+        if design["style"] in _COLD_STYLES and not style_override:
+            import random
+            if random.random() < 0.6:  # 60% 概率替换为暖调
+                warm_choices = list(_WARM_FALLBACK.keys())
+                design["style"] = random.choices(warm_choices, weights=list(_WARM_FALLBACK.values()))[0]
+                logger.info("冷调风格降权: 替换为暖调 %s", design["style"])
 
         # 改进 fallback 标题
         if design["title"] in ("情感笔记", ""):
@@ -190,6 +215,37 @@ class CoverDesigner(BaseAgent):
             design["prompt"] = "A soft emotional aesthetic scene, warm lighting, minimalist, cozy atmosphere, gentle pastel tones, emotional warmth"
 
         return design
+
+    @staticmethod
+    def _ensure_warm_prompt(prompt: str) -> str:
+        """确保 AI 绘画 prompt 包含暖调安全词，缺少时自动补充。"""
+        if not prompt:
+            return "A soft emotional aesthetic scene, warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"
+
+        warm_keywords = ["warm", "cozy", "pastel", "golden", "soft light", "gentle"]
+        has_warm = any(kw in prompt.lower() for kw in warm_keywords)
+
+        if not has_warm:
+            prompt = prompt.rstrip(".") + ", soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"
+            logger.info("AI prompt 缺少暖调关键词，已自动补充")
+
+        # 替换冷调关键词
+        cold_replacements = {
+            "dimly lit": "softly lit",
+            "dark room": "dimly lit cozy room",
+            "cold-toned": "warm-toned",
+            "blue tones": "warm golden tones",
+            "silhouette": "soft figure",
+            "empty room": "cozy room",
+            "gloomy": "melancholic warm",
+            "eerie": "mysterious warm",
+        }
+        for cold, warm in cold_replacements.items():
+            if cold in prompt.lower():
+                prompt = re.sub(re.escape(cold), warm, prompt, flags=re.IGNORECASE)
+                logger.info("替换冷调关键词: %s -> %s", cold, warm)
+
+        return prompt
 
     def handle(self, message: Message) -> None:
         """处理消息总线消息。"""

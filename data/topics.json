@@ -340,6 +340,158 @@
       "status": "generated",
       "generated_at": "2026-05-29T16:24:58.184377+00:00",
       "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/自我接纳不是一句口号每天对着镜子做这1件小事就够了_f77c"
+    },
+    {
+      "topic": "停止「精神内耗」的3个方法，亲测有效",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "实用方法论，每个方法配一个具体场景，让读者立刻能用。",
+      "keywords": [
+        "精神内耗",
+        "自我成长",
+        "方法论",
+        "实用"
+      ],
+      "pillar": "自我成长",
+      "id": 21,
+      "status": "not_started"
+    },
+    {
+      "topic": "「讨好型人格」的人，最后都怎么样了？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "展示讨好型人格的几种结局，引发读者站队讨论：是改变还是继续？",
+      "keywords": [
+        "讨好型人格",
+        "自我成长",
+        "人际边界",
+        "觉醒"
+      ],
+      "pillar": "自我成长",
+      "id": 22,
+      "status": "not_started"
+    },
+    {
+      "topic": "为什么越懂事的人，越容易被忽视？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "用具体故事展示懂事的代价，引发共鸣和争议：懂事到底是美德还是自我消耗？",
+      "keywords": [
+        "懂事",
+        "自我消耗",
+        "原生家庭",
+        "人际边界"
+      ],
+      "pillar": "自我成长",
+      "id": 23,
+      "status": "not_started"
+    },
+    {
+      "topic": "学会这5句「拒绝话术」，再也不怕被人道德绑架",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "5 个具体场景的拒绝话术，读者截图就能用。每个场景配一段对话对比。",
+      "keywords": [
+        "拒绝",
+        "话术",
+        "道德边界",
+        "实用"
+      ],
+      "pillar": "社交关系",
+      "id": 24,
+      "status": "not_started"
+    },
+    {
+      "topic": "分手后还能做朋友吗？评论区说出你的选择",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "抛出争议性问题，展示两方观点，让读者站队讨论。不要给结论。",
+      "keywords": [
+        "分手",
+        "前任",
+        "友情",
+        "争议"
+      ],
+      "pillar": "亲密关系洞察",
+      "id": 25,
+      "status": "generated",
+      "generated_at": "2026-06-03T16:19:36.900485+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/分手后还能做朋友吗评论区说出你的选择_d744"
+    },
+    {
+      "topic": "真正高情商的人，从来不说这3句话",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "反向切入：列出 3 句不该说的话，每句配一个替代说法。实用+争议并存。",
+      "keywords": [
+        "情商",
+        "沟通",
+        "话术",
+        "人际关系"
+      ],
+      "pillar": "社交关系",
+      "id": 26,
+      "status": "not_started"
+    },
+    {
+      "topic": "「PUA」和「为你好」的唯一区别，就一个字",
+      "title_formula": "概念解读式",
+      "target_interaction": "分享驱动",
+      "angle": "揭示 PUA 和正常关心的本质区别，观点尖锐，容易引发说得对和太绝对了两派争论。",
+      "keywords": [
+        "PUA",
+        "情感操控",
+        "为你好",
+        "争议"
+      ],
+      "pillar": "亲密关系洞察",
+      "id": 27,
+      "status": "not_started"
+    },
+    {
+      "topic": "独居女生必看：5个让安全感翻倍的小习惯",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "实用清单，每个习惯配一个具体操作方法。高收藏潜力。",
+      "keywords": [
+        "独居",
+        "安全感",
+        "女生",
+        "实用"
+      ],
+      "pillar": "自我成长",
+      "id": 28,
+      "status": "not_started"
+    },
+    {
+      "topic": "你有没有在「假装社交」？这5个信号说明你在演",
+      "title_formula": "问句式",
+      "target_interaction": "收藏驱动",
+      "angle": "自检清单式内容，5 个信号让读者对照自身，高收藏+高评论潜力。",
+      "keywords": [
+        "社交",
+        "假装",
+        "自检",
+        "人际关系"
+      ],
+      "pillar": "社交关系",
+      "id": 29,
+      "status": "not_started"
+    },
+    {
+      "topic": "那个总是「秒回」你的人，可能最不把你当回事",
+      "title_formula": "观点冲击式",
+      "target_interaction": "分享驱动",
+      "angle": "反常识观点，挑战秒回=在乎的认知，容易引发争议和转发。支持方和反对方都会评论。",
+      "keywords": [
+        "秒回",
+        "社交",
+        "反常识",
+        "争议"
+      ],
+      "pillar": "社交关系",
+      "id": 30,
+      "status": "not_started"
     }
   ]
 }

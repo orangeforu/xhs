@@ -203,7 +203,11 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
         if not topic_pool:
             logger.error("选题池为空，无法按索引选取")
             return None
-        brief = topic_pool[index % len(topic_pool)]
+        # 优先按 topic ID 匹配，fallback 到列表位置
+        brief = next((t for t in topic_pool if t.get("id") == index), None)
+        if not brief:
+            brief = topic_pool[index % len(topic_pool)]
+            logger.info("未找到 ID=%d 的选题，使用列表位置 %d", index, index % len(topic_pool))
     else:
         logger.error("请指定 --topic、--index 或 --smart")
         return None
@@ -297,7 +301,7 @@ def list_topics() -> None:
     for i, t in enumerate(topic_pool):
         status = t.get("status", "not_started")
         icon = "✅" if status == "published" else "📝" if status == "generated" else "⬜"
-        logger.info("[%d] %s %s (%s | %s | %s)", i, icon, t["topic"], t["title_formula"], t["target_interaction"], status)
+        logger.info("[ID %s] %s %s (%s | %s | %s)", t.get("id", i), icon, t["topic"], t["title_formula"], t["target_interaction"], status)
 
 
 def batch_generate(max_count: int | None = None, smart: bool = False, workers: int = 1) -> None:

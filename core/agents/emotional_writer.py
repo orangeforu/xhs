@@ -61,6 +61,63 @@ def _check_content_guard(content: str) -> list[str]:
     return issues
 
 
+
+# ── 写手自检清单（提交前自查） ──
+_IMPORTANT_ANCHORS = [
+    "绿萝", "香薰", "台灯", "窗帘", "被子", "枕头", "起球", "发黄",
+    "抽屉", "衣柜", "阳台", "厨房", "冰箱", "便利贴", "便签",
+    "钥匙", "包包", "围巾", "帽子", "鞋子", "袜子", "拖鞋",
+    "花盆", "植物", "咖啡", "茶", "水杯",
+    "照片", "相框", "日记", "笔记本", "笔", "信封",
+]
+
+_IMPORTANT_ACTIONS = [
+    "反扣", "盯着", "删掉", "关掉", "放下", "推开", "拿起",
+    "拨了拨", "摸了摸", "揉了揉", "擦了擦", "倒了",
+]
+
+
+def _check_data_driven(content: str) -> list[str]:
+    """写手提交前自检：数据驱动的检查清单。返回问题列表，空=通过。"""
+    import re as _re
+    issues = []
+    body_match = _re.search(r"【正文】\s*\n(.*?)(?=【|$)", content, _re.DOTALL)
+    body = body_match.group(1) if body_match else content
+
+    # 1. 前500字内是否有高辨识度物品
+    first_part = body[:500]
+    has_anchor = any(kw in first_part for kw in _IMPORTANT_ANCHORS)
+    if not has_anchor:
+        issues.append("缺少具体物品: 前3页未出现有辨识度的物品")
+
+    # 2. 是否有动作描写代替心理
+    has_action = any(kw in body for kw in _IMPORTANT_ACTIONS)
+    if not has_action:
+        issues.append("缺少动作描写: 全文多用抽象情绪词而非具体动作推进")
+
+    # 3. 是否有收藏元素
+    has_collectible = any(kw in body for kw in ["清单", "方法", "步骤", "自检", "测试", "避雷"])
+    if not has_collectible:
+        issues.append("缺少收藏元素: 没有可收藏的结构化元素")
+
+    # 4. 互动钩子是否具体
+    hook_match = _re.search(r"【互动钩子】\s*\n(.*?)(?=【|$)", content, _re.DOTALL)
+    if hook_match:
+        hook = hook_match.group(1)
+        if any(kw in hook for kw in ["什么感觉", "什么感受", "你是什么心情"]):
+            issues.append("互动钩子抽象: 问什么感觉不如问做什么")
+    else:
+        issues.append("缺少互动钩子")
+
+    # 5. 结尾是否有5秒行动
+    last_part = body[-300:]
+    has_actionable = any(kw in last_part for kw in ["今天", "现在", "立刻", "马上", "下次"])
+    if not has_actionable:
+        issues.append("缺少5秒行动: 结尾没有给读者立刻能做的一件事")
+
+    return issues
+
+
 class EmotionalWriter(BaseAgent):
     """情感写手 Agent — 负责创作和修改笔记正文。"""
 
@@ -73,6 +130,14 @@ class EmotionalWriter(BaseAgent):
         feedback = feedback or ""
         user_prompt = self._build_write_prompt(brief, feedback)
         content = self.think(user_prompt, temperature=0.8, max_tokens=2800)
+
+        # 写手自检：数据驱动检查清单（提交前自查）
+        data_issues = _check_data_driven(content)
+        if data_issues:
+            logger.warning("写手自检发现 %d 个问题，自动修补: %s", len(data_issues), data_issues[:3])
+            self_fix_feedback = (feedback or "") + "\n\n【系统自检发现以下问题，请在不改变故事核心的前提下修补】\n" + "\n".join(f"- {i}" for i in data_issues)
+            self_fix_prompt = self._build_write_prompt(brief, self_fix_feedback)
+            content = self.think(self_fix_prompt, temperature=0.5, max_tokens=2800)
 
         # 内容守卫：检查禁词（仅第一轮，重写轮由审核官反馈驱动）
         guard_issues = _check_content_guard(content)

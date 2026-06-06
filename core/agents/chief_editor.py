@@ -214,10 +214,16 @@ class ChiefEditor(BaseAgent):
             else:
                 return {"action": "abandon", "reason": f"5轮迭代后仍为{grade}级且存在{len(issues)}个问题，放弃发布"}
 
-        # B 级连续 2 轮：建议换标题公式
+        # B 级连续 2 轮：换角度重写（不要小修）
         feedback = self._build_feedback(review)
         if grade == "B" and grade_history and len(grade_history) >= 2 and grade_history[-2] == "B":
-            feedback = "【B级连续2轮，尝试换标题公式】当前公式效果不佳，建议换一种标题公式重新包装同一个故事。\n\n" + feedback
+            feedback = "【连续2轮B级，当前方向已证明无效。请换角度重写，不要在原稿上微调】\n\n换角度建议（任选一个）：\n" + (
+                "- 如果之前从'第三人称旁观'切入，这次试试'第一人称自述'\n"
+                "- 如果之前是'悲伤回忆'基调，这次试试'愤怒觉醒'或'自嘲幽默'\n"
+                "- 如果之前用'对话推动'，这次试试'动作细节推动'\n"
+                "- 如果之前的主角是'受害者'，这次试试从'施害者无意识'的角度切入\n"
+                "\n注意：不是小修，是完全换一种讲述方式。\n\n"
+            ) + feedback
 
         core_issue = issues[0]["problem"] if issues else "整体质量不达标"
 

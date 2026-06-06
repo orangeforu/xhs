@@ -66,11 +66,12 @@ class CoverDesigner(BaseAgent):
 
 要求：
 1. title 不超过12个字，3秒内能读完。必须具体，禁止"情感笔记""看完沉默了"等万能词
-2. subtitle 是一句悬念，不是解释标题
-3. style 必须是 warm_grey|twilight|crimson|mist|cool|blank 之一
-4. prompt 必须包含温暖安全词（soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth）
-5. visual_anchor 是从故事中提炼的1个具体画面元素
-6. rationale 说明设计思路
+2. **标题必须包含矛盾/反差**（数据证明：有矛盾的标题 CTR 是无矛盾的 2-3 倍）。例如："最让人心寒的不是吵架"（不吵架反而更心寒）、"越懂事的人越容易被忽视"（懂事≠被重视）。纯陈述句标题 CTR 极低。
+3. subtitle 是一句悬念，不是解释标题
+4. style 必须是 warm_grey|twilight|crimson|mist|cool|blank 之一
+5. prompt 必须包含温暖安全词（soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth）
+6. visual_anchor 是从故事中提炼的1个具体画面元素
+7. rationale 说明设计思路
 
 **风格轮换要求**：最近使用过的风格是 {recent_styles}。请优先选择不同的风格，避免视觉同质化。如果故事情绪确实适合最近用过的风格，可以选择，但需要在 rationale 中说明理由。
 """

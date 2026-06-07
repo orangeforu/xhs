@@ -463,7 +463,9 @@
       ],
       "pillar": "自我成长",
       "id": 28,
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-07T05:07:38.034880+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/独居女生必看5个让安全感翻倍的小习惯_970d"
     },
     {
       "topic": "你有没有在「假装社交」？这5个信号说明你在演",
@@ -750,7 +752,9 @@
         "清醒"
       ],
       "pillar": "自我成长",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-07T05:11:28.795205+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/这4种自我感动正在毁掉你的生活_9b4b"
     },
     {
       "id": 48,

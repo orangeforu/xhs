@@ -109,13 +109,91 @@ def _check_data_driven(content: str) -> list[str]:
     else:
         issues.append("缺少互动钩子")
 
-    # 5. 结尾是否有5秒行动
+    # 5. 结尾是否有5秒行动（强化版：必须包含可执行动作）
     last_part = body[-300:]
-    has_actionable = any(kw in last_part for kw in ["今天", "现在", "立刻", "马上", "下次"])
-    if not has_actionable:
+    has_time_word = any(kw in last_part for kw in ["今天", "现在", "立刻", "马上", "下次"])
+    has_actionable = any(kw in last_part for kw in ["打开", "找到", "回复", "删掉", "改成", "发", "拨", "关", "拉黑", "截图", "写下"])
+    if has_time_word and not has_actionable:
+        issues.append("5秒行动不够具体: 有'现在/今天'但缺少具体动作动词（如'打开''删掉''回复'）")
+    elif not has_time_word and not has_actionable:
         issues.append("缺少5秒行动: 结尾没有给读者立刻能做的一件事")
 
+    # 6. 收藏元素是否带数字（数据证明带数字的收藏率更高）
+    if has_collectible:
+        has_number = _re.search(r'[0-9]+|一二三四五六七八九十', body)
+        if not has_number:
+            issues.append("收藏元素缺数字: '清单/方法/步骤'应带具体数字（如'3个方法''5步自检'），提升收藏率")
+
     return issues
+
+
+def _score_title_ctr(title: str) -> int:
+    """基于历史数据给标题打CTR预测分（0-100）。"""
+    score = 50
+    import re as _re
+    # 具体数字（一个动作/3个/5步）
+    if _re.search(r'[0-9]+|[一二三四五六七八九十]', title):
+        score += 15
+    # 问号（问题比陈述高20% CTR）
+    if '？' in title or '?' in title:
+        score += 10
+    # "你"字（读者相关性）
+    if '你' in title:
+        score += 8
+    # 方法承诺词
+    if any(kw in title for kw in ['动作', '方法', '步骤', '清单', '指南', '测试', '自检']):
+        score += 10
+    # 痛点词
+    if any(kw in title for kw in ['焦虑', '崩溃', '累', '痛', '毁掉', '毁掉', '失去', '分手']):
+        score += 7
+    # 反常识/悬念词
+    if any(kw in title for kw in ['不是', '原来', '其实', '竟然', '居然', '没想到']):
+        score += 12
+    # emoji（适量加分）
+    emoji_count = len(_re.findall(r'[\U0001F600-\U0001F64F]', title))
+    if 1 <= emoji_count <= 2:
+        score += 5
+    elif emoji_count > 2:
+        score -= 10
+    # 长度惩罚（过长降CTR）
+    if len(title) > 25:
+        score -= 8
+    elif len(title) < 10:
+        score -= 5
+    return score
+
+
+def _optimize_title(content: str) -> str:
+    """基于CTR评分优化标题选择。"""
+    import re as _re
+    title_match = _re.search(r"【标题候选】\s*\n(.*?)(?=【|$)", content, _re.DOTALL)
+    if not title_match:
+        return content
+    titles_block = title_match.group(1)
+    # 提取每行标题（跳过空行和分隔符）
+    lines = [l.strip() for l in titles_block.split('\n') if l.strip() and not l.strip().startswith('---')]
+    if len(lines) < 2:
+        return content
+    # 评分
+    scored = []
+    for line in lines:
+        # 去掉可能的前缀（如"1. "、"①"）
+        clean = _re.sub(r'^[\d]+[.、\s]+', '', line)
+        clean = _re.sub(r'^[①②③④⑤][\s.、]*', '', clean)
+        score = _score_title_ctr(clean)
+        scored.append((score, line, clean))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    best_score, best_line, best_title = scored[0]
+    # 如果最佳标题不在第一位，替换
+    first_line = lines[0]
+    if best_line != first_line and best_score > _score_title_ctr(first_line) + 5:
+        # 把最佳标题放到第一位
+        new_lines = [best_line] + [l for l in lines if l != best_line]
+        new_block = '\n'.join(new_lines)
+        content = content[:title_match.start(1)] + new_block + content[title_match.end(1):]
+        logger.info("标题CTR优化: '%s' (分%d) 替代 '%s' (分%d)",
+                    best_title[:30], best_score, first_line[:30], _score_title_ctr(first_line))
+    return content
 
 
 class EmotionalWriter(BaseAgent):
@@ -149,6 +227,9 @@ class EmotionalWriter(BaseAgent):
             guard_issues = _check_content_guard(content)
             if guard_issues:
                 logger.warning("重试后仍有 %d 个守卫问题（交由审核官处理）: %s", len(guard_issues), guard_issues[:3])
+
+        # 标题CTR优化：基于历史数据选择最佳标题
+        content = _optimize_title(content)
 
         result = {
             "brief": brief,
@@ -231,38 +312,42 @@ class EmotionalWriter(BaseAgent):
         return prompt
 
     def _get_data_recommendations(self, brief: dict) -> str:
-        """从记忆中生成数据驱动的写作建议。"""
+        """从记忆中生成数据驱动的写作建议（基于 CTR 真实数据）。"""
         try:
             from core.agents.memory import AgentMemory
             mem = AgentMemory(self.name)
             parts = []
 
-            # 公式表现数据
+            # 公式表现数据 — 优先使用 avg_ctr
             formula_perf = mem.data.get("formula_performance", {})
             if formula_perf:
-                best = max(formula_perf.items(), key=lambda x: x[1]["avg_score"])
                 current_formula = brief.get("title_formula", "")
-                if best[0] != current_formula and best[1]["count"] >= 2:
-                    parts.append(f"数据提示：「{best[0]}」公式历史表现最好（{best[1]['count']}篇，均分{best[1]['avg_score']}），"
-                                 f"当前选题用的是「{current_formula}」。如果故事角度允许，可以考虑切换。")
+                # 找出 CTR 最高的公式
+                best = max(formula_perf.items(), key=lambda x: x[1].get("avg_ctr", 0))
+                current_stats = formula_perf.get(current_formula, {})
+                current_ctr = current_stats.get("avg_ctr", 0)
+                best_ctr = best[1].get("avg_ctr", 0)
+                if best[0] != current_formula and best[1]["count"] >= 2 and best_ctr > current_ctr + 1:
+                    parts.append(f"📊 数据提示：「{best[0]}」公式历史CTR最高（{best[1]['count']}篇，均CTR {best_ctr}%），"
+                                 f"当前用的是「{current_formula}」(均CTR {current_ctr}%)。如果故事角度允许，考虑切换标题公式。")
 
             # 支柱表现数据
             pillar_perf = mem.data.get("pillar_performance", {})
             if pillar_perf:
-                best_pillar = max(pillar_perf.items(), key=lambda x: x[1]["avg_score"])
+                best_pillar = max(pillar_perf.items(), key=lambda x: x[1].get("avg_ctr", 0))
                 if best_pillar[1]["count"] >= 2:
-                    parts.append(f"数据提示：「{best_pillar[0]}」支柱是你的流量密码（{best_pillar[1]['count']}篇，均分{best_pillar[1]['avg_score']}）。")
+                    parts.append(f"📊 数据提示：「{best_pillar[0]}」是你的流量密码（{best_pillar[1]['count']}篇，均CTR {best_pillar[1]['avg_ctr']}%）。")
 
             # 成功率提示
             stats = mem.get_stats()
             if stats["total_runs"] >= 3:
                 if stats["success_rate"] < 0.3:
-                    parts.append("数据提示：近期成功率偏低，建议选安全牌——用验证过的结构模板，不要冒险尝试新格式。")
+                    parts.append("📊 数据提示：近期成功率偏低，建议选安全牌——用验证过的结构模板，不要冒险尝试新格式。")
                 elif stats["success_rate"] > 0.7:
-                    parts.append("数据提示：近期成功率很高，可以尝试更有野心的叙事角度。")
+                    parts.append("📊 数据提示：近期成功率很高，可以尝试更有野心的叙事角度。")
 
             if parts:
-                return "\n【数据驱动建议】\n" + "\n".join(f"- {p}" for p in parts)
+                return "\n" + "\n".join(parts)
         except Exception as e:
             logger.debug("获取数据建议失败（不影响主流程）: %s", e)
         return ""

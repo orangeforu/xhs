@@ -67,11 +67,18 @@ class CoverDesigner(BaseAgent):
 要求：
 1. title 不超过12个字，3秒内能读完。必须具体，禁止"情感笔记""看完沉默了"等万能词
 2. **标题必须包含矛盾/反差**（数据证明：有矛盾的标题 CTR 是无矛盾的 2-3 倍）。例如："最让人心寒的不是吵架"（不吵架反而更心寒）、"越懂事的人越容易被忽视"（懂事≠被重视）。纯陈述句标题 CTR 极低。
-3. subtitle 是一句悬念，不是解释标题
-4. style 必须是 warm_grey|twilight|crimson|mist|cool|blank 之一
-5. prompt 必须包含温暖安全词（soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth）
-6. visual_anchor 是从故事中提炼的1个具体画面元素
-7. rationale 说明设计思路
+3. **标题应包含至少2个高CTR元素**（数据验证过的）：
+   - 具体数字（"一个动作""3种""5步"）— 带数字的标题CTR高15%
+   - 问句形式（"是不是""为什么""怎么"）— 问号标题CTR高10%
+   - 方法承诺（"动作""方法""步骤""清单"）— 实用承诺CTR高10%
+   - "你"字（让读者直接代入）— 读者相关性CTR高8%
+   - 反常识/悬念（"不是""原来""其实""没想到"）— 认知冲突CTR高12%
+   示例高CTR标题："焦虑发作时，一个动作就能让你立刻平静下来"（含数字+方法承诺+你字，9.5% CTR）
+4. subtitle 是一句悬念，不是解释标题
+5. style 必须是 warm_grey|twilight|crimson|mist|cool|blank 之一
+6. prompt 必须包含温暖安全词（soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth）
+7. visual_anchor 是从故事中提炼的1个具体画面元素
+8. rationale 说明设计思路，并指出标题中使用了哪些高CTR元素
 
 **风格轮换要求**：最近使用过的风格是 {recent_styles}。请优先选择不同的风格，避免视觉同质化。如果故事情绪确实适合最近用过的风格，可以选择，但需要在 rationale 中说明理由。
 """

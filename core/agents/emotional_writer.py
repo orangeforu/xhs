@@ -124,6 +124,20 @@ def _check_data_driven(content: str) -> list[str]:
         if not has_number:
             issues.append("收藏元素缺数字: '清单/方法/步骤'应带具体数字（如'3个方法''5步自检'），提升收藏率")
 
+    # 7. 标题长度检查（小红书限制20字，含emoji）
+    title_match = _re.search(r"【标题候选】\s*\n(.*?)(?=【|$)", content, _re.DOTALL)
+    if title_match:
+        titles_block = title_match.group(1)
+        lines = [l.strip() for l in titles_block.split('\n') if l.strip() and not l.strip().startswith('---')]
+        long_titles = []
+        for line in lines:
+            clean = _re.sub(r'^[\d]+[.、\s]+', '', line)
+            clean = _re.sub(r'^[①②③④⑤][\s.、]*', '', clean)
+            if len(clean) > 20:
+                long_titles.append(f"{clean}({len(clean)}字)")
+        if long_titles:
+            issues.append(f"标题超长: 小红书限制20字(含emoji)，以下标题超长：{'; '.join(long_titles[:2])}")
+
     return issues
 
 
@@ -155,9 +169,9 @@ def _score_title_ctr(title: str) -> int:
         score += 5
     elif emoji_count > 2:
         score -= 10
-    # 长度惩罚（过长降CTR）
-    if len(title) > 25:
-        score -= 8
+    # 长度惩罚（过长降CTR，小红书限制20字）
+    if len(title) > 20:
+        score -= 30  # 强制惩罚，超过平台限制会被截断
     elif len(title) < 10:
         score -= 5
     return score
@@ -283,7 +297,7 @@ class EmotionalWriter(BaseAgent):
 12. **结尾的5秒行动必须是具体的小事**。比如"今天就把备注改回全名""发完这条消息就关机睡觉"，不是"学会爱自己"。
 
 **输出格式**：
-1. 【标题候选】3-4个标题，每个控制在10-15个字以内（含标点），口语化像朋友说话（直接写标题本身，不要加"情绪宣泄型：""认知反差型："等分类前缀），每个带1-2个emoji
+1. 【标题候选】3-4个标题，**每个严格控制在10-20个字以内（含标点、emoji，这是小红书硬限制）**，口语化像朋友说话（直接写标题本身，不要加"情绪宣泄型：""认知反差型："等分类前缀），每个带1-2个emoji
 2. 【封面页】大字标题 + 情绪钩子小字 + 背景建议（中文描述 + 英文AI绘画prompt）
    封面氛围要求：整体必须是温暖、柔和、有呼吸感。即使故事情绪偏悲伤，也要用"暖调中的孤独""温柔的光影"方向。
    英文 prompt 中必须包含 "soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"。

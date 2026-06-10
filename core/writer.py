@@ -75,6 +75,14 @@ def _extract_content(data: dict) -> str:
     if not message or not isinstance(message, dict):
         raise ValueError("API 响应缺少 message 字段")
     content = message.get("content")
+
+    # 支持推理模型的 reasoning_content（如 DeepSeek-R1）
+    if not content:
+        reasoning = message.get("reasoning_content")
+        if reasoning:
+            logger.warning("content 为空，使用 reasoning_content（推理模型）")
+            content = reasoning
+
     if content is None:
         raise ValueError("API 响应缺少 content 字段")
     return content

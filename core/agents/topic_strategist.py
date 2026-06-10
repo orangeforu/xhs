@@ -16,9 +16,32 @@ class TopicStrategist(BaseAgent):
         super().__init__("topic_strategist", prompt, bus)
 
     def enrich_brief(self, brief: dict, round_num: int = 0) -> dict:
-        """基于 performance 数据增强 brief。"""
+        """基于 performance 数据和热点信息增强 brief。"""
         # 加载 performance 数据
         performance = self._load_performance_summary()
+
+        # 检查是否是热点内容
+        is_trending = bool(brief.get("trending_keyword"))
+        trending_hint = ""
+
+        if is_trending:
+            trending_keyword = brief["trending_keyword"]
+            story_hint = brief.get("story_angle_hint", "")
+            emotional_potential = brief.get("emotional_potential", "medium")
+
+            trending_hint = f"""
+**热点信息**（必须围绕此热点展开故事）：
+- 热点关键词：{trending_keyword}
+- 情感转化潜力：{emotional_potential}
+- 故事角度提示：{story_hint}
+
+**热点内容创作要求**：
+1. 故事背景必须包含热点元素（如「{trending_keyword}」），让用户一看就知道和当前热点相关
+2. 但核心必须是情感冲突，热点只是场景。比如「世界杯期间老公天天看球不管我」，热点是世界杯，核心是"被冷落的孤独感"
+3. 标题必须包含热点关键词，利用热点的搜索流量
+4. 封面也要体现热点元素（如足球、球场等），但要保持温暖调性
+5. 故事要具体、有画面感，不要写成新闻稿或热点评论
+"""
 
         prompt = f"""请基于以下选题和历史数据，给出策略建议。
 
@@ -29,6 +52,7 @@ class TopicStrategist(BaseAgent):
 - angle: {brief.get("angle", "")}
 - story_prototype: {brief.get("story_prototype", "")}
 - controversy_anchor: {brief.get("controversy_anchor", "")}
+{trending_hint}
 
 **历史表现摘要**：
 {json.dumps(performance, ensure_ascii=False, indent=2)}
@@ -37,6 +61,7 @@ class TopicStrategist(BaseAgent):
 1. 故事原型是否足够有画面感？是否需要调整？
 2. 争议锚点是否能引发站队？是否有更强的争议角度？
 3. 基于历史数据，这个选题的标题公式和互动目标是否最优？
+{"4. 热点元素是否自然融入故事？标题是否包含热点关键词以获取搜索流量？" if is_trending else ""}
 """
         raw = self.think(prompt, temperature=0.6, max_tokens=1200)
 
@@ -49,6 +74,13 @@ class TopicStrategist(BaseAgent):
             m = re.search(rf'{key}[：:]\s*(.+?)(?:\n|$)', raw, re.IGNORECASE)
             if m:
                 enriched[key] = m.group(1).strip()
+
+        # 保留热点信息（传递给后续 Agent）
+        if brief.get("trending_keyword"):
+            enriched["trending_keyword"] = brief["trending_keyword"]
+            enriched["story_angle_hint"] = brief.get("story_angle_hint", "")
+            enriched["emotional_potential"] = brief.get("emotional_potential", "medium")
+            enriched["is_trending_content"] = True
 
         result = {
             "original_brief": brief,

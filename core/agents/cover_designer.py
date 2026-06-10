@@ -46,7 +46,7 @@ class CoverDesigner(BaseAgent):
         prompt = load_prompt("agent_cover_designer")
         super().__init__("cover_designer", prompt, bus)
 
-    def design(self, note_content: str, round_num: int = 0, output_path: str = "", style_override: str = "", visual_direction: str = "") -> dict:
+    def design(self, note_content: str, round_num: int = 0, output_path: str = "", style_override: str = "", visual_direction: str = "", brief: dict = None) -> dict:
         """基于笔记全文设计封面方案并生成封面图。"""
         # 获取最近使用的风格，强制轮换
         recent_styles = self._get_recent_styles()
@@ -55,11 +55,25 @@ class CoverDesigner(BaseAgent):
         if visual_direction:
             direction_hint = f"\n**内容策划建议的视觉方向**：{visual_direction}\n请参考这个方向，但根据实际内容做最终决定。"
 
+        # 热点内容特殊要求
+        trending_hint = ""
+        if brief and brief.get("is_trending_content"):
+            trending_keyword = brief.get("trending_keyword", "")
+            trending_hint = f"""
+
+**热点内容封面要求**：
+这是一个热点内容，热点关键词是「{trending_keyword}」。
+1. 封面背景必须包含热点元素（如世界杯内容要有足球/球场元素，考研内容要有书本/图书馆元素）
+2. 封面标题也要体现热点相关性（可以包含热点关键词）
+3. 但整体氛围仍要保持温暖调性（soft warm lighting, cozy atmosphere）
+"""
+
         design_prompt = f"""请阅读以下小红书笔记的完整内容，为其设计封面方案。
 
 **笔记内容**：
 {note_content[:3000]}
 {direction_hint}
+{trending_hint}
 
 请输出 JSON 格式的封面设计方案：
 {{"title": "...", "subtitle": "...", "style": "...", "prompt": "...", "visual_anchor": "...", "rationale": "..."}}

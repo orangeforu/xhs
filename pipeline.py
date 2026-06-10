@@ -434,13 +434,10 @@ def generate_trending(max_count: int = 1) -> list[dict]:
         comments = result.get("comments", {})
         rounds = result.get("rounds", 1)
 
-        # 构建封面路径字典
-        cover_paths = {}
-        if design:
-            if design.get("cover_paths"):
-                cover_paths = design["cover_paths"]
-            elif design.get("cover_path"):
-                cover_paths["ai"] = design["cover_path"]
+        # 构建封面路径字典（从 result 顶层获取，不是在 design 里）
+        cover_paths = result.get("cover_paths") or {}
+        if not cover_paths and result.get("cover_path"):
+            cover_paths["ai"] = result["cover_path"]
 
         # LLM 标题评分
         title_eval = None

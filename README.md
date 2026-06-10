@@ -80,8 +80,10 @@ streamlit run app.py                                # 审核工作台
 ├── data/
 │   ├── topics.json         # 选题池
 │   └── performance.json    # 发布数据追踪
-├── docs/                   # 生成的笔记 + 文档
-├── published/              # 已发布的笔记
+├── docs_agent/
+│   ├── pending/              # 新生成未发布的笔记
+│   ├── published/            # 已发布但未录入数据的笔记
+│   └── archived/             # 已发布且已录入数据的笔记
 └── assets/
     └── fonts/              # 思源黑体字体文件
 ```

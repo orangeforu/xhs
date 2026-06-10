@@ -20,8 +20,10 @@ if not _root_logger.handlers:
 
 PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
-DOCS_DIR = PROJECT_ROOT / "docs"
-PUBLISHED_DIR = PROJECT_ROOT / "published"
+DOCS_AGENT_DIR = PROJECT_ROOT / "docs_agent"
+PENDING_DIR = DOCS_AGENT_DIR / "pending"
+PUBLISHED_DIR = DOCS_AGENT_DIR / "published"
+ARCHIVED_DIR = DOCS_AGENT_DIR / "archived"
 ASSETS_DIR = PROJECT_ROOT / "assets"
 FONT_DIR = ASSETS_DIR / "fonts"
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
@@ -78,8 +80,10 @@ def get_logger(name: str) -> logging.Logger:
 def ensure_dirs() -> None:
     """确保必要目录存在。"""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    DOCS_AGENT_DIR.mkdir(parents=True, exist_ok=True)
+    PENDING_DIR.mkdir(parents=True, exist_ok=True)
     PUBLISHED_DIR.mkdir(parents=True, exist_ok=True)
+    ARCHIVED_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def validate_env() -> None:

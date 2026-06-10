@@ -85,18 +85,29 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 
 ### 输出目录结构
 
-每篇笔记生成到 `docs_agent/{topic_name}_{hash}/` 下：
+每篇笔记生成到 `docs_agent/pending/{topic_name}_{hash}/` 下，随生命周期推进自动迁移：
+
 ```
 docs_agent/
-  {topic}_{hash}/
-    note.md              # 主文件（正文 + 审核 + 封面/内页路径 + 预设评论）
-    cover_ai.png         # AI 绘画封面
-    inner_page_1.png     # 内页第 1 页
-    inner_page_2.png     # 内页第 2 页
-    ...
+  pending/                          # 新生成未发布（pipeline 默认输出目录）
+    {topic}_{hash}/
+      note.md                       # 主文件（正文 + 审核 + 封面/内页路径 + 预设评论）
+      cover_ai.png                  # AI 绘画封面
+      inner_page_1.png              # 内页第 1 页
+      inner_page_2.png              # 内页第 2 页
+      ...
+  published/                        # 已发布但未录入数据（app.py 审核通过后自动迁移）
+    {topic}_{hash}/...
+  archived/                         # 已发布且已录入数据（录入互动数据后自动迁移）
+    {topic}_{hash}/...
 ```
 
-发布后通过 `shutil.move()` 将整目录迁移到 `published/`。
+**生命周期迁移规则**：
+- `pipeline.py` 生成笔记 → `pending/`
+- `app.py` 点击「✅ 通过并发布」→ 整目录 `shutil.move` 到 `published/`
+- `app.py` 录入互动数据 → 整目录 `shutil.move` 到 `archived/`
+
+一次性迁移脚本：`python scripts/reorganize_notes.py`（首次把历史混放的笔记按状态分到 3 个子目录）。
 
 ## 平台调性约束
 

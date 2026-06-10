@@ -1,11 +1,13 @@
 """Tab 4: 数据复盘。"""
 
 import os
+import shutil
 from datetime import datetime, timezone
+from pathlib import Path
 
 import streamlit as st
 
-from core.config import load_performance_json, save_performance_json
+from core.config import load_performance_json, save_performance_json, PROJECT_ROOT
 from core.publish_helpers import (
     calculate_grade as _calculate_grade,
     calc_interaction_rate as _calc_interaction_rate,
@@ -14,6 +16,34 @@ from core.publish_helpers import (
     recalculate_summary as _recalculate_summary,
     score_title as _score_title,
 )
+
+
+def _promote_to_archived(note: dict) -> None:
+    """录入数据后，把笔记目录从 docs_agent/published/ 迁移到 docs_agent/archived/。
+
+    同时更新 note["output_dir"]。若目录已位于 archived 或不存在则跳过。
+    """
+    od = note.get("output_dir", "")
+    if not od:
+        return
+    src = Path(od) if Path(od).is_absolute() else PROJECT_ROOT / od
+    if not src.exists():
+        return
+    archived_dir = PROJECT_ROOT / "docs_agent" / "archived"
+    archived_dir.mkdir(parents=True, exist_ok=True)
+    # 已在 archived/ 下则无需移动
+    try:
+        src.relative_to(archived_dir)
+        return
+    except ValueError:
+        pass
+    dst = archived_dir / src.name
+    if dst.exists():
+        # 目标已存在，仅更新 output_dir 即可（避免覆盖）
+        note["output_dir"] = str(dst)
+        return
+    shutil.move(str(src), str(dst))
+    note["output_dir"] = str(dst)
 
 
 def _render_engagement_input(performance: dict):
@@ -59,6 +89,8 @@ def _render_engagement_input(performance: dict):
                 n["shares"] = shares
                 n["exposure"] = exposure
                 n["grade"] = _calculate_grade(likes)
+                n["data_recorded_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                _promote_to_archived(n)
                 _recalculate_summary(performance)
                 save_performance_json(performance)
                 st.success(f"{topic} 数据已保存！等级: {n['grade']}")
@@ -90,6 +122,8 @@ def _handle_batch_import(raw: str, performance: dict):
                         n["shares"] = int(item.get("shares", 0))
                         n["exposure"] = int(item.get("exposure", 0))
                         n["grade"] = _calculate_grade(n["likes"])
+                        n["data_recorded_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                        _promote_to_archived(n)
                         updated += 1
                         break
             if updated:

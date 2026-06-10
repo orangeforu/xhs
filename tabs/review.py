@@ -1,7 +1,6 @@
 """Tab 1: 待审核笔记。"""
 
 import os
-import glob
 import shutil
 from datetime import datetime, timezone
 
@@ -19,23 +18,12 @@ def render_review_tab():
     topics = topics_data.get("topics", [])
 
     generated_topics = [t for t in topics if t.get("status") == "generated"]
-    legacy_drafts = sorted(glob.glob("docs/draft_note_*.md"))
 
-    if not generated_topics and not legacy_drafts:
+    if not generated_topics:
         st.info("暂无待审核笔记。运行 pipeline.py 生成后，笔记会出现在这里。")
     else:
         for t in generated_topics:
             _render_topic_card(t, topics_data, topics)
-
-        # 遗留草稿兼容
-        if legacy_drafts:
-            st.divider()
-            st.caption("以下草稿未关联选题池（旧版遗留）")
-            for f in legacy_drafts:
-                fname = os.path.basename(f)
-                with st.expander(f"📄 {fname}"):
-                    with open(f, "r", encoding="utf-8") as file:
-                        st.markdown(file.read())
 
 
 def _render_topic_card(t: dict, topics_data: dict, topics: list):
@@ -79,9 +67,9 @@ def _render_topic_card(t: dict, topics_data: dict, topics: list):
 def _handle_publish(t: dict, out_dir: str, topics_data: dict):
     """处理发布操作。"""
     topic_name = os.path.basename(out_dir)
-    pub_dir = os.path.join("published", topic_name)
+    pub_dir = os.path.join("docs_agent", "published", topic_name)
     if os.path.exists(pub_dir):
-        st.warning(f"published/{topic_name} 已存在，将被覆盖。")
+        st.warning(f"docs_agent/published/{topic_name} 已存在，将被覆盖。")
     shutil.move(out_dir, pub_dir)
 
     t["status"] = "published"
@@ -96,6 +84,7 @@ def _handle_publish(t: dict, out_dir: str, topics_data: dict):
         "pillar": t.get("pillar", ""),
         "target_interaction": t.get("target_interaction", ""),
         "published_at": t["published_at"],
+        "output_dir": pub_dir,
         "exposure": 0,
         "likes": 0,
         "collects": 0,
@@ -106,7 +95,7 @@ def _handle_publish(t: dict, out_dir: str, topics_data: dict):
     _recalculate_summary(perf)
     save_performance_json(perf)
 
-    st.success(f"{t['topic']} 已发布！目录已移动到 published/")
+    st.success(f"{t['topic']} 已发布！目录已移动到 docs_agent/published/")
     st.rerun()
 
 

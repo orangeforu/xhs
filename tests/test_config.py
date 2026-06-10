@@ -197,17 +197,22 @@ class TestEnsureDirs:
 
     def test_creates_directories(self, tmp_path):
         with patch("core.config.DATA_DIR", tmp_path / "data"):
-            with patch("core.config.DOCS_DIR", tmp_path / "docs"):
-                with patch("core.config.PUBLISHED_DIR", tmp_path / "published"):
-                    ensure_dirs()
+            with patch("core.config.DOCS_AGENT_DIR", tmp_path / "docs_agent"):
+                with patch("core.config.PENDING_DIR", tmp_path / "docs_agent" / "pending"):
+                    with patch("core.config.PUBLISHED_DIR", tmp_path / "docs_agent" / "published"):
+                        with patch("core.config.ARCHIVED_DIR", tmp_path / "docs_agent" / "archived"):
+                            ensure_dirs()
         assert (tmp_path / "data").is_dir()
-        assert (tmp_path / "docs").is_dir()
-        assert (tmp_path / "published").is_dir()
+        assert (tmp_path / "docs_agent" / "pending").is_dir()
+        assert (tmp_path / "docs_agent" / "published").is_dir()
+        assert (tmp_path / "docs_agent" / "archived").is_dir()
 
     def test_idempotent(self, tmp_path):
         with patch("core.config.DATA_DIR", tmp_path / "data"):
-            with patch("core.config.DOCS_DIR", tmp_path / "docs"):
-                with patch("core.config.PUBLISHED_DIR", tmp_path / "published"):
-                    ensure_dirs()
-                    ensure_dirs()  # 第二次不应报错
+            with patch("core.config.DOCS_AGENT_DIR", tmp_path / "docs_agent"):
+                with patch("core.config.PENDING_DIR", tmp_path / "docs_agent" / "pending"):
+                    with patch("core.config.PUBLISHED_DIR", tmp_path / "docs_agent" / "published"):
+                        with patch("core.config.ARCHIVED_DIR", tmp_path / "docs_agent" / "archived"):
+                            ensure_dirs()
+                            ensure_dirs()  # 第二次不应报错
         assert (tmp_path / "data").is_dir()

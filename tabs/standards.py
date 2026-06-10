@@ -1,20 +1,11 @@
 """Tab 3: 创作标准。"""
 
-import os
-
 import streamlit as st
 
 
 def render_standards_tab():
     """渲染创作标准 Tab。"""
     st.header("📖 A级创作标准速查")
-
-    dna_path = "docs/persona_dna.md"
-    if os.path.exists(dna_path):
-        with open(dna_path, "r", encoding="utf-8") as f:
-            dna = f.read()
-    else:
-        dna = ""
 
     st.subheader("🚫 绝对禁忌词")
     st.code("你看 / 你就看一点 / 其实啊 / 其实 / 第一...第二... / 总结起来 / 总之 / 真正爱你的人不会...")
@@ -42,6 +33,3 @@ def render_standards_tab():
     - **内页5**：博主共情 + 治愈
     - **内页6**：金句 + 价值承诺 + 评论引导
     """)
-
-    if st.toggle("查看完整 DNA 报告", key="show_dna"):
-        st.markdown(dna)

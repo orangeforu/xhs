@@ -23,10 +23,9 @@ Thumbs.db
 
 # Legacy drafts
 output_note_*.md
-docs/draft_note_*.md
 
 # Runtime generated content
-# docs/ is kept for legacy notes comparison, docs_agent/ is regenerated per run
+# docs_agent/{pending,published,archived}/ holds notes in lifecycle order
 docs_agent/
 docs_agent_v1/
 data/agent_memory/
@@ -35,9 +34,6 @@ data/*.lock
 
 # Assets generated during runtime
 assets/cover_*.png
-
-# Published notes (runtime)
-published/
 
 # Pytest
 .pytest_cache/

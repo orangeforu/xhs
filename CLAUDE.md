@@ -89,14 +89,16 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 
 ```
 docs_agent/
-  pending/                          # 新生成未发布（pipeline 默认输出目录）
+  pending/                          # 新生成未审核（pipeline 默认输出目录）
     {topic}_{hash}/
       note.md                       # 主文件（正文 + 审核 + 封面/内页路径 + 预设评论）
       cover_ai.png                  # AI 绘画封面
       inner_page_1.png              # 内页第 1 页
       inner_page_2.png              # 内页第 2 页
       ...
-  published/                        # 已发布但未录入数据（app.py 审核通过后自动迁移）
+  approved/                         # 已审核通过，等待在小红书发布（app.py 点击"通过"后迁移）
+    {topic}_{hash}/...
+  published/                        # 已在小红书发布，等待录入数据（用户确认"我发布了XX"后迁移）
     {topic}_{hash}/...
   archived/                         # 已发布且已录入数据（录入互动数据后自动迁移）
     {topic}_{hash}/...
@@ -104,10 +106,13 @@ docs_agent/
 
 **生命周期迁移规则**：
 - `pipeline.py` 生成笔记 → `pending/`
-- `app.py` 点击「✅ 通过并发布」→ 整目录 `shutil.move` 到 `published/`
+- `app.py` 点击「✅ 通过」→ 整目录 `shutil.move` 到 `approved/`
+- 用户确认「我发布了 XX」→ 整目录 `shutil.move` 到 `published/`
 - `app.py` 录入互动数据 → 整目录 `shutil.move` 到 `archived/`
 
-一次性迁移脚本：`python scripts/reorganize_notes.py`（首次把历史混放的笔记按状态分到 3 个子目录）。
+⚠️ **重要**：审核通过不等于已发布。只有用户明确说"我发布了 XX 笔记"才能标记为已发布。
+
+一次性迁移脚本：`python scripts/reorganize_notes.py`（首次把历史混放的笔记按状态分到 4 个子目录）。
 
 ## 平台调性约束
 

@@ -1,8 +1,9 @@
-"""一次性迁移脚本 — 把 docs_agent/ 下的笔记按状态分到 3 个子目录。
+"""一次性迁移脚本 — 把 docs_agent/ 下的笔记按状态分到 4 个子目录。
 
 分类规则：
-  docs_agent/pending/     新生成未发布（topics.json 中 status=generated，或未追踪的孤儿目录）
-  docs_agent/published/   已发布但未录入数据（performance.json 中 entry 但 likes/collects/exposure 全 0）
+  docs_agent/pending/     新生成未审核（topics.json 中 status=generated 或 not_started，或未追踪的孤儿目录）
+  docs_agent/approved/    已审核通过（topics.json 中 status=approved）
+  docs_agent/published/   已在小红书发布未录入数据（topics.json 中 status=published，或 performance.json 中 entry 但 likes/collects/exposure 全 0）
   docs_agent/archived/    已发布且已录入数据（performance.json 中 entry 且 likes/collects/exposure 任一 > 0）
 
 副作用：
@@ -27,7 +28,7 @@ DATA_DIR = ROOT / "data"
 TOPICS_PATH = DATA_DIR / "topics.json"
 PERF_PATH = DATA_DIR / "performance.json"
 
-SUBDIRS = ("pending", "published", "archived")
+SUBDIRS = ("pending", "approved", "published", "archived")
 
 
 def _backup(path: Path) -> None:
@@ -45,7 +46,11 @@ def _classify(folder_name: str, topics_by_dir: dict, perf_by_dir: dict) -> str:
     perf_note = perf_by_dir.get(folder_name)
     if perf_note is not None:
         return "archived" if _has_data(perf_note) else "published"
-    if folder_name in topics_by_dir:
+    topic = topics_by_dir.get(folder_name)
+    if topic is not None:
+        status = topic.get("status", "")
+        if status == "approved":
+            return "approved"
         return "pending"
     # 孤儿目录（未被任何 JSON 追踪）— 默认归到 pending 便于人工复查
     return "pending"
@@ -110,7 +115,7 @@ def main() -> int:
     )
     print(f"\nFound {len(folders)} note folders to classify.")
 
-    moved = {"pending": 0, "published": 0, "archived": 0}
+    moved = {"pending": 0, "approved": 0, "published": 0, "archived": 0}
     for folder in folders:
         subdir = _classify(folder.name, topics_by_dir, perf_by_dir)
         dst = DOCS_AGENT / subdir / folder.name
@@ -156,7 +161,8 @@ def main() -> int:
     )
 
     print(f"\nDone. Moved: {dict(moved)}")
-    print(f"  pending   : {moved['pending']}  (新生成未发布)")
+    print(f"  pending   : {moved['pending']}  (新生成未审核)")
+    print(f"  approved  : {moved['approved']}  (已审核通过)")
     print(f"  published : {moved['published']}  (已发布未录入数据)")
     print(f"  archived  : {moved['archived']}  (已发布已录入数据)")
     return 0

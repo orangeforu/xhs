@@ -6,8 +6,7 @@ from datetime import datetime, timezone
 
 import streamlit as st
 
-from core.config import load_topics_json, save_topics_json, load_performance_json, save_performance_json
-from core.publish_helpers import recalculate_summary as _recalculate_summary
+from core.config import load_topics_json, save_topics_json
 
 
 def render_review_tab():
@@ -50,8 +49,8 @@ def _render_topic_card(t: dict, topics_data: dict, topics: list):
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button(f"✅ 通过并发布", key=f"pass_{t['id']}"):
-                _handle_publish(t, out_dir, topics_data)
+            if st.button(f"✅ 通过", key=f"pass_{t['id']}"):
+                _handle_approve(t, out_dir, topics_data)
 
         with col2:
             _handle_feedback(t, topics_data)
@@ -64,38 +63,20 @@ def _render_topic_card(t: dict, topics_data: dict, topics: list):
             st.text_area("全选复制", preset_text, height=200, key=f"preset_{t['id']}")
 
 
-def _handle_publish(t: dict, out_dir: str, topics_data: dict):
-    """处理发布操作。"""
+def _handle_approve(t: dict, out_dir: str, topics_data: dict):
+    """处理审核通过操作。"""
     topic_name = os.path.basename(out_dir)
-    pub_dir = os.path.join("docs_agent", "published", topic_name)
-    if os.path.exists(pub_dir):
-        st.warning(f"docs_agent/published/{topic_name} 已存在，将被覆盖。")
-    shutil.move(out_dir, pub_dir)
+    approved_dir = os.path.join("docs_agent", "approved", topic_name)
+    if os.path.exists(approved_dir):
+        st.warning(f"docs_agent/approved/{topic_name} 已存在，将被覆盖。")
+    shutil.move(out_dir, approved_dir)
 
-    t["status"] = "published"
-    t["published_at"] = datetime.now(timezone.utc).isoformat()
+    t["status"] = "approved"
+    t["approved_at"] = datetime.now(timezone.utc).isoformat()
+    t["output_dir"] = approved_dir
     save_topics_json(topics_data)
 
-    perf = load_performance_json()
-    perf["notes"].append({
-        "topic_id": t["id"],
-        "topic": t["topic"],
-        "title_formula": t.get("title_formula", ""),
-        "pillar": t.get("pillar", ""),
-        "target_interaction": t.get("target_interaction", ""),
-        "published_at": t["published_at"],
-        "output_dir": pub_dir,
-        "exposure": 0,
-        "likes": 0,
-        "collects": 0,
-        "comments": 0,
-        "shares": 0,
-        "grade": "pending",
-    })
-    _recalculate_summary(perf)
-    save_performance_json(perf)
-
-    st.success(f"{t['topic']} 已发布！目录已移动到 docs_agent/published/")
+    st.success(f"{t['topic']} 已审核通过！目录已移动到 docs_agent/approved/。请在小红书发布后告知我。")
     st.rerun()
 
 

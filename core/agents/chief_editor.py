@@ -46,7 +46,7 @@ class ChiefEditor(BaseAgent):
                 cover_path = f"{out_dir}/cover_ai.png"
                 style_override = brief.get("series_style", "")
                 visual_dir = brief.get("visual_direction", "")
-                parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override, vd=visual_dir: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so, visual_direction=vd)))
+                parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override, vd=visual_dir, br=brief: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so, visual_direction=vd, brief=br)))
             else:
                 parallel_tasks.append(("design", lambda dr=design_result: dr))
 
@@ -172,23 +172,17 @@ class ChiefEditor(BaseAgent):
         if grade == "A" and verdict in ("pass", "conditional") and len(issues) == 0:
             return {"action": "publish", "reason": "A级内容，无硬伤"}
 
-        # B级：必须 0 issues 才能通过
-        if grade == "B" and verdict in ("pass", "conditional") and len(issues) == 0:
-            return {"action": "publish", "reason": "B级内容无硬伤，可接受"}
+        # B级：≤2 issues 可通过（放宽标准，避免过度修补失去个性）
+        if grade == "B" and verdict in ("pass", "conditional") and len(issues) <= 2:
+            return {"action": "publish", "reason": f"B级内容（{len(issues)}个问题），可接受"}
 
         # 死循环检测：连续3轮等级相同
         if grade_history and len(grade_history) >= 3:
             last_three = grade_history[-3:]
             if len(set(last_three)) == 1:
                 if last_three[0] == "B":
-                    if round_num < 4:
-                        return {
-                            "action": "revise",
-                            "feedback": "连续3轮均为B级，说明当前修改方向无效。请完全换一个叙事角度：如果之前是从'受害者的委屈'切入，这次试试'施害者的无意识'；如果之前是对话推动，这次试试动作细节推动。不要在原来的基础上微调。",
-                            "core_issue": "B级死循环：需要彻底换角度",
-                        }
-                    else:
-                        return {"action": "abandon", "reason": "5轮迭代均为B级，选题或角度存在根本问题"}
+                    # 放宽：连续3轮B级直接通过（不再强制换角度）
+                    return {"action": "publish", "reason": "连续3轮B级，内容已稳定，允许发布"}
                 elif last_three[0] == "C" and round_num >= 3:
                     return {"action": "abandon", "reason": "连续3轮C级，选题存在根本问题"}
 
@@ -209,21 +203,15 @@ class ChiefEditor(BaseAgent):
         if round_num >= 4:
             if grade in ("S", "A"):
                 return {"action": "publish", "reason": "已达最大迭代轮数，内容质量可接受"}
-            elif grade == "B" and len(issues) == 0:
-                return {"action": "publish", "reason": "已达最大迭代轮数，B级无硬伤，可接受"}
+            elif grade == "B" and len(issues) <= 2:
+                return {"action": "publish", "reason": f"已达最大迭代轮数，B级（{len(issues)}个问题），可接受"}
             else:
                 return {"action": "abandon", "reason": f"5轮迭代后仍为{grade}级且存在{len(issues)}个问题，放弃发布"}
 
-        # B 级连续 2 轮：换角度重写（不要小修）
+        # B 级连续 2 轮：继续修订（不再强制换角度，第3轮连续B会直接通过）
         feedback = self._build_feedback(review)
         if grade == "B" and grade_history and len(grade_history) >= 2 and grade_history[-2] == "B":
-            feedback = "【连续2轮B级，当前方向已证明无效。请换角度重写，不要在原稿上微调】\n\n换角度建议（任选一个）：\n" + (
-                "- 如果之前从'第三人称旁观'切入，这次试试'第一人称自述'\n"
-                "- 如果之前是'悲伤回忆'基调，这次试试'愤怒觉醒'或'自嘲幽默'\n"
-                "- 如果之前用'对话推动'，这次试试'动作细节推动'\n"
-                "- 如果之前的主角是'受害者'，这次试试从'施害者无意识'的角度切入\n"
-                "\n注意：不是小修，是完全换一种讲述方式。\n\n"
-            ) + feedback
+            feedback = "【连续2轮B级，请针对审核反馈做定向修补，第3轮将直接通过】\n\n" + feedback
 
         core_issue = issues[0]["problem"] if issues else "整体质量不达标"
 

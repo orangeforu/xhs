@@ -47,10 +47,10 @@ def _check_content_guard(content: str) -> list[str]:
             sample = matches[0] if isinstance(matches[0], str) else str(matches[0])
             issues.append(f"{desc}: 「{sample[:30]}」")
 
-    # 检查加粗数量（不超过3处）
+    # 检查加粗数量（不超过6处，放宽限制避免过度修补）
     bold_count = len(re.findall(r'\*\*[^*]+\*\*', body))
-    if bold_count > 4:
-        issues.append(f"加粗过多: {bold_count}处（限制3-4处）")
+    if bold_count > 6:
+        issues.append(f"加粗过多: {bold_count}处（限制5-6处）")
 
     # 检查 emoji 数量（正文不超过2个）
     emoji_re = re.compile(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U00002764\U00002728\U00001F447]')
@@ -109,34 +109,14 @@ def _check_data_driven(content: str) -> list[str]:
     else:
         issues.append("缺少互动钩子")
 
-    # 5. 结尾是否有5秒行动（强化版：必须包含可执行动作）
+    # 5. 结尾是否有5秒行动（宽松版：有关键词即可通过）
     last_part = body[-300:]
-    has_time_word = any(kw in last_part for kw in ["今天", "现在", "立刻", "马上", "下次"])
-    has_actionable = any(kw in last_part for kw in ["打开", "找到", "回复", "删掉", "改成", "发", "拨", "关", "拉黑", "截图", "写下"])
-    if has_time_word and not has_actionable:
-        issues.append("5秒行动不够具体: 有'现在/今天'但缺少具体动作动词（如'打开''删掉''回复'）")
-    elif not has_time_word and not has_actionable:
+    has_actionable = any(kw in last_part for kw in ["今天", "现在", "立刻", "马上", "下次", "打开", "找到", "回复", "删掉", "改成", "发", "拨", "关", "拉黑", "截图", "写下"])
+    if not has_actionable:
         issues.append("缺少5秒行动: 结尾没有给读者立刻能做的一件事")
 
-    # 6. 收藏元素是否带数字（数据证明带数字的收藏率更高）
-    if has_collectible:
-        has_number = _re.search(r'[0-9]+|一二三四五六七八九十', body)
-        if not has_number:
-            issues.append("收藏元素缺数字: '清单/方法/步骤'应带具体数字（如'3个方法''5步自检'），提升收藏率")
-
-    # 7. 标题长度检查（小红书限制20字，含emoji）
-    title_match = _re.search(r"【标题候选】\s*\n(.*?)(?=【|$)", content, _re.DOTALL)
-    if title_match:
-        titles_block = title_match.group(1)
-        lines = [l.strip() for l in titles_block.split('\n') if l.strip() and not l.strip().startswith('---')]
-        long_titles = []
-        for line in lines:
-            clean = _re.sub(r'^[\d]+[.、\s]+', '', line)
-            clean = _re.sub(r'^[①②③④⑤][\s.、]*', '', clean)
-            if len(clean) > 20:
-                long_titles.append(f"{clean}({len(clean)}字)")
-        if long_titles:
-            issues.append(f"标题超长: 小红书限制20字(含emoji)，以下标题超长：{'; '.join(long_titles[:2])}")
+    # 移除"收藏元素带数字"和"标题长度"检查 — 自检过严导致内容被过度修补失去个性
+    # 这两项改由审核官事后检查，不在写手提交前强制修补
 
     return issues
 
@@ -268,6 +248,31 @@ class EmotionalWriter(BaseAgent):
         if brief.get("controversy_anchor"):
             story_hint += f"\n**争议锚点**：{brief['controversy_anchor']}"
 
+        # 热点内容特殊指导
+        trending_hint = ""
+        if brief.get("is_trending_content"):
+            trending_keyword = brief.get("trending_keyword", "")
+            story_angle_hint = brief.get("story_angle_hint", "")
+
+            trending_hint = f"""
+
+**热点内容创作指南**：
+这是一个热点内容，热点关键词是「{trending_keyword}」。
+
+**热点+情感的融合要求**：
+1. 故事背景必须包含热点元素，让用户一看就知道和当前热点相关
+2. 但核心必须是情感冲突，热点只是场景。比如「{story_angle_hint}」
+3. 标题必须包含热点关键词「{trending_keyword}」，利用热点的搜索流量
+4. 封面也要体现热点元素，但要保持温暖调性（soft warm lighting, cozy atmosphere）
+5. 故事要具体、有画面感，不要写成新闻稿或热点评论
+6. 热点是"钩子"，情感是"留人"的东西。用户因为热点点进来，因为情感共鸣而停留、点赞、收藏
+
+**热点内容标题示例**（参考这个风格）：
+- 「世界杯」期间老公天天看球，我突然想离婚了
+- 看完「奥运会」夺冠，我给异地恋的男友发了分手
+- 「考研」上岸那天，我和陪了我3年的女朋友说再见
+"""
+
         prompt = f"""请创作一篇小红书图文笔记。
 
 **选题**：{brief["topic"]}
@@ -275,6 +280,7 @@ class EmotionalWriter(BaseAgent):
 **标题公式**：{formula}
 {story_hint}
 {data_hint}
+{trending_hint}
 
 {formula_instructions}
 
@@ -297,10 +303,11 @@ class EmotionalWriter(BaseAgent):
 12. **结尾的5秒行动必须是具体的小事**。比如"今天就把备注改回全名""发完这条消息就关机睡觉"，不是"学会爱自己"。
 
 **输出格式**：
-1. 【标题候选】3-4个标题，**每个严格控制在10-20个字以内（含标点、emoji，这是小红书硬限制）**，口语化像朋友说话（直接写标题本身，不要加"情绪宣泄型：""认知反差型："等分类前缀），每个带1-2个emoji
+1. 【标题候选】3-4个标题，**每个严格控制在10-20个字以内（含标点、emoji，这是小红书硬限制）**，口语化像朋友说话（直接写标题本身，不要加"情绪宣泄型：""认知反差型："等分类前缀），每个带1-2个emoji。**如果是热点内容，标题必须包含热点关键词**
 2. 【封面页】大字标题 + 情绪钩子小字 + 背景建议（中文描述 + 英文AI绘画prompt）
    封面氛围要求：整体必须是温暖、柔和、有呼吸感。即使故事情绪偏悲伤，也要用"暖调中的孤独""温柔的光影"方向。
    英文 prompt 中必须包含 "soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"。
+   **如果是热点内容，封面背景建议中必须包含热点元素**（如世界杯内容要有足球/球场元素，考研内容要有书本/图书馆元素）
 3. 【正文】根据故事长短自然分页，页与页之间用 `---` 分隔。不必硬凑页数，内容讲完了就结束。
 4. 【金句】一句话，不超过20字，必须加粗
 5. 【互动钩子】**必须用以下三种类型之一**（不要用"说说你的故事""你中了几条"老套路）：

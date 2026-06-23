@@ -286,9 +286,10 @@
         "正念"
       ],
       "pillar": "情绪疗愈",
-      "status": "generated",
+      "status": "approved",
       "generated_at": "2026-05-29T16:03:42.972550+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/焦虑发作时立刻能用的5分钟着陆急救法_00b6"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/焦虑发作时立刻能用的5分钟着陆急救法_00b6",
+      "approved_at": "2026-06-23T14:35:33+00:00"
     },
     {
       "id": 18,
@@ -303,9 +304,10 @@
         "停止内耗"
       ],
       "pillar": "情绪疗愈",
-      "status": "generated",
+      "status": "approved",
       "generated_at": "2026-05-29T16:07:19.836586+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
+      "approved_at": "2026-06-23T14:35:33+00:00"
     },
     {
       "id": 19,
@@ -386,9 +388,10 @@
       ],
       "pillar": "自我成长",
       "id": 23,
-      "status": "generated",
+      "status": "approved",
       "generated_at": "2026-06-10T14:25:21.944571+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/为什么越懂事的人越容易被忽视_93cc"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/为什么越懂事的人越容易被忽视_93cc",
+      "approved_at": "2026-06-23T14:35:33+00:00"
     },
     {
       "topic": "学会这5句「拒绝话术」，再也不怕被人道德绑架",
@@ -420,9 +423,11 @@
       ],
       "pillar": "亲密关系洞察",
       "id": 25,
-      "status": "generated",
+      "status": "published",
       "generated_at": "2026-06-03T16:19:36.900485+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/分手后还能做朋友吗评论区说出你的选择_d744"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/分手后还能做朋友吗评论区说出你的选择_d744",
+      "approved_at": "2026-06-23T14:34:44+00:00",
+      "published_at": "2026-06-23T14:59:03+00:00"
     },
     {
       "topic": "真正高情商的人，从来不说这3句话",
@@ -719,7 +724,11 @@
         "自我成长"
       ],
       "pillar": "亲密关系洞察",
-      "status": "not_started"
+      "status": "published",
+      "generated_at": "2026-06-23T14:40:51.511706+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/分手后最掉价的3件事你做过几个_a051",
+      "approved_at": "2026-06-23T14:41:09+00:00",
+      "published_at": "2026-06-23T14:48:08+00:00"
     },
     {
       "id": 45,
@@ -817,9 +826,11 @@
         "情感"
       ],
       "pillar": "亲密关系洞察",
-      "status": "generated",
+      "status": "published",
       "generated_at": "2026-06-10T14:51:17.001672+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/恋爱中最让人心寒的不是吵架是这3个瞬间_ad68"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/恋爱中最让人心寒的不是吵架是这3个瞬间_ad68",
+      "approved_at": "2026-06-23T14:32:38+00:00",
+      "published_at": "2026-06-23T14:54:44+00:00"
     }
   ]
 }

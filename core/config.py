@@ -212,6 +212,7 @@ def _grade_from_likes(likes: int) -> str:
 _METRIC_KEYS = (
     "likes", "collects", "comments", "shares", "exposure",
     "views", "cover_ctr", "followers_gained", "avg_view_duration", "danmaku",
+    "generated_with_commit",
 )
 
 

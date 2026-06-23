@@ -130,6 +130,7 @@ def write_note_file(
     preset_comments: dict,
     rounds: int = 1,
     title_eval: list | None = None,
+    commit_hash: str = "",
 ) -> None:
     """将笔记及相关产物写入 Markdown 文件（兼容旧格式，确保 app.py 正则解析正常）。"""
     with open(output_file, "w", encoding="utf-8") as f:
@@ -137,7 +138,10 @@ def write_note_file(
         f.write(draft["content"])
         f.write("\n\n---\n\n")
         f.write("## 审核结果\n\n")
-        f.write(f"**迭代轮数**: {rounds} | **最终审核**: {review.get('grade', 'B')} | **审核结论**: {review.get('verdict', 'unknown')}\n\n")
+        f.write(f"**迭代轮数**: {rounds} | **最终审核**: {review.get('grade', 'B')} | **审核结论**: {review.get('verdict', 'unknown')}")
+        if commit_hash:
+            f.write(f" | **代码版本**: {commit_hash}")
+        f.write("\n\n")
         if review.get("overall_comment"):
             f.write(f"**审核评语**: {review['overall_comment']}\n\n")
         f.write(format_review(review))

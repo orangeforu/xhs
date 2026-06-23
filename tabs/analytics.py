@@ -7,7 +7,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from core.config import load_performance_json, save_performance_json, PROJECT_ROOT
+from core.config import load_performance_json, save_performance_json, load_topics_json, PROJECT_ROOT
 from core.publish_helpers import (
     calculate_grade as _calculate_grade,
     calc_interaction_rate as _calc_interaction_rate,
@@ -16,6 +16,15 @@ from core.publish_helpers import (
     recalculate_summary as _recalculate_summary,
     score_title as _score_title,
 )
+
+
+def _get_commit_from_topics(topic: str) -> str:
+    """从 topics.json 中读取某选题的生成时代码版本。"""
+    topics_data = load_topics_json()
+    for t in topics_data.get("topics", []):
+        if t.get("topic") == topic:
+            return t.get("generated_with_commit", "")
+    return ""
 
 
 def _promote_to_archived(note: dict) -> None:
@@ -90,6 +99,8 @@ def _render_engagement_input(performance: dict):
                 n["exposure"] = exposure
                 n["grade"] = _calculate_grade(likes)
                 n["data_recorded_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                if not n.get("generated_with_commit"):
+                    n["generated_with_commit"] = _get_commit_from_topics(topic)
                 _promote_to_archived(n)
                 _recalculate_summary(performance)
                 save_performance_json(performance)
@@ -123,6 +134,8 @@ def _handle_batch_import(raw: str, performance: dict):
                         n["exposure"] = int(item.get("exposure", 0))
                         n["grade"] = _calculate_grade(n["likes"])
                         n["data_recorded_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                        if not n.get("generated_with_commit"):
+                            n["generated_with_commit"] = _get_commit_from_topics(topic)
                         _promote_to_archived(n)
                         updated += 1
                         break
@@ -151,6 +164,8 @@ def _handle_batch_import(raw: str, performance: dict):
                     n["shares"] = int(parts[4].strip())
                     n["exposure"] = int(parts[5].strip())
                     n["grade"] = _calculate_grade(n["likes"])
+                    if not n.get("generated_with_commit"):
+                        n["generated_with_commit"] = _get_commit_from_topics(topic)
                     updated += 1
                 except ValueError:
                     pass

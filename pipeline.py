@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import os
 import re
+import subprocess
 from datetime import datetime, timezone
 
 from core.config import (
@@ -150,7 +151,7 @@ def _load_topic_pool() -> list[dict]:
     return data.get("topics", [])
 
 
-def _update_topic_status(topic_str: str, status: str, output_dir: str | None = None) -> None:
+def _update_topic_status(topic_str: str, status: str, output_dir: str | None = None, commit_hash: str = "") -> None:
     """更新选题状态并持久化到 topics.json（原子读-改-写，带文件锁保护）。"""
     import json as _json
 
@@ -166,12 +167,28 @@ def _update_topic_status(topic_str: str, status: str, output_dir: str | None = N
                     t["status"] = status
                     if status == "generated":
                         t["generated_at"] = datetime.now(timezone.utc).isoformat()
+                        if commit_hash:
+                            t["generated_with_commit"] = commit_hash
                     if output_dir:
                         t["output_dir"] = output_dir
                     break
             _atomic_write_json(path, data, with_lock=False)
         finally:
             _unlock_file(lock_f)
+
+
+def _get_git_commit() -> str:
+    """获取当前 HEAD 的 7 位短 commit hash。"""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, cwd=PROJECT_ROOT, timeout=5,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return "unknown"
 
 
 def _prepare_out_dir(topic: str) -> str:
@@ -275,13 +292,29 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
     except Exception as e:
         logger.warning("标题评分失败（不影响主流程）: %s", e)
 
+    # 获取当前代码版本
+    commit_hash = _get_git_commit()
+
     # 保存笔记文件
     output_file = os.path.join(out_dir, "note.md")
-    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval)
+    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval, commit_hash=commit_hash)
     logger.info("已保存到: %s", output_file)
 
+    # 审核通过（pass/conditional）→ 直接放入 approved/，只有 fail 才留在 pending/
+    verdict = review.get("verdict", "fail")
+    if verdict in ("pass", "conditional"):
+        import shutil
+        approved_base = PROJECT_ROOT / "docs_agent" / "approved"
+        approved_base.mkdir(parents=True, exist_ok=True)
+        approved_dir = str(approved_base / os.path.basename(out_dir))
+        if os.path.exists(approved_dir):
+            shutil.rmtree(approved_dir)
+        shutil.move(out_dir, approved_dir)
+        out_dir = approved_dir
+        logger.info("审核通过 (%s)，笔记已移入 approved/", verdict)
+
     # 更新选题状态
-    _update_topic_status(brief["topic"], "generated", out_dir)
+    _update_topic_status(brief["topic"], "generated", out_dir, commit_hash=commit_hash)
     logger.info("选题状态已更新为 generated | 共迭代 %d 轮 | 最终等级: %s", rounds, review.get("grade", "B"))
 
     return {

@@ -27,23 +27,23 @@ def _freeze_dict(d: dict) -> types.MappingProxyType:
     return types.MappingProxyType(d)
 
 
-# ── 内页排版常量（冻结防止运行时意外修改） ──
+# ── 内页排版常量 ──
 LAYOUT = _freeze_dict({
-    "base_font_size": 42,
-    "bold_extra": 4,
-    "line_height_ratio": 1.5,
-    "para_spacing_ratio": 1.8,
-    "max_text_width_ratio": 0.55,
-    "page_top": 280,
-    "page_bottom_margin": 120,
-    "margin_left": 140,
-    "separator_height_ratio": 0.5,
+    "base_font_size": 52,
+    "bold_extra": 6,
+    "line_height_ratio": 1.55,
+    "para_spacing_ratio": 2.0,
+    "max_text_width_ratio": 0.68,
+    "page_top": 200,
+    "page_bottom_margin": 140,
+    "margin_left": 120,
+    "separator_height_ratio": 1.2,
     "last_page_expand": True,
     "anchor_max_per_page": 3,
-    "last_block_font_boost": 8,
-    "last_block_max_chars": 24,
-    "page_number_font_size": 20,
-    "page_number_y_offset": 70,
+    "last_block_font_boost": 12,
+    "last_block_max_chars": 28,
+    "page_number_font_size": 22,
+    "page_number_y_offset": 80,
 })
 
 # ── 品牌色调（冻结） ──
@@ -52,36 +52,43 @@ PALETTE = _freeze_dict({
         "bg_top": (255, 252, 248), "bg_bottom": (255, 238, 225),
         "title": (60, 35, 20), "subtitle": (130, 95, 70), "accent": (230, 180, 140),
         "body": (90, 70, 55), "highlight": (45, 30, 20),
+        "cover_accent": (225, 140, 80),  # 封面用：更浓的暖橘
     },
     "warm_grey": {
         "bg_top": (250, 247, 243), "bg_bottom": (238, 234, 228),
         "title": (65, 55, 48), "subtitle": (130, 120, 110), "accent": (195, 180, 165),
         "body": (90, 82, 75), "highlight": (50, 42, 36),
+        "cover_accent": (180, 140, 110),  # 封面用：咖啡色
     },
     "cool": {
         "bg_top": (245, 248, 252), "bg_bottom": (220, 230, 245),
         "title": (25, 45, 70), "subtitle": (90, 110, 140), "accent": (160, 190, 220),
         "body": (60, 80, 110), "highlight": (20, 35, 55),
+        "cover_accent": (90, 140, 200),  # 封面用：亮蓝
     },
     "blank": {
         "bg_top": (252, 252, 252), "bg_bottom": (248, 248, 248),
         "title": (30, 30, 30), "subtitle": (100, 100, 100), "accent": (200, 200, 200),
         "body": (70, 70, 70), "highlight": (20, 20, 20),
+        "cover_accent": (80, 80, 80),  # 封面用：深灰
     },
     "twilight": {
         "bg_top": (238, 236, 242), "bg_bottom": (220, 218, 228),
         "title": (55, 50, 70), "subtitle": (110, 105, 130), "accent": (180, 170, 200),
         "body": (85, 80, 100), "highlight": (45, 40, 60),
+        "cover_accent": (140, 120, 180),  # 封面用：紫色
     },
     "crimson": {
         "bg_top": (250, 240, 240), "bg_bottom": (242, 228, 228),
         "title": (85, 35, 35), "subtitle": (140, 90, 90), "accent": (210, 130, 130),
         "body": (120, 70, 70), "highlight": (70, 25, 25),
+        "cover_accent": (200, 85, 75),  # 封面用：正红
     },
     "mist": {
         "bg_top": (242, 244, 246), "bg_bottom": (228, 232, 236),
         "title": (50, 60, 70), "subtitle": (105, 115, 125), "accent": (160, 175, 190),
         "body": (80, 90, 100), "highlight": (40, 50, 60),
+        "cover_accent": (100, 140, 175),  # 封面用：蓝灰
     },
 })
 
@@ -206,7 +213,7 @@ def _add_center_glow(img: Image.Image, palette: dict) -> Image.Image:
     c = palette["bg_top"]
     for r in range(500, 0, -25):
         ratio = r / 500
-        alpha = int(10 * (1 - ratio))
+        alpha = int(18 * (1 - ratio))
         glow_draw.ellipse(
             [(cx - int(r * 1.5), cy - r), (cx + int(r * 1.5), cy + r)],
             fill=(min(255, c[0] + 20), min(255, c[1] + 20), min(255, c[2] + 20), alpha),

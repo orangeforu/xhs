@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFilter
 from core.config import get_logger, IMAGE_PROVIDER
 from core.image.render import (
     COVER_WIDTH, COVER_HEIGHT, PALETTE, LAYOUT,
-    _get_font, _wrap_text, _draw_gradient_bg, _calc_font_size,
+    _get_font, _wrap_text, _draw_gradient_bg, _add_noise_texture, _calc_font_size,
 )
 
 logger = get_logger(__name__)
@@ -47,70 +47,47 @@ def _http_get_with_retry(url: str, retries: int = 3, timeout: int = 120, **kwarg
 
 
 def generate_cover_template(title: str, subtitle: str, style: str = "warm", number: int | None = None, output_path: str = "assets/cover_template.png") -> str:
-    """模板合成封面。"""
+    """文字封面 — 大字报风格，大字标题+色块分割，模仿小红书高CTR文字封面。"""
     p = PALETTE.get(style, PALETTE["warm"])
+    accent = p.get("cover_accent", p["accent"])  # 封面用更鲜明的强调色
 
-    img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (*p["bg_top"], 255))
+    img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (255, 255, 255, 255))
     draw = ImageDraw.Draw(img)
 
-    if style in ("warm", "cool", "warm_grey", "twilight", "crimson", "mist", "blank"):
-        _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
-    elif style == "chat":
+    # 渐变底色
+    _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
+
+    # ── 大字报风格布局 ──
+    margin = 100
+    max_text_w = COVER_WIDTH - margin * 2
+
+    if style == "chat":
+        # 聊天截图风 — 保留原有的绿色聊天气泡
         draw.rectangle([(0, 0), (COVER_WIDTH, COVER_HEIGHT)], fill=(235, 235, 235))
         draw.rectangle([(0, 0), (COVER_WIDTH, 110)], fill=(245, 245, 245))
         draw.line([(0, 110), (COVER_WIDTH, 110)], fill=(220, 220, 220), width=1)
         time_font = _get_font(24)
         draw.text((COVER_WIDTH // 2 - 60, 55), "下午 3:42", font=time_font, fill=(150, 150, 150))
-    elif style == "number":
-        _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
-
-    if style not in ("chat", "blank"):
-        blob = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (0, 0, 0, 0))
-        blob_draw = ImageDraw.Draw(blob)
-        cx, cy = COVER_WIDTH // 2, COVER_HEIGHT // 3
-        for r in range(500, 0, -25):
-            ratio = r / 500
-            alpha = int(10 * (1 - ratio))
-            blob_draw.ellipse(
-                [(cx - int(r * 1.5), cy - r), (cx + int(r * 1.5), cy + r)],
-                fill=(*p["accent"], alpha),
-            )
-        img = Image.alpha_composite(img, blob)
-        draw = ImageDraw.Draw(img)
-
-    margin_x = 100
-    max_text_w = COVER_WIDTH - margin_x * 2
-
-    if style == "chat":
         bubble_pad = 50
         title_font = _get_font(64, bold=True)
         title_lines = _wrap_text(title, title_font, 840)
         title_h = len(title_lines) * 88
-
         sub_font = _get_font(32)
         sub_lines = _wrap_text(subtitle, sub_font, 700)
         sub_h = len(sub_lines) * 48
-
         bubble_w = 920
         bubble_h = title_h + sub_h + bubble_pad * 3
         bx = (COVER_WIDTH - bubble_w) // 2
         by = COVER_HEIGHT // 3 - bubble_h // 2
-
         draw.rounded_rectangle([(bx, by), (bx + bubble_w, by + bubble_h)], radius=30, fill=(149, 236, 105))
-        tri = [
-            (bx + bubble_w - 40, by + bubble_h),
-            (bx + bubble_w + 15, by + bubble_h + 25),
-            (bx + bubble_w - 40, by + bubble_h + 25),
-        ]
+        tri = [(bx + bubble_w - 40, by + bubble_h), (bx + bubble_w + 15, by + bubble_h + 25), (bx + bubble_w - 40, by + bubble_h + 25)]
         draw.polygon(tri, fill=(149, 236, 105))
-
         y_text = by + bubble_pad
         for i, line in enumerate(title_lines):
             bbox = title_font.getbbox(line)
             tw = bbox[2] - bbox[0]
             x = bx + (bubble_w - tw) // 2
             draw.text((x, y_text + i * 88), line, font=title_font, fill=(40, 40, 40))
-
         y_sub = y_text + title_h + bubble_pad
         for i, line in enumerate(sub_lines):
             bbox = sub_font.getbbox(line)
@@ -123,14 +100,11 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
         num_font = _get_font(420, bold=True)
         try:
             bbox = num_font.getbbox(num)
-            nw = bbox[2] - bbox[0]
-            nh = bbox[3] - bbox[1]
+            nw, nh = bbox[2] - bbox[0], bbox[3] - bbox[1]
         except (AttributeError, TypeError):
             nw, nh = 300, 400
-        nx = (COVER_WIDTH - nw) // 2
-        ny = COVER_HEIGHT // 5
-        draw.text((nx, ny), num, font=num_font, fill=(p["accent"]))
-
+        nx, ny = (COVER_WIDTH - nw) // 2, COVER_HEIGHT // 5
+        draw.text((nx, ny), num, font=num_font, fill=(*p["accent"], 180))
         title_font = _get_font(72, bold=True)
         title_lines = _wrap_text(title, title_font, max_text_w)
         y_title = ny + nh + 60
@@ -139,7 +113,6 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
             tw = bbox[2] - bbox[0]
             x = (COVER_WIDTH - tw) // 2
             draw.text((x, y_title + i * 92), line, font=title_font, fill=p["title"])
-
         sub_font = _get_font(36)
         sub_lines = _wrap_text(subtitle, sub_font, max_text_w - 100)
         y_sub = y_title + len(title_lines) * 92 + 50
@@ -150,20 +123,18 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
             draw.text((x, y_sub + i * 54), line, font=sub_font, fill=p["subtitle"])
 
     elif style == "blank":
+        # 极简白底 — 纯文字 + 细线
         title_size, title_font = _calc_font_size(title, max_text_w, 120)
         title_lines = _wrap_text(title, title_font, max_text_w)
         title_h = len(title_lines) * (title_size + 20)
-
         y_start = COVER_HEIGHT // 3 - title_h // 2
         for i, line in enumerate(title_lines):
             bbox = title_font.getbbox(line)
             tw = bbox[2] - bbox[0]
             x = (COVER_WIDTH - tw) // 2
             draw.text((x, y_start + i * (title_size + 20)), line, font=title_font, fill=p["title"])
-
         line_y = y_start + title_h + 60
         draw.rectangle([(COVER_WIDTH // 2 - 40, line_y), (COVER_WIDTH // 2 + 40, line_y + 4)], fill=p["accent"])
-
         sub_font = _get_font(36)
         sub_lines = _wrap_text(subtitle, sub_font, max_text_w - 100)
         y_sub = line_y + 50
@@ -174,37 +145,121 @@ def generate_cover_template(title: str, subtitle: str, style: str = "warm", numb
             draw.text((x, y_sub + i * 54), line, font=sub_font, fill=p["subtitle"])
 
     else:
-        title_size, title_font = _calc_font_size(title, max_text_w, 96)
-        title_lines = _wrap_text(title, title_font, max_text_w)
-        title_h = len(title_lines) * (title_size + 16)
+        # ── 大字报风格（默认） — 粗色块 + 超大标题 ──
+        # 左上粗竖条（下半段渐隐）
+        stripe_w = 20
+        stripe_x = margin - 10
+        stripe_full_h = int(COVER_HEIGHT * 0.65)  # 只画到65%高度
+        draw.rectangle(
+            [(stripe_x, 0), (stripe_x + stripe_w, stripe_full_h)],
+            fill=(*accent, 220),
+        )
+        # 竖条底部渐变消隐
+        fade_h = 60
+        for dy in range(fade_h):
+            alpha = int(220 * (1.0 - dy / fade_h))
+            y_pos = stripe_full_h + dy
+            draw.rectangle(
+                [(stripe_x, y_pos), (stripe_x + stripe_w, y_pos + 1)],
+                fill=(*accent, alpha),
+            )
 
-        y_start = COVER_HEIGHT // 3 - title_h // 2
+        # 标题区背景色块 — 渐变消隐（从顶部 accent 色逐渐透明）
+        block_height = int(COVER_HEIGHT * 0.52)
+        block_overlay = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (0, 0, 0, 0))
+        block_pixels = block_overlay.load()
+        for y in range(block_height):
+            fade_ratio = y / max(block_height - 1, 1)
+            # ease-out cubi fade: 顶部浓，底部淡
+            alpha = int(55 * (1.0 - fade_ratio ** 3))
+            r, g, b = accent
+            for x in range(COVER_WIDTH):
+                block_pixels[x, y] = (r, g, b, alpha)
+        img = Image.alpha_composite(img, block_overlay)
+        draw = ImageDraw.Draw(img)
+
+        # 右上角双层圆形装饰
+        circle_r1 = 200
+        circle_r2 = 130
+        circle_x = COVER_WIDTH - 80
+        circle_y = -40
+        draw.ellipse(
+            [(circle_x - circle_r1, circle_y - circle_r1), (circle_x + circle_r1, circle_y + circle_r1)],
+            fill=(*accent, 18),
+        )
+        draw.ellipse(
+            [(circle_x - circle_r2, circle_y - circle_r2), (circle_x + circle_r2, circle_y + circle_r2)],
+            fill=(*accent, 30),
+        )
+
+        # 中部大型淡色圆形 — 填补空白区，增加层次
+        mid_circle_r = 350
+        mid_circle_x = 60
+        mid_circle_y = int(COVER_HEIGHT * 0.68)
+        draw.ellipse(
+            [(mid_circle_x - mid_circle_r, mid_circle_y - mid_circle_r),
+             (mid_circle_x + mid_circle_r, mid_circle_y + mid_circle_r)],
+            fill=(*accent, 10),
+        )
+
+        # 标题 — 超大，左对齐
+        title_size, title_font = _calc_font_size(title, max_text_w - 40, 120)
+        title_lines = _wrap_text(title, title_font, max_text_w - 40)
+        title_h = len(title_lines) * int(title_size * 1.2)
+
+        y_title_start = int(block_height * 0.55) - title_h // 2
         for i, line in enumerate(title_lines):
             bbox = title_font.getbbox(line)
             tw = bbox[2] - bbox[0]
-            x = (COVER_WIDTH - tw) // 2
-            draw.text((x + 2, y_start + i * (title_size + 16) + 2), line, font=title_font, fill=(0, 0, 0, 20))
-            draw.text((x, y_start + i * (title_size + 16)), line, font=title_font, fill=p["title"])
+            x = margin + 40  # 右移避开竖条
+            # 文字投影 — 加深以增加层次
+            draw.text((x + 3, y_title_start + i * int(title_size * 1.2) + 3),
+                      line, font=title_font, fill=(*accent, 35))
+            draw.text((x, y_title_start + i * int(title_size * 1.2)),
+                      line, font=title_font, fill=p["title"])
 
-        line_y = y_start + title_h + 50
-        bar_w = 60
-        draw.rounded_rectangle(
-            [((COVER_WIDTH - bar_w) // 2, line_y), ((COVER_WIDTH + bar_w) // 2, line_y + 3)],
-            radius=2,
-            fill=p["accent"],
+        # 分隔线 — 加一小圆点装饰
+        sep_y = block_height + 65
+        draw.rectangle(
+            [(margin + 40, sep_y), (margin + 260, sep_y + 4)],
+            fill=(*accent, 220),
+        )
+        dot_r = 5
+        draw.ellipse(
+            [(margin + 275, sep_y - dot_r + 2), (margin + 275 + dot_r * 2, sep_y + dot_r + 2)],
+            fill=(*accent, 200),
         )
 
-        sub_font = _get_font(40)
-        sub_lines = _wrap_text(subtitle, sub_font, max_text_w - 80)
-        y_sub = line_y + 60
+        # 副标题
+        sub_font = _get_font(44)
+        sub_lines = _wrap_text(subtitle, sub_font, max_text_w - 60)
+        y_sub = sep_y + 45
         for i, line in enumerate(sub_lines):
             bbox = sub_font.getbbox(line)
             tw = bbox[2] - bbox[0]
-            x = (COVER_WIDTH - tw) // 2
-            draw.text((x, y_sub + i * 58), line, font=sub_font, fill=p["subtitle"])
+            draw.text((margin + 40, y_sub + i * 60), line, font=sub_font, fill=p["subtitle"])
 
-    if img.mode == "RGBA":
-        img = img.convert("RGB")
+        # ── 底部装饰 — 平衡上下视觉重量 ──
+        bottom_y = COVER_HEIGHT - 160
+        # 细横线
+        draw.rectangle(
+            [(COVER_WIDTH - margin - 200, bottom_y), (COVER_WIDTH - margin, bottom_y + 1)],
+            fill=(*accent, 40),
+        )
+        # 三个小圆点
+        for j in range(3):
+            dot_cx = COVER_WIDTH - margin - 200 + j * 30
+            draw.ellipse(
+                [(dot_cx - 2, bottom_y + 18 - 2), (dot_cx + 2, bottom_y + 18 + 2)],
+                fill=(*accent, 60),
+            )
+
+    # 叠加噪点纹理增加纸质质感
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    img = _add_noise_texture(img, intensity=2)
+
+    img = img.convert("RGB")
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     img.save(output_path, quality=95)
     logger.info("模板封面已保存: %s (style=%s)", output_path, style)

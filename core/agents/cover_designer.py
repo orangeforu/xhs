@@ -4,7 +4,7 @@ import re
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.utils import load_prompt, extract_json_from_llm
-from core.image_generator import generate_cover_ai
+from core.image_generator import generate_cover_template
 
 logger = get_logger(__name__)
 
@@ -76,7 +76,7 @@ class CoverDesigner(BaseAgent):
 {trending_hint}
 
 请输出 JSON 格式的封面设计方案：
-{{"title": "...", "subtitle": "...", "style": "...", "prompt": "...", "visual_anchor": "...", "rationale": "..."}}
+{{"title": "...", "subtitle": "...", "style": "...", "rationale": "..."}}
 
 要求：
 1. title 不超过12个字（封面大字必须短而醒目，和笔记标题是两回事），3秒内能读完。必须具体，禁止"情感笔记""看完沉默了"等万能词
@@ -87,22 +87,16 @@ class CoverDesigner(BaseAgent):
    - 方法承诺（"动作""方法""步骤""清单"）— 实用承诺CTR高10%
    - "你"字（让读者直接代入）— 读者相关性CTR高8%
    - 反常识/悬念（"不是""原来""其实""没想到"）— 认知冲突CTR高12%
-   示例高CTR标题："焦虑发作时，一个动作就能让你立刻平静下来"（含数字+方法承诺+你字，9.5% CTR）
-4. subtitle 是一句悬念，不是解释标题
+4. subtitle 是一句悬念钩子，不是解释标题，≤15字
 5. style 必须是 warm_grey|twilight|crimson|mist|cool|blank 之一
-6. prompt 必须包含温暖安全词（soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth）
-7. visual_anchor 是从故事中提炼的1个具体画面元素
-8. rationale 说明设计思路，并指出标题中使用了哪些高CTR元素
+6. rationale 说明设计思路，并指出标题中使用了哪些高CTR元素
 
-**风格轮换要求**：最近使用过的风格是 {recent_styles}。请优先选择不同的风格，避免视觉同质化。如果故事情绪确实适合最近用过的风格，可以选择，但需要在 rationale 中说明理由。
+**风格轮换要求**：最近使用过的风格是 {recent_styles}。请优先选择不同的风格，避免视觉同质化。
 """
-        raw = self.think(design_prompt, temperature=0.7, max_tokens=1200)
+        raw = self.think(design_prompt, temperature=0.7, max_tokens=800)
 
         # 解析 JSON
         design = self._parse_design(raw)
-
-        # 暖调 prompt 校验：确保 AI 绘画 prompt 包含暖调安全词
-        design["prompt"] = self._ensure_warm_prompt(design.get("prompt", ""))
 
         # 系列风格绑定：如果指定了 style_override，优先使用
         if style_override and style_override in ALL_STYLES:
@@ -124,21 +118,20 @@ class CoverDesigner(BaseAgent):
         if design["title"] in ("情感笔记", ""):
             design["title"] = self._extract_title_from_content(note_content)
 
-        # 生成封面图（只生成 AI 封面，符合平台策略）
+        # 生成文字模板封面（大字标题 + 渐变背景，小红书信息流中 CTR 更高）
         cover_path = None
         cover_paths = {}
         if output_path:
             base_dir = os.path.dirname(output_path)
             ai_path = os.path.join(base_dir, "cover_ai.png")
-            # 封面已存在则跳过（每次生成都有API费用）
+            # 封面已存在则跳过（避免重复生成）
             if os.path.exists(ai_path):
                 logger.info("封面已存在，跳过生成: %s", ai_path)
                 cover_path = ai_path
                 cover_paths["ai"] = ai_path
             else:
                 try:
-                    ai_result = generate_cover_ai(
-                        prompt=design["prompt"],
+                    ai_result = generate_cover_template(
                         title=design["title"],
                         subtitle=design["subtitle"],
                         style=design.get("style", "warm_grey"),
@@ -148,7 +141,7 @@ class CoverDesigner(BaseAgent):
                         cover_paths["ai"] = ai_result
                         cover_path = ai_result
                 except Exception as e:
-                    logger.warning("AI 封面生成失败: %s", e)
+                    logger.warning("封面生成失败: %s", e)
 
         result = {
             "design": design,
@@ -213,19 +206,16 @@ class CoverDesigner(BaseAgent):
         """从 LLM 输出中解析 JSON 设计方案。"""
         parsed = extract_json_from_llm(raw)
         if parsed:
-            # 确保所有必需字段存在
             design = {
                 "title": parsed.get("title", ""),
                 "subtitle": parsed.get("subtitle", ""),
                 "style": parsed.get("style", "warm_grey"),
-                "prompt": parsed.get("prompt", ""),
-                "visual_anchor": parsed.get("visual_anchor", ""),
                 "rationale": parsed.get("rationale", ""),
             }
             return design
 
         # fallback: 使用正则提取 key-value 对
-        design = {"title": "", "subtitle": "", "style": "warm_grey", "prompt": "", "visual_anchor": "", "rationale": ""}
+        design = {"title": "", "subtitle": "", "style": "warm_grey", "rationale": ""}
 
         for key in design:
             # 匹配 "key": "value" 或 key: value 格式
@@ -238,41 +228,8 @@ class CoverDesigner(BaseAgent):
             design["title"] = "说不出口的话"
         if not design["subtitle"]:
             design["subtitle"] = "有些话，藏在心里太久了"
-        if not design["prompt"]:
-            design["prompt"] = "A soft emotional aesthetic scene, warm lighting, minimalist, cozy atmosphere, gentle pastel tones, emotional warmth"
 
         return design
-
-    @staticmethod
-    def _ensure_warm_prompt(prompt: str) -> str:
-        """确保 AI 绘画 prompt 包含暖调安全词，缺少时自动补充。"""
-        if not prompt:
-            return "A soft emotional aesthetic scene, warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"
-
-        warm_keywords = ["warm", "cozy", "pastel", "golden", "soft light", "gentle"]
-        has_warm = any(kw in prompt.lower() for kw in warm_keywords)
-
-        if not has_warm:
-            prompt = prompt.rstrip(".") + ", soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"
-            logger.info("AI prompt 缺少暖调关键词，已自动补充")
-
-        # 替换冷调关键词
-        cold_replacements = {
-            "dimly lit": "softly lit",
-            "dark room": "dimly lit cozy room",
-            "cold-toned": "warm-toned",
-            "blue tones": "warm golden tones",
-            "silhouette": "soft figure",
-            "empty room": "cozy room",
-            "gloomy": "melancholic warm",
-            "eerie": "mysterious warm",
-        }
-        for cold, warm in cold_replacements.items():
-            if cold in prompt.lower():
-                prompt = re.sub(re.escape(cold), warm, prompt, flags=re.IGNORECASE)
-                logger.info("替换冷调关键词: %s -> %s", cold, warm)
-
-        return prompt
 
     def handle(self, message: Message) -> None:
         """处理消息总线消息。"""

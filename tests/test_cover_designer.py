@@ -89,12 +89,13 @@ class TestParseDesign(unittest.TestCase):
         result = self.designer._parse_design(raw)
         self.assertEqual(result["title"], "说不出口的话")
         self.assertEqual(result["style"], "warm_grey")
-        self.assertIn("cozy atmosphere", result["prompt"])
+        self.assertEqual(result["rationale"], "")
 
     def test_json_with_extra_fields(self):
-        raw = '{"title": "标题", "visual_anchor": "窗边的咖啡杯", "rationale": "温暖感"}'
+        raw = '{"title": "标题", "rationale": "温暖感"}'
         result = self.designer._parse_design(raw)
-        self.assertEqual(result["visual_anchor"], "窗边的咖啡杯")
+        self.assertEqual(result["title"], "标题")
+        self.assertEqual(result["rationale"], "温暖感")
 
 
 if __name__ == "__main__":

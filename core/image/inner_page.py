@@ -124,6 +124,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                         pre_paginated_pages: list | None = None) -> str | None:
     """把单页文字渲染成小红书风格内页图。"""
     p = PALETTE.get(style, PALETTE["warm_grey"])
+    cover_accent = p.get("cover_accent", p["accent"])
 
     img = Image.new("RGBA", (COVER_WIDTH, COVER_HEIGHT), (*p["bg_top"], 255))
     _draw_gradient_bg(img, COVER_WIDTH, COVER_HEIGHT, p["bg_top"], p["bg_bottom"])
@@ -159,12 +160,36 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     y = y_start
     anchor_idx = (page_num - 1) % len(ANCHOR_SYMBOLS)
 
+    # 顶部装饰细线
+    draw.rectangle(
+        [(x_start, y_start - 30), (x_start + 80, y_start - 28)],
+        fill=(*cover_accent, 40),
+    )
+
+    # 左侧装饰竖线（底部渐隐）
+    stripe_w = 6
+    stripe_x = x_start - 18
+    stripe_full_end = y_limit - 40
+    draw.rectangle(
+        [(stripe_x, y_start), (stripe_x + stripe_w, stripe_full_end)],
+        fill=(*cover_accent, 60),
+    )
+    # 底部渐隐
+    fade_h = 40
+    for dy in range(fade_h):
+        alpha = int(60 * (1.0 - dy / fade_h))
+        y_pos = stripe_full_end + dy
+        draw.rectangle(
+            [(stripe_x, y_pos), (stripe_x + stripe_w, y_pos + 1)],
+            fill=(*cover_accent, alpha),
+        )
+
     bg_top = p["bg_top"]
     accent = p["accent"]
     highlight_bg = (
-        int(accent[0] * 0.35 + bg_top[0] * 0.65),
-        int(accent[1] * 0.35 + bg_top[1] * 0.65),
-        int(accent[2] * 0.35 + bg_top[2] * 0.65),
+        int(cover_accent[0] * 0.40 + bg_top[0] * 0.60),
+        int(cover_accent[1] * 0.40 + bg_top[1] * 0.60),
+        int(cover_accent[2] * 0.40 + bg_top[2] * 0.60),
     )
 
     actual_para_spacing = para_spacing
@@ -190,11 +215,19 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         tag, is_bold, line_count = block
         if tag == '__separator__':
             sep_height = int(line_height * LAYOUT["separator_height_ratio"])
+            # 粗分割线 + 小圆点
             draw.rectangle(
-                [(x_start, y + sep_height - 2), (x_start + 80, y + sep_height)],
-                fill=p["accent"],
+                [(x_start, y + sep_height // 2 - 1), (x_start + 120, y + sep_height // 2 + 1)],
+                fill=(*cover_accent, 180),
             )
-            y += sep_height + actual_para_spacing // 2
+            dot_r = 5
+            dot_cx = x_start + 140
+            dot_cy = y + sep_height // 2
+            draw.ellipse(
+                [(dot_cx - dot_r, dot_cy - dot_r), (dot_cx + dot_r, dot_cy + dot_r)],
+                fill=(*cover_accent, 200),
+            )
+            y += sep_height + actual_para_spacing
             after_sep_or_first = True
             continue
 
@@ -205,11 +238,12 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         is_last_page = (page_num == total_pages)
         is_short = line_count <= 2 and sum(len(line) for line in tag) <= LAYOUT["last_block_max_chars"]
 
+        # 最后一页最后一段：金句放大
         if is_last_page and is_last_text_block and is_short:
             decor_y = y - 20
             draw.rectangle(
-                [((COVER_WIDTH - 50) // 2, decor_y), ((COVER_WIDTH + 50) // 2, decor_y + 2)],
-                fill=p["accent"],
+                [((COVER_WIDTH - 80) // 2, decor_y), ((COVER_WIDTH + 80) // 2, decor_y + 3)],
+                fill=(*cover_accent, 200),
             )
             y = decor_y + 30
 
@@ -229,6 +263,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
             y += actual_para_spacing
             continue
 
+        # 加粗文字 — 左侧色块高亮
         if is_bold:
             max_line_w = 0
             for line in tag:
@@ -239,22 +274,26 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                     lw = 0
                 max_line_w = max(max_line_w, lw)
             block_h = line_count * line_height
-            pad_x = 24
-            pad_y = 16
+            pad_x = 20
+            pad_y = 12
             rect_x1 = x_start - pad_x
             rect_y1 = y - pad_y
             rect_x2 = x_start + max_line_w + pad_x
             rect_y2 = y + block_h + pad_y
-            rect_x2 = min(rect_x2, COVER_WIDTH - 40)
-            draw.rounded_rectangle(
+            rect_x2 = min(rect_x2, COVER_WIDTH - 60)
+            draw.rectangle(
                 [(rect_x1, rect_y1), (rect_x2, rect_y2)],
-                radius=16,
                 fill=highlight_bg,
+            )
+            # 左侧色条
+            draw.rectangle(
+                [(rect_x1, rect_y1), (rect_x1 + 5, rect_y2)],
+                fill=(*cover_accent, 200),
             )
 
         use_anchor = block_idx in anchor_allowed and not (is_last_page and is_last_text_block)
 
-        dot_size = int(base_font_size * 0.4)
+        dot_size = int(base_font_size * 0.48)
         dot_radius = dot_size // 2
 
         if is_bold:
@@ -275,13 +314,13 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                     draw.ellipse(
                         [(dot_x - dot_radius, dot_y_center - dot_radius),
                          (dot_x + dot_radius, dot_y_center + dot_radius)],
-                        fill=p["accent"],
+                        fill=cover_accent,
                     )
                 else:
                     draw.ellipse(
                         [(dot_x - dot_radius, dot_y_center - dot_radius),
                          (dot_x + dot_radius, dot_y_center + dot_radius)],
-                        outline=p["accent"],
+                        outline=cover_accent,
                         width=2,
                     )
                 anchor_x = x_start + dot_size + int(base_font_size * 0.5)
@@ -294,6 +333,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         y += actual_para_spacing
         after_sep_or_first = False
 
+    # 页码
     page_font = _get_font(LAYOUT["page_number_font_size"])
     page_text = f"— {page_num} / {total_pages} —"
     try:
@@ -302,10 +342,21 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     except (AttributeError, TypeError):
         tw = 0
     page_y = COVER_HEIGHT - LAYOUT["page_number_y_offset"]
+
+    # 页码上方装饰线 + 两侧小圆点
+    deco_y = page_y - 18
+    deco_w = 50
     draw.rectangle(
-        [((COVER_WIDTH - 30) // 2, page_y - 14), ((COVER_WIDTH + 30) // 2, page_y - 12)],
-        fill=p["accent"],
+        [((COVER_WIDTH - deco_w) // 2, deco_y), ((COVER_WIDTH + deco_w) // 2, deco_y + 2)],
+        fill=(*cover_accent, 140),
     )
+    for side in (-1, 1):
+        dot_cx = (COVER_WIDTH + side * (deco_w + 12)) // 2
+        draw.ellipse(
+            [(dot_cx - 2, deco_y - 1), (dot_cx + 2, deco_y + 3)],
+            fill=(*cover_accent, 100),
+        )
+
     draw.text(((COVER_WIDTH - tw) // 2, page_y), page_text, font=page_font, fill=p["subtitle"])
 
     final = img.convert("RGB")

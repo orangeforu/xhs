@@ -14,10 +14,11 @@
         "亲密关系"
       ],
       "pillar": "亲密关系洞察",
-      "status": "generated",
+      "status": "published",
       "generated_at": "2026-06-24T13:45:22.630712+00:00",
       "generated_with_commit": "14c6860",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363",
+      "published_at": "2026-06-24T14:04:21.097169+00:00"
     },
     {
       "id": 2,
@@ -727,7 +728,7 @@
       "pillar": "亲密关系洞察",
       "status": "published",
       "generated_at": "2026-06-23T14:40:51.511706+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/分手后最掉价的3件事你做过几个_a051",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/分手后最掉价的3件事你做过几个_a051",
       "approved_at": "2026-06-23T14:41:09+00:00",
       "published_at": "2026-06-23T14:48:08+00:00"
     },
@@ -831,7 +832,7 @@
       "pillar": "亲密关系洞察",
       "status": "published",
       "generated_at": "2026-06-10T14:51:17.001672+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/恋爱中最让人心寒的不是吵架是这3个瞬间_ad68",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/恋爱中最让人心寒的不是吵架是这3个瞬间_ad68",
       "approved_at": "2026-06-23T14:32:38+00:00",
       "published_at": "2026-06-23T14:54:44+00:00"
     }

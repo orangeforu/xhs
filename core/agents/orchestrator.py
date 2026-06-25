@@ -4,11 +4,6 @@ Multi-Agent 创作编排器
 把 7 个专家 Agent 通过消息总线协作完成一篇笔记的创作。
 """
 
-import hashlib
-import os
-import re
-from datetime import datetime, timezone
-
 from core.agents import (
     MessageBus,
     EmotionalWriter,
@@ -19,7 +14,7 @@ from core.agents import (
     TopicStrategist,
     ChiefEditor,
 )
-from core.config import get_logger, PROJECT_ROOT
+from core.config import get_logger
 
 logger = get_logger(__name__)
 
@@ -37,9 +32,14 @@ class Orchestrator:
         self.strategist = TopicStrategist(self.bus)
         self.chief = ChiefEditor(self.bus)
 
-    def run(self, brief: dict, out_dir: str) -> dict:
+    def run(self, brief: dict, out_dir: str, user_feedback: str = "") -> dict:
         """
         执行完整的多 Agent 创作流程。
+
+        Args:
+            brief: 选题 brief
+            out_dir: 输出目录
+            user_feedback: 用户修改反馈（来自审核工作台的"需要修改"）
 
         Returns:
             dict: 包含 draft, design, inner_paths, review, comments, rounds, status
@@ -60,94 +60,8 @@ class Orchestrator:
             editor=self.editor,
             community=self.community,
             out_dir=out_dir,
+            user_feedback=user_feedback,
         )
 
         result["brief"] = enriched_brief
         return result
-
-
-def _clean_md(text: str) -> str:
-    """去掉 Markdown 加粗、斜体、反引号等标记。"""
-    if not text:
-        return ""
-    t = text.strip()
-    t = re.sub(r"^[\s*_`]+|[\s*_`]+$", "", t)
-    return t.strip()
-
-
-def _extract_cover_info_from_design(design_result: dict) -> dict:
-    """从设计师的输出中提取封面信息（兼容旧 pipeline 格式）。"""
-    if not design_result or not design_result.get("design"):
-        return {"title": "", "subtitle": "", "prompt": "", "style": "warm_grey"}
-    d = design_result["design"]
-    return {
-        "title": d.get("title", ""),
-        "subtitle": d.get("subtitle", ""),
-        "prompt": d.get("prompt", ""),
-        "style": d.get("style", "warm_grey"),
-    }
-
-
-def _write_note_file(
-    output_file: str,
-    brief: dict,
-    draft: dict,
-    review: dict,
-    cover_paths: dict,
-    inner_paths: list,
-    preset_comments: dict,
-    rounds: int = 1,
-) -> None:
-    """将笔记及相关产物写入 Markdown 文件（兼容旧格式，确保 app.py 正则解析正常）。"""
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(f"# {brief['topic']}\n\n")
-        f.write(draft["content"])
-        f.write("\n\n---\n\n")
-        f.write("## 审核结果\n\n")
-        f.write(f"**迭代轮数**: {rounds} | **最终审核**: {review.get('grade', 'B')} | **审核结论**: {review.get('verdict', 'unknown')}\n\n")
-        if review.get("overall_comment"):
-            f.write(f"**审核评语**: {review['overall_comment']}\n\n")
-        f.write(_format_review(review))
-        if cover_paths:
-            f.write("\n\n## 封面文件\n\n")
-            for name, path in cover_paths.items():
-                f.write(f"- `{name}`: {path}\n")
-        if inner_paths:
-            f.write("\n## 内页文件\n\n")
-            for path in inner_paths:
-                f.write(f"- {path}\n")
-        if preset_comments.get("comments"):
-            f.write("\n## 预设评论（发布后使用）\n\n")
-            for c in preset_comments["comments"]:
-                f.write(f"- {c}\n")
-
-
-def _format_review(review: dict) -> str:
-    """将结构化审核报告格式化为 Markdown。"""
-    if not review:
-        return "审核信息缺失"
-    parts = []
-    parts.append(f"**等级**: {review.get('grade', 'B')}")
-    parts.append(f"**结论**: {review.get('verdict', 'unknown')}")
-
-    issues = review.get("issues", [])
-    if issues:
-        parts.append("\n### 问题\n")
-        for i in issues:
-            parts.append(f"- **{i.get('location', '')}**: {i.get('problem', '')}")
-            if i.get("suggestion"):
-                parts.append(f"  - 建议: {i['suggestion']}")
-
-    suggestions = review.get("suggestions", [])
-    if suggestions:
-        parts.append("\n### 建议\n")
-        for s in suggestions:
-            parts.append(f"- **{s.get('location', '')}**: {s.get('idea', '')}")
-
-    strengths = review.get("strengths", [])
-    if strengths:
-        parts.append("\n### 优点\n")
-        for s in strengths:
-            parts.append(f"- {s}")
-
-    return "\n".join(parts)

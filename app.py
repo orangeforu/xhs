@@ -1,21 +1,33 @@
+"""小红书 AI 创作工作台 — Streamlit 应用入口。"""
+
 import os
-import glob
-import re
-import shutil
-from datetime import datetime, timezone
 
 import streamlit as st
 
 from core.config import (
     init,
     load_topics_json,
-    save_topics_json,
     load_performance_json,
-    save_performance_json,
     open_folder,
 )
+from core.publish_helpers import (
+    calculate_grade as _calculate_grade,
+    calc_formula_stats as _calc_formula_stats,
+    calc_pillar_stats as _calc_pillar_stats,
+)
+from tabs import (
+    render_review_tab,
+    render_topics_tab,
+    render_standards_tab,
+    render_analytics_tab,
+    render_calendar_tab,
+    render_publish_tab,
+)
 
-init()
+try:
+    init()
+except RuntimeError:
+    pass  # .env 未配置时允许 app 以只读模式运行（数据复盘等不需要 API key）
 
 st.set_page_config(page_title="小红书AI创作台", page_icon="📝", layout="wide")
 
@@ -59,27 +71,19 @@ total_count = len(topics)
 generated_count = sum(1 for t in topics if t.get("status") == "generated")
 published_count = sum(1 for t in topics if t.get("status") == "published")
 
-# ── 熔断检测 ──
-def _calculate_grade(likes: int) -> str:
-    if likes > 1500:
-        return "S"
-    elif likes >= 800:
-        return "A"
-    elif likes >= 200:
-        return "B"
-    return "C"
-
 
 def _check_circuit_breaker() -> tuple[bool, int]:
-    """检查是否触发熔断：连续3篇C级。返回 (是否熔断, 连续C级数)。"""
+    """检查是否触发熔断：最近3篇全部C级（不足3篇时也检查）。返回 (是否熔断, 连续C级数)。"""
     notes = performance.get("notes", [])
     if not notes:
         return False, 0
-    # 按发布时间排序，取最近3篇已录入数据的
     recent = [n for n in notes if n.get("likes", 0) > 0 or n.get("grade") in ("S", "A", "B", "C")]
     recent.sort(key=lambda x: x.get("published_at", ""), reverse=True)
+    if not recent:
+        return False, 0
+    check_count = min(3, len(recent))
     streak = 0
-    for n in recent[:3]:
+    for n in recent[:check_count]:
         grade = n.get("grade", "")
         if not grade or grade == "pending":
             grade = _calculate_grade(n.get("likes", 0))
@@ -87,41 +91,11 @@ def _check_circuit_breaker() -> tuple[bool, int]:
             streak += 1
         else:
             break
-    return streak >= 3, streak
+    # 所有被检查的笔记都是 C 级即触发熔断
+    return streak == check_count and check_count >= 1, streak
 
 
 cb_tripped, cb_streak = _check_circuit_breaker()
-
-
-# ── 发布辅助函数 ──
-def _extract_title_candidates(content: str) -> list[str]:
-    """从 note.md 提取标题候选列表。"""
-    titles = []
-    m = re.search(r"【标题候选】\s*(.+?)\s*(?=【|$)", content, re.DOTALL)
-    if m:
-        block = m.group(1).strip()
-        for line in block.split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            cleaned = re.sub(r"^\d+[\.、]\s*", "", line)
-            cleaned = re.sub(r"^[\s*_`]+|[\s*_`]+$", "", cleaned)
-            if cleaned:
-                titles.append(cleaned)
-    return titles
-
-
-def _extract_body_for_publish(content: str) -> str:
-    """提取并格式化正文，适合小红书发布。"""
-    m = re.search(r"【正文】\s*(.+?)(?=## 预设评论|$)", content, re.DOTALL)
-    if not m:
-        return ""
-    body = m.group(1).strip()
-    body = re.sub(r"\*\*(.+?)\*\*", r"\1", body)
-    body = re.sub(r"\n\s*---\s*\n", "\n\n", body)
-    body = re.sub(r"^#+\s*", "", body, flags=re.MULTILINE)
-    body = re.sub(r"\n{3,}", "\n\n", body)
-    return body.strip()
 
 
 # ── Sidebar ──
@@ -134,6 +108,18 @@ st.sidebar.progress(
     published_count / total_count if total_count else 0,
     text=f"发布进度 {published_count}/{total_count}",
 )
+
+# 最有效公式/支柱提示
+if performance.get("notes"):
+    _notes = performance["notes"]
+    _formula_stats = _calc_formula_stats(_notes)
+    if _formula_stats:
+        best_f = max(_formula_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+        st.sidebar.caption(f"🏆 最有效公式: **{best_f[0]}**（均赞 {best_f[1]['total_likes']/best_f[1]['count']:.0f}）")
+    _pillar_stats = _calc_pillar_stats(_notes)
+    if _pillar_stats:
+        best_p = max(_pillar_stats.items(), key=lambda x: x[1]["total_likes"] / max(x[1]["count"], 1))
+        st.sidebar.caption(f"🏆 最有效支柱: **{best_p[0]}**（均赞 {best_p[1]['total_likes']/best_p[1]['count']:.0f}）")
 
 if cb_tripped:
     st.sidebar.error(f"🚨 熔断警告：连续 {cb_streak} 篇 C 级！请暂停发布，复盘选题方向。")
@@ -149,309 +135,29 @@ if st.sidebar.button("📁 打开项目文件夹"):
     open_folder(os.path.dirname(os.path.abspath(__file__)))
 
 # ── Main Tabs ──
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📝 待审核笔记", "📚 选题池", "📖 创作标准", "📈 数据复盘", "🚀 一键发布助手"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📝 待审核笔记",
+    "📚 选题池",
+    "📖 创作标准",
+    "📈 数据复盘",
+    "📅 内容日历",
+    "🚀 一键发布助手",
+])
 
-# Tab 1: 待审核笔记
 with tab1:
-    st.header("待审核笔记")
+    render_review_tab()
 
-    generated_topics = [t for t in topics if t.get("status") == "generated"]
-    legacy_drafts = sorted(glob.glob("docs/draft_note_*.md"))
-
-    if not generated_topics and not legacy_drafts:
-        st.info("暂无待审核笔记。运行 pipeline.py 生成后，笔记会出现在这里。")
-    else:
-        for t in generated_topics:
-            out_dir = t.get("output_dir", "")
-            note_path = os.path.join(out_dir, "note.md") if out_dir else ""
-            if not (note_path and os.path.exists(note_path)):
-                st.warning(f"选题 **{t['topic']}** 标记为已生成，但找不到文件：{note_path}")
-                continue
-
-            with st.expander(f"📄 {t['topic']}", expanded=True):
-                try:
-                    with open(note_path, "r", encoding="utf-8") as f:
-                        content = f.read()
-                except FileNotFoundError:
-                    st.error(f"文件已被删除: {note_path}")
-                    continue
-                st.markdown(content)
-
-                # 提取预设评论
-                preset_text = ""
-                if "## 预设评论" in content:
-                    preset_text = content.split("## 预设评论")[1].strip()
-
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    if st.button(f"✅ 通过并发布", key=f"pass_{t['id']}"):
-                        topic_name = os.path.basename(out_dir)
-                        pub_dir = os.path.join("published", topic_name)
-                        if os.path.exists(pub_dir):
-                            st.warning(f"published/{topic_name} 已存在，将被覆盖。")
-                        shutil.move(out_dir, pub_dir)
-
-                        t["status"] = "published"
-                        t["published_at"] = datetime.now(timezone.utc).isoformat()
-                        save_topics_json(topics_data)
-
-                        perf = load_performance_json()
-                        perf["notes"].append({
-                            "topic_id": t["id"],
-                            "topic": t["topic"],
-                            "published_at": t["published_at"],
-                            "likes": 0,
-                            "collects": 0,
-                            "comments": 0,
-                            "shares": 0,
-                            "grade": "pending",
-                        })
-                        perf["summary"]["total_published"] = len(perf["notes"])
-                        save_performance_json(perf)
-
-                        st.success(f"{t['topic']} 已发布！目录已移动到 published/")
-                        st.rerun()
-
-                with col2:
-                    if st.button(f"📝 需要修改", key=f"edit_{t['id']}"):
-                        st.warning("请在下方输入修改意见，或直接编辑 docs/ 下的文件。")
-                        st.text_area("修改意见", key=f"feedback_{t['id']}")
-
-                with col3:
-                    if st.button(f"❌ 打回重写", key=f"reject_{t['id']}"):
-                        st.session_state[f"confirm_reject_{t['id']}"] = True
-                    if st.session_state.get(f"confirm_reject_{t['id']}"):
-                        st.warning(f"确认打回 **{t['topic']}**？将删除生成的全部文件。")
-                        c1, c2 = st.columns(2)
-                        with c1:
-                            if st.button("确认打回", key=f"confirm_yes_{t['id']}"):
-                                t["status"] = "not_started"
-                                if os.path.exists(out_dir):
-                                    shutil.rmtree(out_dir)
-                                for k in ("generated_at", "output_dir", "published_at"):
-                                    t.pop(k, None)
-                                save_topics_json(topics_data)
-                                st.session_state.pop(f"confirm_reject_{t['id']}", None)
-                                st.error(f"{t['topic']} 已打回。请调整 pipeline.py 的 prompt 后重新生成。")
-                                st.rerun()
-                        with c2:
-                            if st.button("取消", key=f"confirm_no_{t['id']}"):
-                                st.session_state.pop(f"confirm_reject_{t['id']}", None)
-                                st.rerun()
-
-                if preset_text:
-                    st.subheader("💬 预设评论（发布后复制到评论区）")
-                    st.text_area("全选复制", preset_text, height=200, key=f"preset_{t['id']}")
-
-        # 遗留草稿兼容
-        if legacy_drafts:
-            st.divider()
-            st.caption("以下草稿未关联选题池（旧版遗留）")
-            for f in legacy_drafts:
-                fname = os.path.basename(f)
-                with st.expander(f"📄 {fname}"):
-                    with open(f, "r", encoding="utf-8") as file:
-                        st.markdown(file.read())
-
-# Tab 2: 选题池
 with tab2:
-    st.header("📚 本月选题池")
+    render_topics_tab()
 
-    for i, t in enumerate(topics, 1):
-        status = t.get("status", "not_started")
-        status_map = {
-            "not_started": ("未开始", "blue"),
-            "generated": ("待审核", "orange"),
-            "published": ("已发布", "green"),
-            "archived": ("已归档", "gray"),
-        }
-        label, color = status_map.get(status, (status, "blue"))
-
-        cols = st.columns([0.5, 3, 1, 1, 1])
-        with cols[0]:
-            st.write(f"**{i}**")
-        with cols[1]:
-            st.write(t["topic"])
-        with cols[2]:
-            st.caption(t.get("title_formula", ""))
-        with cols[3]:
-            st.caption(t.get("target_interaction", ""))
-        with cols[4]:
-            if color == "green":
-                st.success(label)
-            elif color == "orange":
-                st.warning(label)
-            elif color == "gray":
-                st.caption(label)
-            else:
-                st.info(label)
-
-# Tab 3: 创作标准
 with tab3:
-    st.header("📖 A级创作标准速查")
+    render_standards_tab()
 
-    with open("docs/persona_dna.md", "r", encoding="utf-8") as f:
-        dna = f.read()
-
-    st.subheader("🚫 绝对禁忌词")
-    st.code("你看 / 你就看一点 / 其实啊 / 其实 / 第一...第二... / 总结起来 / 总之 / 真正爱你的人不会...")
-
-    st.subheader("✅ 每篇必须包含")
-    must_have = [
-        "亲近视角：'我闺蜜跟我说' 或 '有姐妹私信我'",
-        "博主共情：'其实我也有过这种时候'",
-        "最狠的一句话：极致扎心短句",
-        "以前vs现在对比",
-        "反常识洞察角度",
-        "治愈出口 + 价值承诺",
-        "评论引导互动问题",
-        "封面：情绪钩子小字（无具体虚假事件）",
-    ]
-    for item in must_have:
-        st.checkbox(item, value=True, disabled=True)
-
-    st.subheader("📐 图文分页格式")
-    st.markdown("""
-    - **封面**：大字标题 + 情绪钩子小字
-    - **内页1**：开场画面（抓眼球细节）
-    - **内页2-3**：故事展开 + 深入内心 + 对比
-    - **内页4**：反常识洞察
-    - **内页5**：博主共情 + 治愈
-    - **内页6**：金句 + 价值承诺 + 评论引导
-    """)
-
-    if st.toggle("查看完整 DNA 报告", key="show_dna"):
-        st.markdown(dna)
-
-# Tab 4: 数据复盘
 with tab4:
-    st.header("📈 数据复盘")
+    render_analytics_tab(cb_tripped=cb_tripped, cb_streak=cb_streak)
 
-    notes = performance.get("notes", [])
-    summary = performance.get("summary", {})
-
-    # 统计摘要
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.metric("总发布", summary.get("total_published", 0))
-    with col2:
-        total_likes = sum(n.get("likes", 0) for n in notes)
-        avg_likes = total_likes / len(notes) if notes else 0
-        st.metric("总点赞", total_likes, f"均赞 {avg_likes:.0f}")
-    with col3:
-        s_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "S")
-        st.metric("S级爆款", s_count)
-    with col4:
-        a_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "A")
-        st.metric("A级优质", a_count)
-    with col5:
-        c_count = sum(1 for n in notes if _calculate_grade(n.get("likes", 0)) == "C")
-        st.metric("C级不合格", c_count)
-
-    if cb_tripped:
-        st.error("🚨 **熔断已触发**：连续 3 篇 C 级（点赞<200）。请立即停止发布，复盘选题方向和内容质量。")
-    elif c_count >= 2:
-        st.warning(f"⚠️ 已有 {c_count} 篇 C 级内容，请注意内容质量。")
-
-    st.divider()
-    st.subheader("📋 已发布笔记数据录入")
-
-    if not notes:
-        st.info("暂无已发布笔记。在「待审核笔记」Tab 中点击「通过并发布」后，笔记会出现在这里。")
-    else:
-        for i, note in enumerate(notes):
-            topic = note.get("topic", f"笔记 {i+1}")
-            with st.expander(f"{topic}", expanded=False):
-                cols = st.columns(5)
-                with cols[0]:
-                    likes = st.number_input("点赞", min_value=0, value=note.get("likes", 0), key=f"likes_{i}")
-                with cols[1]:
-                    collects = st.number_input("收藏", min_value=0, value=note.get("collects", 0), key=f"collects_{i}")
-                with cols[2]:
-                    comments = st.number_input("评论", min_value=0, value=note.get("comments", 0), key=f"comments_{i}")
-                with cols[3]:
-                    shares = st.number_input("分享", min_value=0, value=note.get("shares", 0), key=f"shares_{i}")
-                with cols[4]:
-                    grade = _calculate_grade(likes)
-                    grade_color = {"S": "🟢", "A": "🔵", "B": "🟡", "C": "🔴"}.get(grade, "⚪")
-                    st.markdown(f"**等级: {grade_color} {grade}**")
-
-                if st.button("💾 保存数据", key=f"save_perf_{i}"):
-                    note["likes"] = likes
-                    note["collects"] = collects
-                    note["comments"] = comments
-                    note["shares"] = shares
-                    note["grade"] = grade
-                    save_performance_json(performance)
-                    st.success(f"{topic} 数据已保存！")
-                    st.rerun()
-
-# Tab 5: 一键发布助手
 with tab5:
-    st.header("🚀 一键发布助手")
-    st.caption("选择笔记 → 挑选标题 → 复制正文 → 按顺序上传图片 → 粘贴预设评论")
+    render_calendar_tab()
 
-    eligible_topics = [t for t in topics if t.get("status") in ("generated", "published")]
-    if not eligible_topics:
-        st.info("暂无可发布的笔记。先在 Terminal 运行 `python pipeline.py --index N` 生成笔记。")
-    else:
-        options = {f"{t['topic']} ({'待审核' if t.get('status') == 'generated' else '已发布'})": t for t in eligible_topics}
-        selected_label = st.selectbox("选择要发布的笔记", list(options.keys()))
-        selected_topic = options[selected_label]
-
-        out_dir = selected_topic.get("output_dir", "")
-        note_path = os.path.join(out_dir, "note.md") if out_dir else ""
-
-        if not (note_path and os.path.exists(note_path)):
-            st.error(f"找不到笔记文件：{note_path}")
-        else:
-            with open(note_path, "r", encoding="utf-8") as f:
-                raw_content = f.read()
-
-            titles = _extract_title_candidates(raw_content)
-            body = _extract_body_for_publish(raw_content)
-            tags = selected_topic.get("tags", [])
-            hashtags = " ".join([f"#{tag}" for tag in tags])
-
-            col_left, col_right = st.columns([1, 1])
-
-            with col_left:
-                st.subheader("1️⃣ 选择标题")
-                if titles:
-                    selected_title = st.radio("推荐标题（选一个）", titles, index=0)
-                else:
-                    selected_title = st.text_input("自定义标题", value=selected_topic.get("topic", ""))
-
-                st.subheader("2️⃣ 发布正文")
-                full_text = f"{body}\n\n{hashtags}".strip()
-                st.text_area(
-                    "点击文本框，按 Ctrl+A 全选后复制",
-                    full_text,
-                    height=280,
-                    key="publish_body",
-                )
-
-                if "## 预设评论" in raw_content:
-                    preset = raw_content.split("## 预设评论")[1].strip()
-                    st.subheader("4️⃣ 预设评论（发布后粘贴到评论区）")
-                    st.text_area("", preset, height=120, key="publish_preset")
-
-            with col_right:
-                st.subheader("3️⃣ 图片上传顺序")
-                image_files = sorted(
-                    glob.glob(os.path.join(out_dir, "*.png")),
-                    key=lambda x: (
-                        0 if "cover" in os.path.basename(x).lower() else 1,
-                        os.path.basename(x),
-                    ),
-                )
-                if not image_files:
-                    st.warning("该笔记目录下没有找到图片。")
-                else:
-                    for i, img_path in enumerate(image_files, 1):
-                        fname = os.path.basename(img_path)
-                        st.caption(f"第{i}张 · {fname}")
-                        st.image(img_path, use_container_width=True)
-                        if i == 1:
-                            st.info("☝️ 第一张是封面，上传时记得放在最前面")
-                        st.divider()
+with tab6:
+    render_publish_tab()

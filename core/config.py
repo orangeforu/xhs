@@ -4,31 +4,36 @@ import os
 import platform
 import subprocess
 import tempfile
-import time
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# 统一日志配置
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
+# 日志配置 — 只在根 logger 无 handler 时添加，避免覆盖用户自定义配置
+_root_logger = logging.getLogger()
+if not _root_logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"))
+    _root_logger.addHandler(_handler)
+    _root_logger.setLevel(logging.INFO)
 
 PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
-DOCS_DIR = PROJECT_ROOT / "docs"
-PUBLISHED_DIR = PROJECT_ROOT / "published"
+DOCS_AGENT_DIR = PROJECT_ROOT / "docs_agent"
+PENDING_DIR = DOCS_AGENT_DIR / "pending"
+PUBLISHED_DIR = DOCS_AGENT_DIR / "published"
+ARCHIVED_DIR = DOCS_AGENT_DIR / "archived"
 ASSETS_DIR = PROJECT_ROOT / "assets"
 FONT_DIR = ASSETS_DIR / "fonts"
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 
-# 图片生成配置
+# ── 集中管理的环境变量 ──
 IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "pollinations").lower()
 IMAGE_API_KEY = os.getenv("IMAGE_API_KEY", "")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("KIMI_API_KEY", "")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1"))
+LLM_MODEL = os.getenv("LLM_MODEL", "kimi-k2-6")
 
 
 # ── 跨平台文件锁 ──
@@ -42,26 +47,46 @@ if platform.system() in ("Linux", "Darwin"):
     def _unlock_file(f) -> None:
         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 else:
-    # Windows fallback：使用 lockfile 机制
+    # Windows: 使用 msvcrt 文件锁
+    import msvcrt
+
     def _lock_file(f, exclusive: bool = True) -> None:
-        pass  # TODO: Windows 下可引入 pywin32 或 filelock
+        mode = msvcrt.LK_NBLCK if exclusive else msvcrt.LK_NBRLCK
+        try:
+            msvcrt.locking(f.fileno(), mode, 1)
+        except OSError:
+            # 如果锁被占用，重试
+            import time
+            for _ in range(10):
+                time.sleep(0.1)
+                try:
+                    msvcrt.locking(f.fileno(), mode, 1)
+                    return
+                except OSError:
+                    continue
+            raise
 
     def _unlock_file(f) -> None:
-        pass
+        try:
+            msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
 
 
 def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def ensure_dirs():
+def ensure_dirs() -> None:
     """确保必要目录存在。"""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    DOCS_AGENT_DIR.mkdir(parents=True, exist_ok=True)
+    PENDING_DIR.mkdir(parents=True, exist_ok=True)
     PUBLISHED_DIR.mkdir(parents=True, exist_ok=True)
+    ARCHIVED_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def validate_env():
+def validate_env() -> None:
     """验证关键环境变量，缺失时立即报错并给出清晰指引。"""
     api_key = os.getenv("LLM_API_KEY", "") or os.getenv("KIMI_API_KEY", "")
     if not api_key:
@@ -93,9 +118,29 @@ def open_folder(path: str) -> None:
         subprocess.run(["xdg-open", path], check=False)
 
 
-def _atomic_write_json(path: Path, data: dict) -> None:
-    """原子写入 JSON：先写临时文件再 rename，避免并发写入导致数据损坏。"""
+def _atomic_write_json(path: Path, data: dict, with_lock: bool = True) -> None:
+    """原子写入 JSON：先写临时文件再 rename，避免并发写入导致数据损坏。
+
+    Args:
+        with_lock: 是否使用文件锁保护写入（默认 True）
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
+
+    if with_lock:
+        # 使用 .lock 文件作为锁文件，避免对同一个文件同时读写
+        lock_path = path.with_suffix(".lock")
+        with open(lock_path, "w") as lock_f:
+            _lock_file(lock_f, exclusive=True)
+            try:
+                _write_json_atomic(path, data)
+            finally:
+                _unlock_file(lock_f)
+    else:
+        _write_json_atomic(path, data)
+
+
+def _write_json_atomic(path: Path, data: dict) -> None:
+    """实际的原子写入逻辑。"""
     fd, tmp_path = tempfile.mkstemp(suffix=".json", dir=str(path.parent))
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -113,23 +158,20 @@ def load_topics_json() -> dict:
         raise FileNotFoundError(
             f"选题池文件不存在: {path}。请先创建 data/topics.json。"
         )
-    with open(path, "r", encoding="utf-8") as f:
-        _lock_file(f, exclusive=False)
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=False)
         try:
-            return json.load(f)
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
         finally:
-            _unlock_file(f)
+            _unlock_file(lock_f)
 
 
 def save_topics_json(data: dict) -> None:
-    """保存选题池 JSON。"""
+    """保存选题池 JSON（带锁保护）。"""
     path = DATA_DIR / "topics.json"
-    with open(path, "a+", encoding="utf-8") as f:
-        _lock_file(f, exclusive=True)
-        try:
-            _atomic_write_json(path, data)
-        finally:
-            _unlock_file(f)
+    _atomic_write_json(path, data, with_lock=True)
 
 
 def load_performance_json() -> dict:
@@ -138,28 +180,92 @@ def load_performance_json() -> dict:
     if not path.exists():
         return {"notes": [], "summary": {
             "total_published": 0, "total_likes": 0, "total_collects": 0,
-            "total_comments": 0, "total_shares": 0,
+            "total_comments": 0, "total_shares": 0, "total_exposure": 0,
+            "total_views": 0, "total_followers_gained": 0,
+            "avg_ctr": 0.0, "avg_view_duration": 0.0,
             "s_grade_count": 0, "a_grade_count": 0,
             "b_grade_count": 0, "c_grade_count": 0,
             "current_streak_underperform": 0,
         }}
-    with open(path, "r", encoding="utf-8") as f:
-        _lock_file(f, exclusive=False)
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=False)
         try:
-            return json.load(f)
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
         finally:
-            _unlock_file(f)
+            _unlock_file(lock_f)
 
 
 def save_performance_json(data: dict) -> None:
-    """保存发布数据 JSON。"""
+    """保存发布数据 JSON（带锁保护）。"""
     path = DATA_DIR / "performance.json"
-    with open(path, "a+", encoding="utf-8") as f:
-        _lock_file(f, exclusive=True)
+    _atomic_write_json(path, data, with_lock=True)
+
+
+def _grade_from_likes(likes: int) -> str:
+    """根据点赞数计算等级。委托给 publish_helpers.calculate_grade。"""
+    from core.publish_helpers import calculate_grade
+    return calculate_grade(likes)
+
+
+_METRIC_KEYS = (
+    "likes", "collects", "comments", "shares", "exposure",
+    "views", "cover_ctr", "followers_gained", "avg_view_duration", "danmaku",
+    "generated_with_commit",
+)
+
+
+def update_note_performance(topic: str, metrics: dict) -> bool:
+    """更新单篇笔记的运营数据（按 topic 匹配，原子读-改-写）。
+
+    metrics 支持字段:
+      likes, collects, comments, shares, exposure,
+      views, cover_ctr, followers_gained, avg_view_duration, danmaku
+    返回是否找到并更新了该笔记。
+    """
+    from core.publish_helpers import recalculate_summary
+
+    path = DATA_DIR / "performance.json"
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=True)
         try:
-            _atomic_write_json(path, data)
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for note in data.get("notes", []):
+                if note.get("topic") == topic:
+                    for key in _METRIC_KEYS:
+                        if key in metrics:
+                            note[key] = metrics[key] if isinstance(metrics[key], str) else int(metrics[key])
+                    note["grade"] = _grade_from_likes(note.get("likes", 0))
+                    recalculate_summary(data)
+                    _write_json_atomic(path, data)
+                    return True
+            return False
         finally:
-            _unlock_file(f)
+            _unlock_file(lock_f)
+
+
+def load_calendar_json() -> dict:
+    """加载内容日历 JSON，不存在时返回空模板。"""
+    path = DATA_DIR / "calendar.json"
+    if not path.exists():
+        return {"weeks": {}, "series": {}}
+    lock_path = path.with_suffix(".lock")
+    with open(lock_path, "w") as lock_f:
+        _lock_file(lock_f, exclusive=False)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        finally:
+            _unlock_file(lock_f)
+
+
+def save_calendar_json(data: dict) -> None:
+    """保存内容日历 JSON。"""
+    path = DATA_DIR / "calendar.json"
+    _atomic_write_json(path, data, with_lock=True)
 
 
 def init() -> None:

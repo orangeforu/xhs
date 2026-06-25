@@ -38,13 +38,13 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 ```
 
 - **TopicStrategist**：增强选题 brief，补充角度和叙事策略。
-- **EmotionalWriter**：LLM 写作，支持 4 种标题公式（问句式/概念解读式/观点冲击式/方法承诺式），按公式注入特化指令。
+- **EmotionalWriter**：LLM 写作，支持 4 种标题公式（问句式/概念解读式/观点冲击式/方法承诺式）和 7 种页面结构（A-G），按公式注入特化指令。
 - **CoverDesigner**：提取封面信息（标题/小字/AI 绘画 prompt/视觉风格）。
 - **LayoutArtist**：调用 `core/image_generator.py` 生成内页分页图。
 - **ContentEditor**：LLM 审核，输出结构化报告（等级 S/A/B/C、问题列表、建议）。
 - **ChiefEditor**：主编决策，最多 **5 轮迭代**。决策逻辑：
   - A 级直接通过；B 级 + issues ≤ 2 可通过。
-  - 连续 3 轮同级（A/B）强制通过，防止审核死循环。
+  - 连续 3 轮同级（S/A/B）强制通过，防止审核死循环。
   - 5 轮后仍不达标则 **放弃**（`status: abandoned`）。
 - **CommunityManager**：生成 5-8 条拟真预设评论。
 
@@ -53,7 +53,7 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 ### MessageBus 通信机制
 
 `core/agents/base.py` 定义了发布/订阅模式的消息总线：
-- `MessageType` 枚举定义了 8 种消息类型（BRIEF/DRAFT/DESIGN/REVIEW/REQUEST/RESPONSE/DECISION/COMMENT/NOTIFY）。
+- `MessageType` 枚举定义了 9 种消息类型（BRIEF/DRAFT/DESIGN/REVIEW/REQUEST/RESPONSE/DECISION/COMMENT/NOTIFY）。
 - `MessageBus.subscribe()` 注册回调，`publish()` 支持广播（`to_agent=None`）和点对点投递。
 - `MessageBus.get_history()` 和 `get_last_message()` 用于查询通信历史。
 - `BaseAgent.think()` 调用 LLM 时会自动注入 `AgentMemory` 中的持久化上下文。
@@ -62,9 +62,9 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 
 `core/image_generator.py` 负责全部图片渲染：
 
-- **封面双方案**：
-  1. **AI 绘画**：默认使用 Pollinations（免费），可选 DALL-E（需 `IMAGE_API_KEY`）。prompt 经过 `_sanitize_prompt` 自动替换阴冷关键词并追加温暖 safeguard。
-  2. **模板合成**：纯 Pillow 代码渲染，7 种配色主题（`warm_grey`/`twilight`/`crimson`/`mist`/`cool`/`warm`/`blank`），动态计算字号防溢出。
+- **封面生成**：
+  1. **AI 绘画**（主方案）：默认使用 Pollinations（免费），可选 DALL-E（需 `IMAGE_API_KEY`，内置重试）。prompt 经过 `_sanitize_prompt` 自动替换阴冷关键词并追加温暖 safeguard。
+  2. **模板合成**（fallback）：AI 失败时自动回退。纯 Pillow 代码渲染，7 种配色主题（`warm_grey`/`twilight`/`crimson`/`mist`/`cool`/`warm`/`blank`），动态计算字号防溢出。
 - **内页分页**：先由 `_paginate_blocks` 计算排版分页（不渲染），得到准确总页数后多线程（`max_workers=4`）渲染。每页含渐变背景、视觉锚点、金句高亮块、页码。
 
 ### 关键兼容层
@@ -77,26 +77,42 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 
 ### LLM 调用层
 
-`core/writer.py` 是唯一的 LLM 调用入口：
+`core/writer.py` 提供底层 LLM 调用：
 - `_call_api()`：OpenAI 兼容 API，内置 3 次指数退避重试（处理 429/5xx）。
-- `write_note()`：写作入口，加载 `prompts/system_writer.md` + `prompts/write_note.md`，按标题公式注入特化指令。
-- `review_note()`：审核入口，加载 `prompts/review.md`，返回结构化 JSON（grade/emotional_trajectory/quality_issues 等）。
-- `generate_preset_comments()`：评论生成，加载 `prompts/preset_comments.md`。
+- `_extract_content()`：从 OpenAI 兼容响应中提取文本。
+
+高层写作/审核/评论逻辑由 Agent 层处理（`EmotionalWriter.write()`、`ContentEditor.review()`、`CommunityManager.generate_comments()`）。
 
 ### 输出目录结构
 
-每篇笔记生成到 `docs_agent/{topic_name}_{hash}/` 下：
+每篇笔记生成到 `docs_agent/pending/{topic_name}_{hash}/` 下，随生命周期推进自动迁移：
+
 ```
 docs_agent/
-  {topic}_{hash}/
-    note.md              # 主文件（正文 + 审核 + 封面/内页路径 + 预设评论）
-    cover_ai.png         # AI 绘画封面
-    inner_page_1.png     # 内页第 1 页
-    inner_page_2.png     # 内页第 2 页
-    ...
+  pending/                          # 新生成未审核（pipeline 默认输出目录）
+    {topic}_{hash}/
+      note.md                       # 主文件（正文 + 审核 + 封面/内页路径 + 预设评论）
+      cover_ai.png                  # AI 绘画封面
+      inner_page_1.png              # 内页第 1 页
+      inner_page_2.png              # 内页第 2 页
+      ...
+  approved/                         # 已审核通过，等待在小红书发布（app.py 点击"通过"后迁移）
+    {topic}_{hash}/...
+  published/                        # 已在小红书发布，等待录入数据（用户确认"我发布了XX"后迁移）
+    {topic}_{hash}/...
+  archived/                         # 已发布且已录入数据（录入互动数据后自动迁移）
+    {topic}_{hash}/...
 ```
 
-发布后通过 `shutil.move()` 将整目录迁移到 `published/`。
+**生命周期迁移规则**：
+- `pipeline.py` 生成笔记 → `pending/`
+- `app.py` 点击「✅ 通过」→ 整目录 `shutil.move` 到 `approved/`
+- 用户确认「我发布了 XX」→ 整目录 `shutil.move` 到 `published/`
+- `app.py` 录入互动数据 → 整目录 `shutil.move` 到 `archived/`
+
+⚠️ **重要**：审核通过不等于已发布。只有用户明确说"我发布了 XX 笔记"才能标记为已发布。
+
+一次性迁移脚本：`python scripts/reorganize_notes.py`（首次把历史混放的笔记按状态分到 4 个子目录）。
 
 ## 平台调性约束
 

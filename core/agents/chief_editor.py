@@ -1,27 +1,20 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
 
-from core.agents.base import BaseAgent, MessageBus, Message, MessageType
-from core.config import get_logger, PROMPTS_DIR
+from core.agents.base import BaseAgent, MessageBus, Message
+from core.config import get_logger
+from core.utils import load_prompt, extract_visual_style
 
 logger = get_logger(__name__)
-
-
-def _load_prompt(name: str) -> str:
-    path = PROMPTS_DIR / f"{name}.md"
-    if not path.exists():
-        raise FileNotFoundError(f"Prompt 文件不存在: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
 
 
 class ChiefEditor(BaseAgent):
     """主编 Agent — 协调所有专家，控制迭代流程，做最终决策。"""
 
     def __init__(self, bus: MessageBus):
-        prompt = _load_prompt("agent_chief_editor")
+        prompt = load_prompt("agent_chief_editor")
         super().__init__("chief_editor", prompt, bus)
 
-    def orchestrate(self, brief, writer, designer, artist, editor, community, out_dir: str) -> dict:
+    def orchestrate(self, brief, writer, designer, artist, editor, community, out_dir: str, user_feedback: str = "") -> dict:
         """主流程编排。最多5轮迭代。"""
         round_num = 0
         draft = None
@@ -30,12 +23,17 @@ class ChiefEditor(BaseAgent):
         inner_paths = []
         grade_history = []  # 记录每轮审核等级，防止死循环
 
+        # 每次创作流程开始时，重置所有 Agent 的记忆缓存，确保从磁盘加载最新数据
+        for agent in (writer, designer, artist, editor, community, self):
+            agent.reset_memory_cache()
+
         # ── Round 0: 初稿 ──
         logger.info("=" * 50)
         logger.info("主编启动创作流程: %s", brief["topic"])
         logger.info("=" * 50)
 
-        draft = writer.write(brief, round_num=0)
+        # 如果有用户反馈，作为第一轮的 feedback 传入
+        draft = writer.write(brief, round_num=0, feedback=user_feedback if user_feedback else None)
 
         # ── 迭代循环 ──
         while round_num < 5:
@@ -44,36 +42,50 @@ class ChiefEditor(BaseAgent):
             # 并行：封面设计、内页排版、内容审核
             parallel_tasks = []
 
-            if round_num == 0 or (review and review.get("needs_redesign")):
+            if round_num == 0:
                 cover_path = f"{out_dir}/cover_ai.png"
-                parallel_tasks.append(("design", lambda: designer.design(draft["content"], round_num=round_num, output_path=cover_path)))
+                style_override = brief.get("series_style", "")
+                visual_dir = brief.get("visual_direction", "")
+                parallel_tasks.append(("design", lambda rn=round_num, cp=cover_path, so=style_override, vd=visual_dir, br=brief: designer.design(draft["content"], round_num=rn, output_path=cp, style_override=so, visual_direction=vd, brief=br)))
             else:
-                parallel_tasks.append(("design", lambda: design_result))
+                parallel_tasks.append(("design", lambda dr=design_result: dr))
 
-            if round_num == 0 or (review and review.get("needs_relayout")):
-                parallel_tasks.append(("layout", lambda: artist.layout(draft["content"], style=self._extract_style(draft["content"]), out_dir=out_dir, round_num=round_num)))
+            if round_num == 0:
+                parallel_tasks.append(("layout", lambda rn=round_num: artist.layout(draft["content"], style=self._extract_style(draft["content"]), out_dir=out_dir, round_num=rn)))
             else:
-                parallel_tasks.append(("layout", lambda: inner_paths))
+                parallel_tasks.append(("layout", lambda ip=inner_paths: ip))
 
-            parallel_tasks.append(("review", lambda: editor.review(draft["content"], round_num=round_num)))
+            parallel_tasks.append(("review", lambda rn=round_num: editor.review(draft["content"], round_num=rn)))
 
             results = {}
+            task_errors = {}
             with ThreadPoolExecutor(max_workers=3) as executor:
                 futures = {executor.submit(fn): name for name, fn in parallel_tasks}
                 for future in as_completed(futures):
                     name = futures[future]
                     try:
-                        results[name] = future.result()
+                        results[name] = future.result(timeout=300)
+                    except FuturesTimeoutError:
+                        logger.error("并行任务 %s 超时（300s），取消任务", name)
+                        future.cancel()
+                        task_errors[name] = TimeoutError(f"任务 {name} 超时")
+                        results[name] = None
                     except Exception as e:
                         logger.error("并行任务 %s 失败: %s", name, e)
+                        task_errors[name] = e
                         results[name] = None
 
             if "design" in results:
                 design_result = results["design"] or design_result
             if "layout" in results:
                 inner_paths = results["layout"] or inner_paths
-            if "review" in results:
-                review = results["review"] or review
+
+            # 审核任务失败需要特殊处理：区分"服务失败"和"审核不通过"
+            if "review" in task_errors:
+                logger.error("审核服务失败（非内容问题），将重试审核: %s", task_errors["review"])
+                # 不更新 review，让它保持上一轮的值，在 _make_decision 中会因为 review is None 触发 revise
+            elif "review" in results and results["review"] is not None:
+                review = results["review"]
 
             # 记录本轮grade，用于检测死循环
             grade_history.append(review.get("grade", "B") if review else "B")
@@ -86,6 +98,12 @@ class ChiefEditor(BaseAgent):
                 break
             elif decision["action"] == "abandon":
                 logger.warning("主编决策: 放弃 (%s)", decision["reason"])
+                # 记录失败到各 agent 记忆
+                grade = review.get("grade", "C") if review else "C"
+                topic = brief["topic"]
+                writer.record_outcome(grade, topic)
+                editor.record_outcome(grade, topic)
+                self._record_decision(grade, topic, round_num)
                 return {
                     "status": "abandoned",
                     "reason": decision["reason"],
@@ -99,7 +117,14 @@ class ChiefEditor(BaseAgent):
                 logger.info("主编决策: 重写 (第 %d 轮)，核心问题: %s", round_num, decision.get("core_issue", "详见反馈"))
                 draft = writer.write(brief, round_num=round_num, feedback=feedback)
             else:
-                break
+                logger.error("主编决策返回未知 action: %s，强制放弃", decision["action"])
+                return {
+                    "status": "abandoned",
+                    "reason": f"主编决策异常: {decision['action']}",
+                    "draft": draft,
+                    "review": review,
+                    "rounds": round_num + 1,
+                }
 
         # ── 生成预设评论 ──
         comments = community.generate_comments(draft["content"], round_num=round_num)
@@ -127,38 +152,67 @@ class ChiefEditor(BaseAgent):
             "rounds": round_num + 1,
         }
 
+    # 结构模板列表，C 级时要求切换
+    _STRUCTURE_TEMPLATES = ["经典金句前置", "对话开场", "倒叙冲击", "反问留白", "动作细节推动"]
+
     def _make_decision(self, draft, design_result, review, round_num, grade_history=None) -> dict:
         """主编做最终决策。"""
         if not review:
-            return {"action": "revise", "feedback": "审核未返回结果，请重新生成", "core_issue": "审核失败"}
+            return {"action": "revise", "feedback": "审核服务暂时不可用，请保持内容质量重新提交", "core_issue": "审核服务异常"}
 
         verdict = review.get("verdict", "conditional")
         grade = review.get("grade", "B")
         issues = review.get("issues", [])
 
-        # A级直接通过
-        if grade == "A" and verdict == "pass":
-            return {"action": "publish", "reason": "A级高质量内容"}
+        # S级直接通过
+        if grade == "S" and verdict == "pass":
+            return {"action": "publish", "reason": "S级爆款内容"}
 
-        # B级 + pass/conditional，且无严重 issues，可以通过
+        # A级：必须 0 issues 才能通过
+        if grade == "A" and verdict in ("pass", "conditional") and len(issues) == 0:
+            return {"action": "publish", "reason": "A级内容，无硬伤"}
+
+        # B级：≤2 issues 可通过（放宽标准，避免过度修补失去个性）
         if grade == "B" and verdict in ("pass", "conditional") and len(issues) <= 2:
-            return {"action": "publish", "reason": f"B级内容可接受，issues={len(issues)}"}
+            return {"action": "publish", "reason": f"B级内容（{len(issues)}个问题），可接受"}
 
-        # 死循环检测：连续3轮等级相同（如B-B-B），强制通过，避免越改越差
+        # 死循环检测：连续3轮等级相同
         if grade_history and len(grade_history) >= 3:
             last_three = grade_history[-3:]
-            if len(set(last_three)) == 1 and last_three[0] in ("A", "B"):
-                return {"action": "publish", "reason": f"连续3轮等级均为{last_three[0]}，避免审核死循环，强制通过"}
+            if len(set(last_three)) == 1:
+                if last_three[0] == "B":
+                    # 放宽：连续3轮B级直接通过（不再强制换角度）
+                    return {"action": "publish", "reason": "连续3轮B级，内容已稳定，允许发布"}
+                elif last_three[0] == "C" and round_num >= 3:
+                    return {"action": "abandon", "reason": "连续3轮C级，选题存在根本问题"}
+
+        # C 级：要求换结构模板重写（不是微调）
+        if grade == "C":
+            if round_num >= 3:
+                return {"action": "abandon", "reason": f"已达{round_num + 1}轮仍为C级，放弃"}
+            template_idx = round_num % len(self._STRUCTURE_TEMPLATES)
+            new_template = self._STRUCTURE_TEMPLATES[template_idx]
+            feedback = self._build_feedback(review)
+            return {
+                "action": "revise",
+                "feedback": f"【C级内容，需要结构性重写】\n当前结构无效，请切换到「{new_template}」结构重新创作。不要在原稿上修改，从零开始。\n\n{feedback}",
+                "core_issue": f"C级：切换到{new_template}结构",
+            }
 
         # 已达最大轮数
         if round_num >= 4:
-            if grade in ("A", "B"):
-                return {"action": "publish", "reason": "已达最大迭代轮数(5轮)，内容可接受"}
+            if grade in ("S", "A"):
+                return {"action": "publish", "reason": "已达最大迭代轮数，内容质量可接受"}
+            elif grade == "B" and len(issues) <= 2:
+                return {"action": "publish", "reason": f"已达最大迭代轮数，B级（{len(issues)}个问题），可接受"}
             else:
-                return {"action": "abandon", "reason": "5轮迭代后仍未达到 publishable 标准"}
+                return {"action": "abandon", "reason": f"5轮迭代后仍为{grade}级且存在{len(issues)}个问题，放弃发布"}
 
-        # 需要重写
+        # B 级连续 2 轮：继续修订（不再强制换角度，第3轮连续B会直接通过）
         feedback = self._build_feedback(review)
+        if grade == "B" and grade_history and len(grade_history) >= 2 and grade_history[-2] == "B":
+            feedback = "【连续2轮B级，请针对审核反馈做定向修补，第3轮将直接通过】\n\n" + feedback
+
         core_issue = issues[0]["problem"] if issues else "整体质量不达标"
 
         return {
@@ -198,16 +252,10 @@ class ChiefEditor(BaseAgent):
 
         return "\n".join(parts)
 
-    def _extract_style(self, content: str) -> str:
+    @staticmethod
+    def _extract_style(content: str) -> str:
         """从内容中提取视觉风格标签。"""
-        import re
-        m = re.search(r'[\[【\*]*(?:视觉风格|风格|style)[\]】\*]*[:：]\s*\n?\s*`?([a-z_]+)`?', content, re.IGNORECASE)
-        if m:
-            style = m.group(1).strip().lower()
-            valid = {"warm_grey", "twilight", "crimson", "mist", "cool", "warm", "blank"}
-            if style in valid:
-                return style
-        return "warm_grey"
+        return extract_visual_style(content)
 
     def _record_decision(self, grade: str, topic: str, rounds_used: int):
         """记录主编决策历史。"""
@@ -219,8 +267,8 @@ class ChiefEditor(BaseAgent):
         elif grade == "C":
             mem.record_failure(context)
         else:
-            mem.data["total_runs"] = mem.data.get("total_runs", 0) + 1
-            mem.save()
+            mem.record_mediocre(context)
+        mem.flush()
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         pass

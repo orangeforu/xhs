@@ -1,5 +1,3 @@
-import re
-
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.image_generator import generate_inner_pages
@@ -34,7 +32,8 @@ class LayoutArtist(BaseAgent):
         self.send(to_agent=None, msg_type=MessageType.DESIGN, content=result, round_num=round_num)
         return inner_paths
 
-    def handle(self, message: Message):
+    def handle(self, message: Message) -> None:
         if message.msg_type == MessageType.DRAFT:
-            # 收到 draft 更新，记录
-            pass
+            # 收到 draft 更新，记录字数
+            content = message.content.get("content", "")
+            logger.debug("排版美工收到稿件，字数约 %d", len(content))

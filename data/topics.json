@@ -3,343 +3,838 @@
   "topics": [
     {
       "id": 1,
-      "topic": "怎么判断男朋友是不是真的爱你？",
+      "topic": "恋爱三年才发现，那些“对你好”的细节里藏着的分手信号",
       "title_formula": "问句式",
       "target_interaction": "评论驱动",
-      "angle": "用具体行为清单代替抽象'感觉'",
+      "angle": "从日常细微行为变化（如分享欲下降、不再规划未来）预判关系走向，引发读者对照自身经历讨论。",
       "keywords": [
-        "男朋友",
-        "真爱",
-        "细节",
-        "恋爱"
+        "恋爱细节",
+        "分手预兆",
+        "感情变淡",
+        "亲密关系"
       ],
       "pillar": "亲密关系洞察",
-      "status": "generated",
-      "generated_at": "2026-05-15T03:08:34.298225+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/怎么判断男朋友是不是真的爱你_2ef5"
+      "status": "published",
+      "generated_at": "2026-06-24T13:45:22.630712+00:00",
+      "generated_with_commit": "14c6860",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363",
+      "published_at": "2026-06-24T14:04:21.097169+00:00"
     },
     {
       "id": 2,
-      "topic": "什么叫'情绪稳定'？",
+      "topic": "原来“恋爱脑”不是病，是大脑在向你发出一种深层需求信号",
       "title_formula": "概念解读式",
-      "target_interaction": "收藏驱动",
-      "angle": "拆解'情绪稳定'的3个日常表现",
+      "target_interaction": "共鸣驱动",
+      "angle": "从心理学和生理学角度解读“恋爱脑”背后的情感依恋、安全感缺失或自我价值感需求，引发深度认同。",
       "keywords": [
-        "情绪稳定",
-        "情绪管理",
-        "恋爱",
-        "相处"
+        "恋爱脑",
+        "心理学",
+        "情感需求",
+        "自我价值"
       ],
       "pillar": "亲密关系洞察",
       "status": "generated",
-      "generated_at": "2026-05-15T03:10:01.064964+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/什么叫情绪稳定_e109"
+      "generated_at": "2026-05-28T14:05:30.573152+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/原来恋爱脑不是病是大脑在向你发出一种深层需求信号_cb74"
     },
     {
       "id": 3,
-      "topic": "约会时男生哪些细节说明他人品很好？",
-      "title_formula": "问句式",
-      "target_interaction": "评论驱动",
-      "angle": "场景化：吃饭、坐车、吵架时的反应",
+      "topic": "我终于敢承认：有些恋爱，分开比在一起更需要勇气",
+      "title_formula": "观点冲击式",
+      "target_interaction": "分享驱动",
+      "angle": "挑战“坚持就是胜利”的恋爱观，为那些在消耗型关系中挣扎、最终选择离开的人提供情感支持与认同。",
       "keywords": [
-        "约会",
-        "人品",
-        "细节",
-        "男生"
+        "及时止损",
+        "分手勇气",
+        "消耗型恋爱",
+        "情感成长"
       ],
       "pillar": "亲密关系洞察",
       "status": "generated",
-      "generated_at": "2026-05-17T03:24:09.896307+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/约会时男生哪些细节说明他人品很好_115a"
+      "generated_at": "2026-05-28T14:08:49.463149+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/我终于敢承认有些恋爱分开比在一起更需要勇气_0aae"
     },
     {
       "id": 4,
-      "topic": "为什么说'为你好'是最温柔的绑架？",
-      "title_formula": "观点冲击式",
-      "target_interaction": "讨论驱动",
-      "angle": "原生家庭和亲密关系中的边界感",
+      "topic": "超准的「关系状态」自检清单：7个问题看清你们是真爱还是搭伙",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "提供一套具体、可操作的自我提问清单，帮助用户理性评估亲密关系质量，实用性强。",
       "keywords": [
-        "为你好",
-        "边界感",
-        "原生家庭",
-        "控制"
+        "恋爱自检",
+        "关系评估",
+        "真爱测试",
+        "情感指南"
       ],
-      "pillar": "女性成长困境",
+      "pillar": "亲密关系洞察",
       "status": "generated",
-      "generated_at": "2026-05-15T03:15:17.092032+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/为什么说为你好是最温柔的绑架_c090"
+      "generated_at": "2026-05-28T14:14:48.843024+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/超准的关系状态自检清单7个问题看清你们是真爱还是搭伙_3c35"
     },
     {
       "id": 5,
-      "topic": "如何做到'温柔但有边界'？",
+      "topic": "高质量独处指南：一个人时做这5件事，比聚会更滋养灵魂",
       "title_formula": "方法承诺式",
       "target_interaction": "收藏驱动",
-      "angle": "具体话术 + 场景演练",
+      "angle": "提供具体、有仪式感的独处活动建议（如写情绪日记、主题式观影），将独处转化为自我增值的时间。",
       "keywords": [
-        "温柔",
-        "边界",
-        "话术",
-        "沟通"
+        "独处时光",
+        "自我提升",
+        "生活方式",
+        "高质量单身"
       ],
-      "pillar": "自我提升/生活方式",
+      "pillar": "自我成长",
       "status": "generated",
-      "generated_at": "2026-05-15T03:16:46.735719+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/如何做到温柔但有边界_67a5"
+      "generated_at": "2026-05-28T14:18:33.840759+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/高质量独处指南一个人时做这5件事比聚会更滋养灵魂_859c"
     },
     {
       "id": 6,
-      "topic": "女生太懂事，恋爱真的会输吗？",
-      "title_formula": "问句式",
-      "target_interaction": "讨论驱动",
-      "angle": "正反案例对比",
+      "topic": "为什么你总是情绪反刍？可能因为你的“心理后台”程序太多了",
+      "title_formula": "概念解读式",
+      "target_interaction": "共鸣驱动",
+      "angle": "用“手机后台程序”比喻未处理的情绪和待办事项，生动解释内耗和焦虑的成因，引发恍然大悟式共鸣。",
       "keywords": [
-        "懂事",
-        "恋爱",
-        "女生",
-        "付出"
+        "情绪内耗",
+        "心理后台",
+        "焦虑原因",
+        "思维反刍"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "自我成长",
       "status": "generated",
-      "generated_at": "2026-05-15T03:18:52.004718+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/女生太懂事恋爱真的会输吗_9713"
+      "generated_at": "2026-05-28T14:22:56.892880+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/为什么你总是情绪反刍可能因为你的心理后台程序太多了_0dd6"
     },
     {
       "id": 7,
-      "topic": "吵架后先低头的人，真的输了吗？",
-      "title_formula": "问句式",
-      "target_interaction": "评论驱动",
-      "angle": "引入'输赢思维'的反思",
+      "topic": "对“讨好型人格”最狠的一刀：你以为的善良，其实是隐秘的控制",
+      "title_formula": "观点冲击式",
+      "target_interaction": "点赞驱动",
+      "angle": "颠覆对“讨好型人格”的传统认知，指出其背后可能隐藏的对他人反应的控制欲，观点犀利引人深思。",
       "keywords": [
-        "吵架",
-        "低头",
-        "输赢",
-        "恋爱"
+        "讨好型人格",
+        "人际边界",
+        "心理控制",
+        "自我成长"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "自我成长",
       "status": "generated",
-      "generated_at": "2026-05-15T03:21:54.862372+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/吵架后先低头的人真的输了吗_d79f"
+      "generated_at": "2026-05-28T14:26:31.538703+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/对讨好型人格最狠的一刀你以为的善良其实是隐秘的控制_7eda"
     },
     {
       "id": 8,
-      "topic": "什么叫'有效关心'？",
-      "title_formula": "概念解读式",
-      "target_interaction": "分享驱动",
-      "angle": "对比'无效关心'的4个场景",
+      "topic": "你的“边界感”是怎么被一步步试探没的？从不好意思拒绝开始",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "聚焦“不好意思拒绝”这个具体场景，引导读者回顾边界被侵犯的全过程，极易引发“我也是”的评论。",
       "keywords": [
-        "有效关心",
-        "关心",
-        "恋爱",
-        "沟通"
+        "边界感",
+        "拒绝别人",
+        "人际困扰",
+        "自我保护"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "自我成长",
       "status": "generated",
-      "generated_at": "2026-05-15T03:22:56.629184+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/什么叫有效关心_3eca"
+      "generated_at": "2026-05-31T15:09:54.066042+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/你的边界感是怎么被一步步试探没的从不好意思拒绝开始_f9f7"
     },
     {
       "id": 9,
-      "topic": "怎么看出一个人在敷衍你？",
-      "title_formula": "问句式",
-      "target_interaction": "共鸣驱动",
-      "angle": "微信聊天、约会、承诺兑现的细节",
+      "topic": "成年人的友谊潜规则：不再“随时有空”，才是关系的开始",
+      "title_formula": "观点冲击式",
+      "target_interaction": "分享驱动",
+      "angle": "挑战“好朋友就应该随叫随到”的传统观念，提出成年人友谊的新标准是“尊重彼此的时间和空间”，引发广泛共鸣与转发。",
       "keywords": [
-        "敷衍",
-        "微信",
-        "约会",
-        "承诺"
+        "成年人友谊",
+        "社交潜规则",
+        "朋友相处",
+        "人际关系"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "社交关系",
       "status": "generated",
-      "generated_at": "2026-05-15T03:24:25.924868+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/怎么看出一个人在敷衍你_9cd7"
+      "generated_at": "2026-05-28T14:32:12.091058+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/成年人的友谊潜规则不再随时有空才是关系的开始_6503"
     },
     {
       "id": 10,
-      "topic": "谈恋爱后，还需要独立空间吗？",
-      "title_formula": "问句式",
-      "target_interaction": "讨论驱动",
-      "angle": "亲密与边界的平衡",
+      "topic": "三步识别并远离“情绪吸血鬼”朋友，保护你的能量场",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "提供具体方法（识别特征、设立规则、逐步远离）来处理单方面消耗你情绪的朋友，实用且有操作性。",
       "keywords": [
-        "独立空间",
-        "恋爱",
-        "边界",
-        "亲密"
+        "情绪吸血鬼",
+        "能量保护",
+        "有毒朋友",
+        "人际关系"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "社交关系",
       "status": "generated",
-      "generated_at": "2026-05-15T03:26:33.614550+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/谈恋爱后还需要独立空间吗_0860"
+      "generated_at": "2026-05-28T14:34:56.008676+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/三步识别并远离情绪吸血鬼朋友保护你的能量场_0e95"
     },
     {
       "id": 11,
-      "topic": "那些走到最后的情侣，都做对了什么？",
-      "title_formula": "观点冲击式",
-      "target_interaction": "收藏驱动",
-      "angle": "总结3-4个可复用的相处模式",
+      "topic": "那个总让你感到疲惫的家人，可能正在对你进行“情绪勒索”",
+      "title_formula": "概念解读式",
+      "target_interaction": "共鸣驱动",
+      "angle": "解读家庭关系中常见的情感操控模式（如愧疚感、威胁），让读者看清自己疲惫感的来源，获得认知上的解脱。",
       "keywords": [
-        "情侣",
-        "相处",
-        "恋爱",
-        "长久"
+        "情绪勒索",
+        "原生家庭",
+        "亲情绑架",
+        "心理边界"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "社交关系",
       "status": "generated",
-      "generated_at": "2026-05-15T03:28:35.274158+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/那些走到最后的情侣都做对了什么_a260"
+      "generated_at": "2026-06-03T14:33:24.886697+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/那个总让你感到疲惫的家人可能正在对你进行情绪勒索_82a0"
     },
     {
       "id": 12,
-      "topic": "男朋友哪些话听起来甜，其实很伤人？",
-      "title_formula": "问句式",
-      "target_interaction": "评论驱动",
-      "angle": "具体话术 + 背后的心理机制",
+      "topic": "我拉黑了那个“每次找我都是吐槽”的朋友，一点也不后悔",
+      "title_formula": "观点冲击式",
+      "target_interaction": "分享驱动",
+      "angle": "以第一人称讲述结束一段单向情绪倾倒式友谊的经历与感受，说出很多人想做但不敢做的事，引发强烈分享欲。",
       "keywords": [
-        "男朋友",
-        "话术",
-        "伤人",
-        "心理"
+        "情绪垃圾桶",
+        "朋友吐槽",
+        "断舍离",
+        "社交疲惫"
       ],
-      "pillar": "亲密关系洞察",
+      "pillar": "社交关系",
       "status": "generated",
-      "generated_at": "2026-05-15T03:29:43.257001+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/男朋友哪些话听起来甜其实很伤人_9f7f"
+      "generated_at": "2026-05-28T14:41:11.177122+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/我拉黑了那个每次找我都是吐槽的朋友一点也不后悔_dfd4"
     },
     {
       "id": 13,
-      "topic": "30岁不结婚，真的那么可怕吗？",
-      "title_formula": "问句式",
-      "target_interaction": "评论驱动",
-      "angle": "不煽动、不劝婚，呈现多元选择",
+      "topic": "停止“精致穷”！我的365天不重样穿搭，靠的是这3个消费心法",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "针对“想变美又怕花钱”的痛点，提供“胶囊衣橱”、“投资基础款”等具体可复制的消费和穿搭理念。",
       "keywords": [
-        "30岁",
-        "结婚",
-        "恐婚",
-        "选择"
+        "精致穷",
+        "消费观",
+        "胶囊衣橱",
+        "穿搭技巧"
       ],
-      "pillar": "女性成长困境",
+      "pillar": "生活态度",
       "status": "generated",
-      "generated_at": "2026-05-15T03:32:26.481016+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/30岁不结婚真的那么可怕吗_02aa"
+      "generated_at": "2026-05-29T15:41:46.117378+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/停止精致穷我的365天不重样穿搭靠的是这3个消费心法_b236"
     },
     {
       "id": 14,
-      "topic": "女孩子为什么总是习惯性说'没事'？",
+      "topic": "独居后才懂：安全感不是有人陪，而是这5个“保命”小东西",
       "title_formula": "问句式",
-      "target_interaction": "共鸣驱动",
-      "angle": "社会规训下的情绪压抑",
+      "target_interaction": "评论驱动",
+      "angle": "聚焦独居女性安全这个具体场景，列出智能门铃、阻门器等实用物品，引发独居者讨论和补充，互动性强。",
       "keywords": [
-        "没事",
-        "女孩子",
-        "情绪",
-        "压抑"
+        "独居安全",
+        "女生独居",
+        "好物推荐",
+        "生活技巧"
       ],
-      "pillar": "女性成长困境",
-      "status": "generated",
-      "generated_at": "2026-05-15T03:34:43.493204+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/女孩子为什么总是习惯性说没事_9904"
+      "pillar": "生活态度",
+      "status": "published",
+      "generated_at": "2026-05-29T16:33:19.076683+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/独居后才懂安全感不是有人陪而是这5个保命小东西_eefa"
     },
     {
       "id": 15,
-      "topic": "谈谈那些'看起来为你好'的打压",
+      "topic": "我戒掉了“伪自律”，开始理直气壮地“浪费”时间，人生反而松弛了",
       "title_formula": "观点冲击式",
       "target_interaction": "分享驱动",
-      "angle": "职场/家庭中的隐性PUA场景",
+      "angle": "反对过度规划和自我压榨的“内卷式生活”，倡导允许自己无聊和放松，契合当下追求“松弛感”的潮流。",
       "keywords": [
-        "打压",
-        "PUA",
-        "职场",
-        "家庭"
+        "伪自律",
+        "松弛感",
+        "生活方式",
+        "自我和解"
       ],
-      "pillar": "女性成长困境",
+      "pillar": "生活态度",
       "status": "generated",
-      "generated_at": "2026-05-15T03:35:52.714516+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/谈谈那些看起来为你好的打压_5e05"
+      "generated_at": "2026-05-29T15:49:08.431508+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/我戒掉了伪自律开始理直气壮地浪费时间人生反而松弛了_6d67"
     },
     {
       "id": 16,
-      "topic": "为什么越懂事的孩子，长大越不快乐？",
-      "title_formula": "问句式",
+      "topic": "“精致穷”背后，是你未被看见的匮乏感和补偿心理",
+      "title_formula": "概念解读式",
       "target_interaction": "共鸣驱动",
-      "angle": "原生家庭与自我觉醒",
+      "angle": "深入分析“精致穷”行为背后的情感需求（如填补空虚、证明自己），让读者从心理层面理解自己，引发深度共鸣。",
       "keywords": [
-        "懂事",
-        "原生家庭",
-        "快乐",
-        "觉醒"
+        "消费心理",
+        "精致穷",
+        "心理匮乏",
+        "自我认知"
       ],
-      "pillar": "女性成长困境",
+      "pillar": "生活态度",
       "status": "generated",
-      "generated_at": "2026-05-15T03:37:54.387451+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/为什么越懂事的孩子长大越不快乐_ba04"
+      "generated_at": "2026-05-29T15:57:13.688727+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/精致穷背后是你未被看见的匮乏感和补偿心理_774d"
     },
     {
       "id": 17,
-      "topic": "独居女生最大的自由是什么？",
-      "title_formula": "观点冲击式",
-      "target_interaction": "点赞驱动",
-      "angle": "温暖叙事，不鼓吹不婚",
+      "topic": "焦虑发作时，立刻能用的5分钟“着陆”急救法",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "针对急性焦虑发作的场景，提供“5-4-3-2-1”感官着陆法等即时可用的缓解技巧，实用且紧急。",
       "keywords": [
-        "独居",
-        "女生",
-        "自由",
-        "独立"
+        "焦虑自救",
+        "情绪急救",
+        "心理技巧",
+        "正念"
       ],
-      "pillar": "女性成长困境",
-      "status": "generated",
-      "generated_at": "2026-05-15T03:39:03.280399+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/独居女生最大的自由是什么_b5f9"
+      "pillar": "情绪疗愈",
+      "status": "approved",
+      "generated_at": "2026-05-29T16:03:42.972550+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/焦虑发作时立刻能用的5分钟着陆急救法_00b6",
+      "approved_at": "2026-06-23T14:35:33+00:00"
     },
     {
       "id": 18,
-      "topic": "为什么你总是把天聊死？",
+      "topic": "你是不是又在“自我攻击”了？觉察这3个内心对话瞬间就能停",
       "title_formula": "问句式",
-      "target_interaction": "收藏驱动",
-      "angle": "3个常见错误 + 改正方法",
+      "target_interaction": "点赞驱动",
+      "angle": "引导读者识别“我真差劲”、“都是我的错”等具体的自我攻击性内在对话，提供觉察即停止的简单方法，易获认同。",
       "keywords": [
-        "聊天",
-        "沟通",
-        "社交",
-        "技巧"
+        "自我攻击",
+        "内在对话",
+        "心理觉察",
+        "停止内耗"
       ],
-      "pillar": "自我提升/生活方式",
-      "status": "generated",
-      "generated_at": "2026-05-16T16:10:27.348766+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/为什么你总是把天聊死_6647"
+      "pillar": "情绪疗愈",
+      "status": "approved",
+      "generated_at": "2026-05-29T16:07:19.836586+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
+      "approved_at": "2026-06-23T14:35:33+00:00"
     },
     {
       "id": 19,
-      "topic": "情绪不好的时候，怎么快速自救？",
-      "title_formula": "方法承诺式",
-      "target_interaction": "收藏驱动",
-      "angle": "5分钟可操作的急救清单",
+      "topic": "允许自己“摆烂”吧：真正的疗愈，从承认“我撑不住了”开始",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "挑战“必须坚强”的社会期待，为“想放弃”的情绪正名，认为承认脆弱是疗愈的第一步，极易引发讨论和倾诉。",
       "keywords": [
-        "情绪",
-        "自救",
-        "急救",
-        "心理"
+        "摆烂",
+        "接纳脆弱",
+        "情绪释放",
+        "心理疗愈"
       ],
-      "pillar": "自我提升/生活方式",
-      "status": "generated",
-      "generated_at": "2026-05-15T03:42:55.587786+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/情绪不好的时候怎么快速自救_eb5c"
+      "pillar": "情绪疗愈",
+      "status": "published",
+      "generated_at": "2026-06-03T14:03:39.819779+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/允许自己摆烂吧真正的疗愈从承认我撑不住了开始_c6ec"
     },
     {
       "id": 20,
-      "topic": "怎么养成'不内耗'的体质？",
+      "topic": "“自我接纳”不是一句口号：每天对着镜子做这1件小事就够了",
+      "title_formula": "概念解读式",
+      "target_interaction": "点赞驱动",
+      "angle": "将宏大的“自我接纳”概念落地为“每天对镜子里的自己说一句肯定的话”等微小、可执行的行为，让理念变得触手可及。",
+      "keywords": [
+        "自我接纳",
+        "积极心理",
+        "自我肯定",
+        "情绪疗愈"
+      ],
+      "pillar": "情绪疗愈",
+      "status": "generated",
+      "generated_at": "2026-05-29T16:24:58.184377+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/自我接纳不是一句口号每天对着镜子做这1件小事就够了_f77c"
+    },
+    {
+      "topic": "停止「精神内耗」的3个方法，亲测有效",
       "title_formula": "方法承诺式",
       "target_interaction": "收藏驱动",
-      "angle": "思维习惯 + 日常练习",
+      "angle": "实用方法论，每个方法配一个具体场景，让读者立刻能用。",
       "keywords": [
-        "内耗",
-        "思维",
-        "习惯",
-        "成长"
+        "精神内耗",
+        "自我成长",
+        "方法论",
+        "实用"
       ],
-      "pillar": "自我提升/生活方式",
+      "pillar": "自我成长",
+      "id": 21,
+      "status": "not_started"
+    },
+    {
+      "topic": "「讨好型人格」的人，最后都怎么样了？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "展示讨好型人格的几种结局，引发读者站队讨论：是改变还是继续？",
+      "keywords": [
+        "讨好型人格",
+        "自我成长",
+        "人际边界",
+        "觉醒"
+      ],
+      "pillar": "自我成长",
+      "id": 22,
       "status": "generated",
-      "generated_at": "2026-05-15T03:44:25.430677+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/怎么养成不内耗的体质_4260"
+      "generated_at": "2026-06-10T13:44:26.431105+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/讨好型人格的人最后都怎么样了_dedb"
+    },
+    {
+      "topic": "为什么越懂事的人，越容易被忽视？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "用具体故事展示懂事的代价，引发共鸣和争议：懂事到底是美德还是自我消耗？",
+      "keywords": [
+        "懂事",
+        "自我消耗",
+        "原生家庭",
+        "人际边界"
+      ],
+      "pillar": "自我成长",
+      "id": 23,
+      "status": "approved",
+      "generated_at": "2026-06-10T14:25:21.944571+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/为什么越懂事的人越容易被忽视_93cc",
+      "approved_at": "2026-06-23T14:35:33+00:00"
+    },
+    {
+      "topic": "学会这5句「拒绝话术」，再也不怕被人道德绑架",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "5 个具体场景的拒绝话术，读者截图就能用。每个场景配一段对话对比。",
+      "keywords": [
+        "拒绝",
+        "话术",
+        "道德边界",
+        "实用"
+      ],
+      "pillar": "社交关系",
+      "id": 24,
+      "status": "generated",
+      "generated_at": "2026-06-10T13:46:47.929663+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/学会这5句拒绝话术再也不怕被人道德绑架_2608"
+    },
+    {
+      "topic": "分手后还能做朋友吗？评论区说出你的选择",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "抛出争议性问题，展示两方观点，让读者站队讨论。不要给结论。",
+      "keywords": [
+        "分手",
+        "前任",
+        "友情",
+        "争议"
+      ],
+      "pillar": "亲密关系洞察",
+      "id": 25,
+      "status": "published",
+      "generated_at": "2026-06-03T16:19:36.900485+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/分手后还能做朋友吗评论区说出你的选择_d744",
+      "approved_at": "2026-06-23T14:34:44+00:00",
+      "published_at": "2026-06-23T14:59:03+00:00"
+    },
+    {
+      "topic": "真正高情商的人，从来不说这3句话",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "反向切入：列出 3 句不该说的话，每句配一个替代说法。实用+争议并存。",
+      "keywords": [
+        "情商",
+        "沟通",
+        "话术",
+        "人际关系"
+      ],
+      "pillar": "社交关系",
+      "id": 26,
+      "status": "generated",
+      "generated_at": "2026-06-10T15:14:50.103105+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/真正高情商的人从来不说这3句话_e852"
+    },
+    {
+      "topic": "「PUA」和「为你好」的唯一区别，就一个字",
+      "title_formula": "概念解读式",
+      "target_interaction": "分享驱动",
+      "angle": "揭示 PUA 和正常关心的本质区别，观点尖锐，容易引发说得对和太绝对了两派争论。",
+      "keywords": [
+        "PUA",
+        "情感操控",
+        "为你好",
+        "争议"
+      ],
+      "pillar": "亲密关系洞察",
+      "id": 27,
+      "status": "not_started"
+    },
+    {
+      "topic": "独居女生必看：5个让安全感翻倍的小习惯",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "实用清单，每个习惯配一个具体操作方法。高收藏潜力。",
+      "keywords": [
+        "独居",
+        "安全感",
+        "女生",
+        "实用"
+      ],
+      "pillar": "自我成长",
+      "id": 28,
+      "status": "generated",
+      "generated_at": "2026-06-10T14:12:17.831133+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/独居女生必看5个让安全感翻倍的小习惯_970d"
+    },
+    {
+      "topic": "你有没有在「假装社交」？这5个信号说明你在演",
+      "title_formula": "问句式",
+      "target_interaction": "收藏驱动",
+      "angle": "自检清单式内容，5 个信号让读者对照自身，高收藏+高评论潜力。",
+      "keywords": [
+        "社交",
+        "假装",
+        "自检",
+        "人际关系"
+      ],
+      "pillar": "社交关系",
+      "id": 29,
+      "status": "generated",
+      "generated_at": "2026-06-10T14:01:59.895085+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/你有没有在假装社交这5个信号说明你在演_87c9"
+    },
+    {
+      "topic": "那个总是「秒回」你的人，可能最不把你当回事",
+      "title_formula": "观点冲击式",
+      "target_interaction": "分享驱动",
+      "angle": "反常识观点，挑战秒回=在乎的认知，容易引发争议和转发。支持方和反对方都会评论。",
+      "keywords": [
+        "秒回",
+        "社交",
+        "反常识",
+        "争议"
+      ],
+      "pillar": "社交关系",
+      "id": 30,
+      "status": "not_started"
+    },
+    {
+      "id": 31,
+      "topic": "停止「精神内耗」的3个方法，亲测有效",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "用具体场景展示精神内耗的典型瞬间（反复回想一句话、睡前复盘对话），给出3个可立刻执行的停止方法。",
+      "keywords": [
+        "精神内耗",
+        "停止内耗",
+        "情绪管理",
+        "自我成长"
+      ],
+      "pillar": "自我成长",
+      "status": "not_started"
+    },
+    {
+      "id": 32,
+      "topic": "学会这5句「拒绝话术」，再也不怕被人道德绑架",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "列举5个常见的道德绑架场景（借钱、帮忙、随叫随到），给出每种场景下可以原封不动照搬的拒绝话术。",
+      "keywords": [
+        "拒绝话术",
+        "道德绑架",
+        "边界感",
+        "社交技巧"
+      ],
+      "pillar": "社交关系",
+      "status": "not_started"
+    },
+    {
+      "id": 33,
+      "topic": "那个总是「秒回」你的人，可能最不把你当回事",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "反直觉观点：秒回≠在意。分析秒回背后的不同动机（无聊、习惯、控制欲），对比真正在意的人的表现。争议性强。",
+      "keywords": [
+        "秒回",
+        "聊天回复",
+        "恋爱细节",
+        "识人"
+      ],
+      "pillar": "社交关系",
+      "status": "not_started"
+    },
+    {
+      "id": 34,
+      "topic": "恋爱后反而不会讲话了？这3个沟通陷阱正在杀死你们的关系",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "展示3个恋爱中常见的沟通错误（翻旧账、冷暴力、预设答案），每个配一个正确做法的对话对比。",
+      "keywords": [
+        "恋爱沟通",
+        "吵架",
+        "冷暴力",
+        "亲密关系"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "generated",
+      "generated_at": "2026-06-09T15:13:02.502895+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/恋爱后反而不会讲话了这3个沟通陷阱正在杀死你们的关系_1314"
+    },
+    {
+      "id": 35,
+      "topic": "为什么越懂事的人，越容易被忽视？",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "懂事=不被看见。展示懂事的人在家庭、职场、恋爱中的典型场景，引发我也是的共鸣。争议点：懂事到底是美德还是自我消耗。",
+      "keywords": [
+        "懂事",
+        "被忽视",
+        "讨好型人格",
+        "自我成长"
+      ],
+      "pillar": "自我成长",
+      "status": "not_started"
+    },
+    {
+      "id": 36,
+      "topic": "独居女生必看：5个让安全感翻倍的小习惯",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "5个具体的独居安全习惯（门锁、外卖、紧急联系人等），实用性强，收藏率高。适合作为安全型内容。",
+      "keywords": [
+        "独居",
+        "女生安全",
+        "独居生活",
+        "自我保护"
+      ],
+      "pillar": "生活态度",
+      "status": "not_started"
+    },
+    {
+      "id": 37,
+      "topic": "你有没有在「假装社交」？这5个信号说明你在演",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "5个假装社交的信号（假笑、附和、回家后疲惫），读者自检对照。争议点：社交到底是必要的还是消耗的。",
+      "keywords": [
+        "假装社交",
+        "社恐",
+        "社交疲惫",
+        "自我接纳"
+      ],
+      "pillar": "社交关系",
+      "status": "not_started"
+    },
+    {
+      "id": 38,
+      "topic": "焦虑发作时，一个动作就能让你立刻平静下来",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "介绍一个简单有效的焦虑缓解技巧（如54321着陆法），配场景展示如何使用。实用+情绪疗愈双重价值。",
+      "keywords": [
+        "焦虑",
+        "情绪急救",
+        "着陆法",
+        "心理健康"
+      ],
+      "pillar": "情绪疗愈",
+      "status": "generated",
+      "generated_at": "2026-06-07T03:58:16.396070+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/焦虑发作时一个动作就能让你立刻平静下来_c7be"
+    },
+    {
+      "id": 39,
+      "topic": "「PUA」和「为你好」的唯一区别，就一个字",
+      "title_formula": "概念解读式",
+      "target_interaction": "评论驱动",
+      "angle": "区分真正的关心和操控式关心。争议性强：很多读者会站队讨论这到底算不算PUA。结尾给一个自检清单。",
+      "keywords": [
+        "PUA",
+        "为你好",
+        "情感操控",
+        "边界感"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
+    },
+    {
+      "id": 40,
+      "topic": "朋友圈经营指南：发这3种内容的人，最容易被拉黑",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "反向思维：什么样的朋友圈让人想屏蔽。争议点：有人觉得是社交自由，有人觉得是没边界。引发讨论。",
+      "keywords": [
+        "朋友圈",
+        "社交礼仪",
+        "边界感",
+        "人际关系"
+      ],
+      "pillar": "社交关系",
+      "status": "not_started"
+    },
+    {
+      "id": 41,
+      "topic": "吵架后千万别做的3件事，第2件你天天在做",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "展示3个吵架后的常见错误行为（翻旧账、冷战等），配正确做法对比。第2件制造悬念让人想点开。",
+      "keywords": [
+        "吵架",
+        "情侣矛盾",
+        "沟通技巧",
+        "恋爱方法"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "generated",
+      "generated_at": "2026-06-09T15:25:11.927523+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/吵架后千万别做的3件事第2件你天天在做_b5ae"
+    },
+    {
+      "id": 42,
+      "topic": "这5种「朋友」，趁早远离",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "列举5种消耗型朋友（吐槽型、攀比型、利用型等），每种配一个识别信号和正确处理方式。",
+      "keywords": [
+        "朋友",
+        "社交边界",
+        "远离消耗",
+        "人际关系"
+      ],
+      "pillar": "社交关系",
+      "status": "not_started"
+    },
+    {
+      "id": 43,
+      "topic": "父母催婚时，你只需要说这一句话",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "针对催婚场景给出一句万能回应话术，简单但有效。场景感强，痛点精准。",
+      "keywords": [
+        "催婚",
+        "父母",
+        "边界感",
+        "家庭关系"
+      ],
+      "pillar": "社交关系",
+      "status": "not_started"
+    },
+    {
+      "id": 44,
+      "topic": "分手后最掉价的3件事，你做过几个？",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "反向盘点分手后不应该做的事（反复查看动态、求复合等）。争议点：什么算掉价什么算深情？引发站队。",
+      "keywords": [
+        "分手",
+        "前任",
+        "失恋",
+        "自我成长"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "published",
+      "generated_at": "2026-06-23T14:40:51.511706+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/分手后最掉价的3件事你做过几个_a051",
+      "approved_at": "2026-06-23T14:41:09+00:00",
+      "published_at": "2026-06-23T14:48:08+00:00"
+    },
+    {
+      "id": 45,
+      "topic": "一个人开始走运的5个征兆，看看你中了几个",
+      "title_formula": "问句式",
+      "target_interaction": "收藏驱动",
+      "angle": "5个生活变好的微小信号（开始早睡、不再解释、学会拒绝等）。正面积极，收藏率高。",
+      "keywords": [
+        "走运",
+        "变好",
+        "生活信号",
+        "自我成长"
+      ],
+      "pillar": "自我成长",
+      "status": "generated",
+      "generated_at": "2026-06-10T14:16:22.806797+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/一个人开始走运的5个征兆看看你中了几个_a956"
+    },
+    {
+      "id": 46,
+      "topic": "月薪5千和月薪5万的人，区别只在这3个习惯",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "从消费习惯、时间分配、社交方式三个维度对比。争议点：是习惯决定收入还是收入决定习惯？易引发讨论。",
+      "keywords": [
+        "消费习惯",
+        "自律",
+        "阶层",
+        "生活方式"
+      ],
+      "pillar": "生活态度",
+      "status": "generated",
+      "generated_at": "2026-06-23T15:24:29.353379+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/月薪5千和月薪5万的人区别只在这3个习惯_c461"
+    },
+    {
+      "id": 47,
+      "topic": "这4种「自我感动」正在毁掉你的生活",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "盘点4种看似努力实则自我感动的行为（假自律、假勤奋、假社交等）。直戳痛点，争议性强。",
+      "keywords": [
+        "自我感动",
+        "假努力",
+        "自律",
+        "清醒"
+      ],
+      "pillar": "自我成长",
+      "status": "generated",
+      "generated_at": "2026-06-07T05:11:28.795205+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/这4种自我感动正在毁掉你的生活_9b4b"
+    },
+    {
+      "id": 48,
+      "topic": "高情商回复模板：面对这5种场景直接抄作业",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "5个社交尴尬场景（被问工资、被比较、被借钱等），每个配一句高情商回复话术。纯干货收藏型。",
+      "keywords": [
+        "高情商",
+        "回复话术",
+        "社交技巧",
+        "聊天"
+      ],
+      "pillar": "社交关系",
+      "status": "generated",
+      "generated_at": "2026-06-10T15:18:31.219614+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/pending/高情商回复模板面对这5种场景直接抄作业_f6d8"
+    },
+    {
+      "id": 49,
+      "topic": "为什么你总是晚睡？不是不困，是舍不得",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "分析报复性熬夜背后的心理：白天不属于自己，只有深夜才是自己的时间。共鸣感极强。",
+      "keywords": [
+        "熬夜",
+        "报复性熬夜",
+        "睡眠",
+        "情绪"
+      ],
+      "pillar": "情绪疗愈",
+      "status": "generated",
+      "generated_at": "2026-06-10T14:45:31.172387+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/为什么你总是晚睡不是不困是舍不得_f050"
+    },
+    {
+      "id": 50,
+      "topic": "恋爱中最让人心寒的不是吵架，是这3个瞬间",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "对比吵架vs日常冷淡：吵架至少说明在乎，真正的伤害藏在没事随便都行里。引发深度共鸣。",
+      "keywords": [
+        "心寒",
+        "恋爱细节",
+        "冷暴力",
+        "情感"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "published",
+      "generated_at": "2026-06-10T14:51:17.001672+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/恋爱中最让人心寒的不是吵架是这3个瞬间_ad68",
+      "approved_at": "2026-06-23T14:32:38+00:00",
+      "published_at": "2026-06-23T14:54:44+00:00"
     }
   ]
 }

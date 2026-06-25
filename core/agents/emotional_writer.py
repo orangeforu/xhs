@@ -2,7 +2,7 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt, FORMULA_INSTRUCTIONS
+from core.utils import load_prompt, FORMULA_INSTRUCTIONS, sanitize_tags_in_content
 
 logger = get_logger(__name__)
 
@@ -251,6 +251,9 @@ class EmotionalWriter(BaseAgent):
 
         # 标题CTR优化：基于历史数据选择最佳标题
         content = _optimize_title(content)
+
+        # 标签确定性兜底（D-01）：LLM 常无视"3-5个精准标签"规则，用代码强制清洗
+        content = sanitize_tags_in_content(content, brief.get("keywords"))
 
         result = {
             "brief": brief,

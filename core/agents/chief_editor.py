@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as
 
 from core.agents.base import BaseAgent, MessageBus, Message
 from core.config import get_logger
-from core.utils import load_prompt, extract_visual_style
+from core.utils import load_prompt, extract_visual_style, check_tags_compliance
 
 logger = get_logger(__name__)
 
@@ -159,6 +159,19 @@ class ChiefEditor(BaseAgent):
         """主编做最终决策。"""
         if not review:
             return {"action": "revise", "feedback": "审核服务暂时不可用，请保持内容质量重新提交", "core_issue": "审核服务异常"}
+
+        # D-02 标签硬门禁：标签不合规 → 强制 revise，LLM 审核的 S/A 判定不得覆盖
+        # 仅当 draft 含实际正文时预检（空 draft 不触发，避免影响单元测试与异常分支）
+        draft_content = draft.get("content", "") if draft else ""
+        tag_issues = check_tags_compliance(draft_content) if draft_content else []
+        if tag_issues and round_num < 4:
+            return {
+                "action": "revise",
+                "feedback": "【标签不合规 — 必须修复】\n"
+                            + "\n".join(f"- {i}" for i in tag_issues)
+                            + "\n请输出 3-5 个精准话题标签（必带 #不懂就问有问必答），禁止 #情感 #恋爱 等泛词，不超过5个。",
+                "core_issue": "标签不合规（硬门禁）",
+            }
 
         verdict = review.get("verdict", "conditional")
         grade = review.get("grade", "B")

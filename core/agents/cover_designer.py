@@ -3,7 +3,7 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt, extract_json_from_llm
+from core.utils import load_prompt, extract_json_from_llm, extract_visual_style
 from core.image_generator import generate_cover_template
 
 logger = get_logger(__name__)
@@ -103,13 +103,21 @@ class CoverDesigner(BaseAgent):
             design["style"] = style_override
             logger.info("使用系列绑定风格: %s", style_override)
         else:
-            # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
-            design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
+            # D-03：优先尊重写手在笔记里定的视觉风格（写作→封面配色闭环），
+            # 让情绪基调（crimson 愤怒/mist 代理正义等）真正落到封面上
+            writer_style = extract_visual_style(note_content)
+            if writer_style in ALL_STYLES and writer_style != "warm_grey":
+                design["style"] = writer_style
+                logger.info("沿用写手定的视觉风格: %s", writer_style)
+            else:
+                # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
+                design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
 
-        # 冷调风格降权：如果选了冷调风格，有概率替换为暖调
+        # 冷调风格降权（D-03 弱化）：mist/cool/twilight 仍有价值（代理正义/怀旧），
+        # 仅 25% 概率替换为暖调，让情绪光谱在封面真正呈现
         if design["style"] in _COLD_STYLES and not style_override:
             import random
-            if random.random() < 0.6:  # 60% 概率替换为暖调
+            if random.random() < 0.25:
                 warm_choices = list(_WARM_FALLBACK.keys())
                 design["style"] = random.choices(warm_choices, weights=list(_WARM_FALLBACK.values()))[0]
                 logger.info("冷调风格降权: 替换为暖调 %s", design["style"])

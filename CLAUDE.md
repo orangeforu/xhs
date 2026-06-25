@@ -62,9 +62,10 @@ TopicStrategist → EmotionalWriter → (CoverDesigner ∥ LayoutArtist ∥ Cont
 
 `core/image_generator.py` 负责全部图片渲染：
 
-- **封面生成**：
-  1. **AI 绘画**（主方案）：默认使用 Pollinations（免费），可选 DALL-E（需 `IMAGE_API_KEY`，内置重试）。prompt 经过 `_sanitize_prompt` 自动替换阴冷关键词并追加温暖 safeguard。
-  2. **模板合成**（fallback）：AI 失败时自动回退。纯 Pillow 代码渲染，7 种配色主题（`warm_grey`/`twilight`/`crimson`/`mist`/`cool`/`warm`/`blank`），动态计算字号防溢出。
+- **封面生成**（`CoverDesigner` 编排，产物文件名仍为 `cover_ai.png`，历史命名）：
+  1. **模板合成**（当前主方案）：纯 Pillow 渲染大字报风封面（粗竖条 + 渐变色块 + 超大标题），7 种配色主题（`warm_grey`/`twilight`/`crimson`/`mist`/`cool`/`warm`/`blank`），动态字号防溢出。
+  2. **AI 绘画**（可选，未默认启用）：`generate_cover_ai` 走 Pollinations/SiliconFlow/DALL-E，AI 失败时回退模板。数据证明 AI 封面 CTR 偏低（塑料感 + 文字可读性差），已不作主方案。
+  - **配色策略（D-03）**：`CoverDesigner` 优先尊重 `EmotionalWriter` 在笔记里定的视觉风格（情绪基调→配色），弱化冷调强制降权，让 `crimson`（愤怒共鸣）/`mist`（代理正义）等强情绪色真正落地。
 - **内页分页**：先由 `_paginate_blocks` 计算排版分页（不渲染），得到准确总页数后多线程（`max_workers=4`）渲染。每页含渐变背景、视觉锚点、金句高亮块、页码。
 
 ### 关键兼容层
@@ -117,7 +118,15 @@ docs_agent/
 ## 平台调性约束
 
 - **陪伴感优先于分析感**：情感内容必须像闺蜜夜聊，禁止理性分析和下定义式表达。
-- **封面生成策略**：只生成 AI 封面（`cover_ai.png`），不额外生成 `cover_chat`/`cover_warm` 等多风格模板封面。
+- **封面生成策略**：以**模板大字封面**为主（文件名 `cover_ai.png` 为历史命名）。AI 绘画封面因 CTR 偏低已不作主方案。配色由写手定的视觉风格驱动（见 D-03）。
+
+## 涨粉优化约定（2026-06 改造，详见 `docs/涨粉优化执行计划.md`）
+
+- **话题标签（D-01/D-02）**：3-5 个精准标签，禁用泛词（#情感 #恋爱 等）。`core/utils.py: sanitize_tags` 在写手产出后确定性兜底，`ChiefEditor` 硬门禁拦截不合规标签。**凡 prompt 写了但 LLM 不稳定遵守的规则，一律用代码兜底**，不依赖 LLM 自觉。
+- **内页气泡（D-05）**：`_parse_to_blocks` 识别"角色：内容"对话行，渲染成左右聊天气泡（主角方右暖色、对方左灰），不再拍扁成纯文字。block 结构为 4 元组 `(text, is_bold, is_sep, side)`，向后兼容 3 元组调用与索引访问。
+- **金句海报（D-06）**：任何页结尾短句居中放大成海报页（`last_block_font_boost=18`），便于截图传播。
+- **选题（D-07）**：`generate_topics.py` 强制情绪光谱均衡（≥4 种情绪）+ 搜索型问句配额（≥2 个），避免单一"隐性伤害"赛道锁死。
+- **人设与系列（D-08）**：固定人设 = 31 岁互联网打工人（见 `prompts/agent_writer.md`）。每个选题带 `series` 字段（5 个固定系列），写手结尾输出系列引导建立追更感。
 
 ## 环境依赖
 

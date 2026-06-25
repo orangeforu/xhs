@@ -59,6 +59,24 @@ class TestParseToBlocks(unittest.TestCase):
         blocks = _parse_to_blocks("   \n\n   ")
         self.assertEqual(len(blocks), 0)
 
+    def test_dialogue_protagonist_parsed_as_right_bubble(self):
+        """主角方对话行（她：...）识别为右侧气泡（D-05）。"""
+        blocks = _parse_to_blocks("她：我今天被领导骂了。")
+        self.assertEqual(len(blocks), 1)
+        self.assertEqual(blocks[0][3], "right")
+
+    def test_dialogue_other_role_parsed_as_left_bubble(self):
+        """对方对话行（他：...）识别为左侧气泡。"""
+        blocks = _parse_to_blocks("他：晚点说。")
+        self.assertEqual(len(blocks), 1)
+        self.assertEqual(blocks[0][3], "left")
+
+    def test_non_dialogue_has_no_bubble_side(self):
+        """普通叙述句不识别为气泡（side 为 None）。"""
+        blocks = _parse_to_blocks("她盯着屏幕看了很久。")
+        self.assertEqual(len(blocks), 1)
+        self.assertIsNone(blocks[0][3])
+
 
 class TestWrapText(unittest.TestCase):
     """测试文本换行。"""

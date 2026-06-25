@@ -21,16 +21,39 @@ _SKIP_MARKERS = ['【金句】', '【互动钩子】', '【话题标签】', '�
 _EMOJI_RE = re.compile(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+")
 _BOLD_RE = re.compile(r'\*\*(.*?)\*\*')
 
+# ── 对话气泡识别（D-05）──
+# 主角方角色 → 右气泡；其余（对方）→ 左气泡
+_BUBBLE_ROLES_RIGHT = {"她", "我", "女生", "女友", "老婆", "妈妈"}
+_BUBBLE_RE = re.compile(
+    r'^(她|他|我|妈妈|男生|女生|对方|前任|男友|女友|老公|老婆|爸爸|妈妈|爸|妈|闺蜜|朋友|同事|老板|领导|客户|舍友|室友)[：:]\s*(.*)$'
+)
 
-def _parse_to_blocks(text: str) -> list[tuple[str, bool, bool]]:
-    """解析文本为 block 列表：(text, is_bold, is_separator)。"""
+
+def _parse_bubble(text: str):
+    """识别"角色：内容"格式的对话行，返回 (side, speaker, content) 或 None。"""
+    m = _BUBBLE_RE.match(text)
+    if not m:
+        return None
+    speaker = m.group(1)
+    content = m.group(2).strip().strip('"""\'…— ').strip()
+    if len(content) < 1:
+        return None
+    side = "right" if speaker in _BUBBLE_ROLES_RIGHT else "left"
+    return (side, speaker, content)
+
+
+def _parse_to_blocks(text: str) -> list:
+    """解析文本为 block 列表：(text, is_bold, is_separator, side)。
+
+    side 为 None（普通段）、"left"/"right"（对话气泡），向后兼容 3 元组访问。
+    """
     blocks = []
     for raw in text.split('\n'):
         stripped = raw.strip()
         if not stripped:
             continue
         if stripped == '---':
-            blocks.append(('', False, True))
+            blocks.append(('', False, True, None))
             continue
         if any(m in stripped for m in _SKIP_MARKERS):
             continue
@@ -53,22 +76,29 @@ def _parse_to_blocks(text: str) -> list[tuple[str, bool, bool]]:
         clean = _BOLD_RE.sub(lambda m: m.group(1), stripped).strip()
         clean = _EMOJI_RE.sub('', clean).strip()
         if clean:
-            blocks.append((clean, is_bold, False))
+            bubble = _parse_bubble(clean)
+            side = bubble[0] if bubble else None
+            blocks.append((clean, is_bold, False, side))
     return blocks
 
 
 def _paginate_blocks(blocks: list) -> list:
-    """将 blocks 分页，返回 list[list[block]]。"""
+    """将 blocks 分页，返回 list[list[block]]。兼容 3 元组与 4 元组（含气泡 side）。"""
     body_font = _get_font(_BASE_FONT_SIZE, bold=False)
     body_font_bold = _get_font(_BASE_FONT_SIZE + LAYOUT["bold_extra"], bold=True)
+    bubble_pad = LAYOUT.get("bubble_pad_y", 28)  # 气泡上下内边距总高
+
     render_blocks = []
-    for para_text, is_bold, is_sep in blocks:
+    for block in blocks:
+        # 兼容旧 3 元组调用（测试/外部）与新的 4 元组（含 side）
+        para_text, is_bold, is_sep = block[0], block[1], block[2]
+        side = block[3] if len(block) >= 4 else None
         if is_sep:
-            render_blocks.append(('__separator__', False, 0))
+            render_blocks.append(('__separator__', False, 0, None))
             continue
         font = body_font_bold if is_bold else body_font
         wrapped = _wrap_text(para_text, font, _MAX_TEXT_W)
-        render_blocks.append((wrapped, is_bold, len(wrapped)))
+        render_blocks.append((wrapped, is_bold, len(wrapped), side))
 
     y_start = LAYOUT["page_top"]
     y_end = COVER_HEIGHT - LAYOUT["page_bottom_margin"]
@@ -79,24 +109,24 @@ def _paginate_blocks(blocks: list) -> list:
     current_page = []
     current_height = 0
     for item in render_blocks:
-        tag, is_bold, line_count = item
+        tag, is_bold, line_count, side = item
         if tag == '__separator__':
             if current_height + sep_height > usable_height and current_page:
                 pages.append(current_page)
                 current_page = []
                 current_height = 0
-            current_page.append(('__separator__', False, 0))
+            current_page.append(('__separator__', False, 0, None))
             current_height += sep_height
         else:
-            block_height = line_count * _LINE_HEIGHT
+            block_height = line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
             if current_page:
                 block_height += _PARA_SPACING
             if current_height + block_height > usable_height and current_page:
                 pages.append(current_page)
                 current_page = []
                 current_height = 0
-                block_height = line_count * _LINE_HEIGHT
-            current_page.append((tag, is_bold, line_count))
+                block_height = line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
+            current_page.append((tag, is_bold, line_count, side))
             current_height += block_height
 
     if current_page:
@@ -108,14 +138,60 @@ def _calc_page_height(page_blocks: list) -> int:
     """计算一页 blocks 的实际渲染高度。"""
     h = 0
     sep_height = int(_LINE_HEIGHT * LAYOUT["separator_height_ratio"])
-    for i, (tag, is_bold, line_count) in enumerate(page_blocks):
+    bubble_pad = LAYOUT.get("bubble_pad_y", 28)
+    for i, block in enumerate(page_blocks):
+        tag = block[0]
+        line_count = block[2]
+        side = block[3] if len(block) >= 4 else None
         if tag == '__separator__':
             h += sep_height
         else:
             if i > 0 and page_blocks[i - 1][0] != '__separator__':
                 h += _PARA_SPACING
-            h += line_count * _LINE_HEIGHT
+            h += line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
     return h
+
+
+def _draw_bubble(draw, lines, side, y, x_start, palette, accent, font, line_height):
+    """渲染一条聊天气泡（D-05），返回气泡底部 y 坐标。
+
+    主角方（side="right"）→ 右侧暖色气泡；对方（side="left"）→ 左侧中性气泡。
+    lines 为已换行的文本行列表。
+    """
+    pad_x, pad_y = 28, 14
+    max_w = 0
+    for ln in lines:
+        try:
+            bbox = font.getbbox(ln)
+            w = bbox[2] - bbox[0]
+        except (AttributeError, TypeError):
+            w = 0
+        max_w = max(max_w, w)
+    text_w = min(max_w, int(_MAX_TEXT_W * 0.72))
+    bubble_w = text_w + pad_x * 2
+    bubble_h = len(lines) * line_height + pad_y * 2
+
+    margin_right = LAYOUT["margin_left"]
+    if side == "right":
+        bx = COVER_WIDTH - margin_right - bubble_w
+        fill = (*accent, 42)
+        text_color = palette["title"]
+    else:
+        bx = x_start
+        fill = (130, 130, 130, 26)
+        text_color = palette["body"]
+    by = y
+
+    draw.rounded_rectangle(
+        [(bx, by), (bx + bubble_w, by + bubble_h)],
+        radius=22,
+        fill=fill,
+    )
+    ty = by + pad_y
+    for ln in lines:
+        draw.text((bx + pad_x, ty), ln, font=font, fill=text_color)
+        ty += line_height
+    return by + bubble_h
 
 
 def generate_inner_page(text: str, page_num: int, total_pages: int, style: str = "warm_grey",
@@ -212,7 +288,10 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                            page_num, y, y_limit, len(page_blocks) - block_idx)
             break
 
-        tag, is_bold, line_count = block
+        tag = block[0]
+        is_bold = block[1]
+        line_count = block[2]
+        side = block[3] if len(block) >= 4 else None
         if tag == '__separator__':
             sep_height = int(line_height * LAYOUT["separator_height_ratio"])
             # 粗分割线 + 小圆点
@@ -231,6 +310,13 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
             after_sep_or_first = True
             continue
 
+        # 对话气泡渲染（D-05）：把"角色：内容"行画成左右聊天气泡
+        if side:
+            y = _draw_bubble(draw, tag, side, y, x_start, p, cover_accent, body_font, line_height)
+            y += actual_para_spacing
+            after_sep_or_first = False
+            continue
+
         font = body_font_bold if is_bold else body_font
 
         last_text_idx = max((i for i, b in enumerate(page_blocks) if b[0] != '__separator__'), default=-1)
@@ -238,8 +324,8 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         is_last_page = (page_num == total_pages)
         is_short = line_count <= 2 and sum(len(line) for line in tag) <= LAYOUT["last_block_max_chars"]
 
-        # 最后一页最后一段：金句放大
-        if is_last_page and is_last_text_block and is_short:
+        # 金句海报放大（D-06）：任何页结尾的短句都放大居中，不再只限最后一页
+        if is_last_text_block and is_short:
             decor_y = y - 20
             draw.rectangle(
                 [((COVER_WIDTH - 80) // 2, decor_y), ((COVER_WIDTH + 80) // 2, decor_y + 3)],

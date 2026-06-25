@@ -17,7 +17,7 @@
       "status": "published",
       "generated_at": "2026-06-24T13:45:22.630712+00:00",
       "generated_with_commit": "14c6860",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363",
       "published_at": "2026-06-24T14:04:21.097169+00:00"
     },
     {
@@ -358,7 +358,11 @@
       ],
       "pillar": "自我成长",
       "id": 21,
-      "status": "not_started"
+      "status": "published",
+      "generated_at": "2026-06-25T14:48:18.631051+00:00",
+      "generated_with_commit": "9894470",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/停止精神内耗的3个方法亲测有效_2a91",
+      "published_at": "2026-06-25T15:01:14.629540+00:00"
     },
     {
       "topic": "「讨好型人格」的人，最后都怎么样了？",
@@ -427,7 +431,7 @@
       "id": 25,
       "status": "published",
       "generated_at": "2026-06-03T16:19:36.900485+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/分手后还能做朋友吗评论区说出你的选择_d744",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/分手后还能做朋友吗评论区说出你的选择_d744",
       "approved_at": "2026-06-23T14:34:44+00:00",
       "published_at": "2026-06-23T14:59:03+00:00"
     },
@@ -461,7 +465,11 @@
       ],
       "pillar": "亲密关系洞察",
       "id": 27,
-      "status": "not_started"
+      "status": "published",
+      "generated_at": "2026-06-25T14:50:54.919187+00:00",
+      "generated_with_commit": "9894470",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/PUA和为你好的唯一区别就一个字_97bf",
+      "published_at": "2026-06-25T15:01:14.629540+00:00"
     },
     {
       "topic": "独居女生必看：5个让安全感翻倍的小习惯",

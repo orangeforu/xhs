@@ -8,6 +8,23 @@ from core.image_generator import generate_cover_template
 
 logger = get_logger(__name__)
 
+MAX_COVER_TITLE_LENGTH = 12  # 封面大字标题硬约束
+
+
+def _enforce_cover_title_length(title: str, max_len: int = MAX_COVER_TITLE_LENGTH) -> str:
+    """硬约束封面标题 ≤ max_len 字，超长时智能截断。"""
+    if not title or len(title) <= max_len:
+        return title
+    logger.warning("封面标题超长 (%d字 > %d字限制)，自动截断: %s", len(title), max_len, title[:30])
+    # 尝试在标点处截断
+    truncated = title[:max_len]
+    for sep in ("，", "。", "？", "！", "、", "：", " ", ","):
+        last = truncated.rfind(sep)
+        if last > max_len // 2:
+            return truncated[:last]
+    return truncated
+
+
 ALL_STYLES = ["warm_grey", "twilight", "crimson", "mist", "cool", "blank"]
 
 # 风格权重 — 暖色调优先，冷色调降权
@@ -117,6 +134,9 @@ class CoverDesigner(BaseAgent):
         # 改进 fallback 标题
         if design["title"] in ("情感笔记", ""):
             design["title"] = self._extract_title_from_content(note_content)
+
+        # 硬约束：封面大字标题 ≤12 字，防止排版崩溃
+        design["title"] = _enforce_cover_title_length(design["title"])
 
         # 生成文字模板封面（大字标题 + 渐变背景，小红书信息流中 CTR 更高）
         cover_path = None

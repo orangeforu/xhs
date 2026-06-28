@@ -306,10 +306,40 @@
         "停止内耗"
       ],
       "pillar": "情绪疗愈",
-      "status": "approved",
-      "generated_at": "2026-05-29T16:07:19.836586+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
-      "approved_at": "2026-06-23T14:35:33+00:00"
+      "status": "published",
+      "generated_at": "2026-06-28T06:57:01.461840+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
+      "approved_at": "2026-06-23T14:35:33+00:00",
+      "generated_with_commit": "b08ea77",
+      "features": {
+        "story_structure": "B",
+        "stance_point_page": 3,
+        "anchoring_items": [
+          "便签"
+        ],
+        "anchoring_item_count": 1,
+        "has_action_description": true,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 552,
+        "page_count": 4,
+        "bold_count": 5,
+        "emoji_count": 0,
+        "cover_title": "我差点又骂自己没用，但这次我没改方案，先改了这句话",
+        "cover_title_length": 25,
+        "cover_subtitle": "别急着讨伐自己，先问书桌前那3个问题",
+        "visual_style": "`warm_grey`",
+        "review_rounds": 4,
+        "final_grade": "A",
+        "verdict": "pass",
+        "issues_count": 0,
+        "self_check_issues_count": 2,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "published_at": "2026-06-28T14:03:24.368367+00:00"
     },
     {
       "id": 19,
@@ -358,11 +388,11 @@
       ],
       "pillar": "自我成长",
       "id": 21,
-      "status": "generated",
+      "status": "published",
       "generated_at": "2026-06-28T05:49:46.014127+00:00",
       "generated_with_commit": "158acd1",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/停止精神内耗的3个方法亲测有效_2a91",
-      "published_at": "2026-06-25T15:01:14.629540+00:00"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/停止精神内耗的3个方法亲测有效_2a91",
+      "published_at": "2026-06-28T06:07:12.089750+00:00"
     },
     {
       "topic": "「讨好型人格」的人，最后都怎么样了？",
@@ -518,10 +548,11 @@
       ],
       "pillar": "社交关系",
       "id": 30,
-      "status": "generated",
+      "status": "published",
       "generated_at": "2026-06-28T05:43:18.868002+00:00",
       "generated_with_commit": "158acd1",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/那个总是秒回你的人可能最不把你当回事_2741"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/那个总是秒回你的人可能最不把你当回事_2741",
+      "published_at": "2026-06-28T06:07:12.089750+00:00"
     },
     {
       "id": 31,

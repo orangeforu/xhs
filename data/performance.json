@@ -686,23 +686,65 @@
       "avg_view_duration": 14,
       "followers_gained": 0,
       "data_recorded_at": "2026-06-28"
+    },
+    {
+      "topic": "你是不是又在“自我攻击”了？觉察这3个内心对话瞬间就能停",
+      "title_formula": "问句式",
+      "pillar": "情绪疗愈",
+      "published_at": "2026-06-28T14:05:05.155881+00:00",
+      "output_dir": "docs_agent/published/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
+      "generated_with_commit": "b08ea77",
+      "features": {
+        "story_structure": "B",
+        "stance_point_page": 3,
+        "anchoring_items": [
+          "便签"
+        ],
+        "anchoring_item_count": 1,
+        "has_action_description": true,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 552,
+        "page_count": 4,
+        "bold_count": 5,
+        "emoji_count": 0,
+        "cover_title": "我差点又骂自己没用，但这次我没改方案，先改了这句话",
+        "cover_title_length": 25,
+        "cover_subtitle": "别急着讨伐自己，先问书桌前那3个问题",
+        "visual_style": "`warm_grey`",
+        "review_rounds": 4,
+        "final_grade": "A",
+        "verdict": "pass",
+        "issues_count": 0,
+        "self_check_issues_count": 2,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "published_day_of_week": 7,
+      "exposure": 0,
+      "likes": 0,
+      "collects": 0,
+      "comments": 0,
+      "shares": 0,
+      "grade": "pending"
     }
   ],
   "summary": {
-    "total_published": 33,
+    "total_published": 34,
     "total_likes": 3,
     "total_collects": 6,
     "total_comments": 0,
     "total_shares": 2,
     "total_exposure": 11473,
+    "total_views": 756,
+    "avg_ctr": 5.8,
+    "avg_view_duration": 17.1,
     "s_grade_count": 0,
     "a_grade_count": 12,
     "b_grade_count": 8,
     "c_grade_count": 7,
-    "current_streak_underperform": 0,
-    "total_views": 756,
-    "total_followers_gained": 0,
-    "avg_ctr": 5.8,
-    "avg_view_duration": 17.1
+    "pending_count": 2
   }
 }

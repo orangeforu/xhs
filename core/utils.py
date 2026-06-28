@@ -131,6 +131,7 @@ def write_note_file(
     rounds: int = 1,
     title_eval: list | None = None,
     commit_hash: str = "",
+    features: dict | None = None,
 ) -> None:
     """将笔记及相关产物写入 Markdown 文件（兼容旧格式，确保 app.py 正则解析正常）。"""
     with open(output_file, "w", encoding="utf-8") as f:
@@ -191,6 +192,12 @@ def write_note_file(
                 f.write("\n### 博主回复模板\n\n")
                 for r in reply_templates:
                     f.write(f"- {r}\n")
+        # 内容特征
+        if features:
+            from core.features import features_to_yaml
+            f.write("\n\n## 内容特征\n\n")
+            f.write(features_to_yaml(features))
+            f.write("\n")
 
 
 def format_review(review: dict) -> str:

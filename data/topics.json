@@ -358,10 +358,10 @@
       ],
       "pillar": "自我成长",
       "id": 21,
-      "status": "published",
-      "generated_at": "2026-06-25T14:48:18.631051+00:00",
-      "generated_with_commit": "9894470",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/停止精神内耗的3个方法亲测有效_2a91",
+      "status": "generated",
+      "generated_at": "2026-06-28T05:49:46.014127+00:00",
+      "generated_with_commit": "158acd1",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/停止精神内耗的3个方法亲测有效_2a91",
       "published_at": "2026-06-25T15:01:14.629540+00:00"
     },
     {
@@ -468,7 +468,7 @@
       "status": "published",
       "generated_at": "2026-06-25T14:50:54.919187+00:00",
       "generated_with_commit": "9894470",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/PUA和为你好的唯一区别就一个字_97bf",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/PUA和为你好的唯一区别就一个字_97bf",
       "published_at": "2026-06-25T15:01:14.629540+00:00"
     },
     {
@@ -518,7 +518,10 @@
       ],
       "pillar": "社交关系",
       "id": 30,
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-28T05:43:18.868002+00:00",
+      "generated_with_commit": "158acd1",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/那个总是秒回你的人可能最不把你当回事_2741"
     },
     {
       "id": 31,

@@ -891,7 +891,7 @@
         "情绪管理"
       ],
       "pillar": "情绪疗愈",
-      "status": "generated",
+      "status": "published",
       "generated_at": "2026-06-28T14:52:04.698259+00:00",
       "generated_with_commit": "b64affc",
       "features": {
@@ -920,7 +920,8 @@
         "published_day_of_week": null,
         "data_collection_days": null
       },
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/你不是懒是能量太低了_9f4b"
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/你不是懒是能量太低了_9f4b",
+      "published_at": "2026-06-28T15:43:12.993677+00:00"
     },
     {
       "id": 52,

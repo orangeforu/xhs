@@ -729,6 +729,49 @@
       "comments": 0,
       "shares": 0,
       "grade": "pending"
+    },
+    {
+      "topic": "你不是懒，是能量太低了",
+      "original_topic": "你不是懒，是能量太低了",
+      "title_formula": "概念解读式",
+      "pillar": "情绪疗愈",
+      "published_at": "2026-06-28T15:43:12.993677+00:00",
+      "output_dir": "docs_agent/published/你不是懒是能量太低了_9f4b",
+      "generated_with_commit": "b64affc",
+      "exposure": 0,
+      "views": 0,
+      "likes": 0,
+      "collects": 0,
+      "comments": 0,
+      "shares": 0,
+      "grade": "pending",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "你不是懒，是能量太低了",
+        "cover_title_length": 11,
+        "cover_subtitle": "3个表现，中1条就算透支了",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 1,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "published_day_of_week": 7
     }
   ],
   "summary": {
@@ -745,6 +788,14 @@
     "a_grade_count": 12,
     "b_grade_count": 8,
     "c_grade_count": 7,
-    "pending_count": 2
+    "pending_count": 2,
+    "total_notes": 35,
+    "grade_distribution": {
+      "C": 7,
+      "A": 12,
+      "": 5,
+      "B": 8,
+      "pending": 3
+    }
   }
 }

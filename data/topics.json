@@ -891,7 +891,36 @@
         "情绪管理"
       ],
       "pillar": "情绪疗愈",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-28T14:52:04.698259+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "你不是懒，是能量太低了",
+        "cover_title_length": 11,
+        "cover_subtitle": "3个表现，中1条就算透支了",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 1,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/你不是懒是能量太低了_9f4b"
     },
     {
       "id": 52,
@@ -907,7 +936,41 @@
         "社交"
       ],
       "pillar": "生活态度",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-28T14:47:36.657192+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "F",
+        "stance_point_page": 1,
+        "anchoring_items": [
+          "拖鞋"
+        ],
+        "anchoring_item_count": 1,
+        "has_action_description": false,
+        "collection_elements": [
+          "清单",
+          "自检题"
+        ],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 553,
+        "page_count": 5,
+        "bold_count": 6,
+        "emoji_count": 5,
+        "cover_title": "1683个好友，只有3人记得我的生日",
+        "cover_title_length": 18,
+        "cover_subtitle": "删了400个名字后，我给自己煮了碗面",
+        "visual_style": "twilight",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "pass",
+        "issues_count": 0,
+        "self_check_issues_count": 1,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/30岁以后才明白朋友越来越少是好事_dccb"
     },
     {
       "id": 53,
@@ -937,7 +1000,36 @@
         "自我价值"
       ],
       "pillar": "亲密关系洞察",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-28T14:56:14.004599+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "其他",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "爱不是盲目付出，是聪明索取",
+        "cover_title_length": 13,
+        "cover_subtitle": "我花了3年才明白这个道理",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 3,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/关于爱情你该知道的3个反常识真相_072d"
     },
     {
       "id": 55,
@@ -952,7 +1044,41 @@
         "时间管理"
       ],
       "pillar": "自我成长",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-28T14:39:36.623339+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "C",
+        "stance_point_page": null,
+        "anchoring_items": [
+          "笔记本",
+          "笔"
+        ],
+        "anchoring_item_count": 2,
+        "has_action_description": true,
+        "collection_elements": [
+          "方法步骤"
+        ],
+        "hook_type": "其他",
+        "has_five_sec_action": true,
+        "has_dead_hook": true,
+        "word_count": 661,
+        "page_count": 5,
+        "bold_count": 5,
+        "emoji_count": 1,
+        "cover_title": "下班后的3小时，决定你3年后的样子",
+        "cover_title_length": 17,
+        "cover_subtitle": "她用了这个方法，一年后跳槽涨薪50%",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "B",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 4,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/下班后的3小时决定你3年后的样子_995c"
     },
     {
       "id": 56,
@@ -967,7 +1093,36 @@
         "放下"
       ],
       "pillar": "社交关系",
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-28T14:43:50.679194+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "连续28天发早安晚安的人，后来怎么样了 💔",
+        "cover_title_length": 21,
+        "cover_subtitle": "他不是不会主动，只是对你按了静音。",
+        "visual_style": "mist",
+        "review_rounds": 2,
+        "final_grade": "B",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 3,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/那个从不主动联系你的人其实早就给了你答案_0afd"
     },
     {
       "id": 57,

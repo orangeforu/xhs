@@ -4,7 +4,7 @@ import re
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.utils import load_prompt, extract_json_from_llm, extract_visual_style
-from core.image_generator import generate_cover_template
+from core.image_generator import generate_cover_ai
 
 logger = get_logger(__name__)
 
@@ -76,9 +76,10 @@ class CoverDesigner(BaseAgent):
 {trending_hint}
 
 请输出 JSON 格式的封面设计方案：
-{{"title": "...", "subtitle": "...", "style": "...", "rationale": "..."}}
+{{"title": "...", "subtitle": "...", "style": "...", "ai_prompt": "...", "rationale": "..."}}
 
 要求：
+0. ai_prompt 是一段**英文** AI 绘画 prompt（80-150词），描述封面背景画面。必须是温暖、柔和、有呼吸感的场景，必须包含 "soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"，禁止昏暗/阴冷/剪影/诡异。要有具体场景+人物动作（如 "a young woman sitting by a window holding a phone, warm afternoon light"）。
 1. title 不超过12个字（封面大字必须短而醒目，和笔记标题是两回事），3秒内能读完。必须具体，禁止"情感笔记""看完沉默了"等万能词
 2. **标题必须包含矛盾/反差**（数据证明：有矛盾的标题 CTR 是无矛盾的 2-3 倍）。例如："最让人心寒的不是吵架"（不吵架反而更心寒）、"越懂事的人越容易被忽视"（懂事≠被重视）。纯陈述句标题 CTR 极低。
 3. **标题应包含至少2个高CTR元素**（数据验证过的）：
@@ -139,7 +140,8 @@ class CoverDesigner(BaseAgent):
                 cover_paths["ai"] = ai_path
             else:
                 try:
-                    ai_result = generate_cover_template(
+                    ai_result = generate_cover_ai(
+                        prompt=design.get("ai_prompt", ""),
                         title=design["title"],
                         subtitle=design["subtitle"],
                         style=design.get("style", "warm_grey"),
@@ -218,6 +220,7 @@ class CoverDesigner(BaseAgent):
                 "title": parsed.get("title", ""),
                 "subtitle": parsed.get("subtitle", ""),
                 "style": parsed.get("style", "warm_grey"),
+                "ai_prompt": parsed.get("ai_prompt", ""),
                 "rationale": parsed.get("rationale", ""),
             }
             return design

@@ -24,6 +24,7 @@ class TestOrchestratorRun(unittest.TestCase):
             "英文AI绘画prompt: A test scene\n\n"
             "【正文】\n"
             + "这是一段测试正文内容。\n" * 30
+            + "\n\n【话题标签】\n#不懂就问有问必答 #测试标签1 #测试标签2\n"
         )
 
         def fake_call_api(**kwargs):
@@ -86,6 +87,7 @@ class TestOrchestratorRun(unittest.TestCase):
             "英文AI绘画prompt: A test scene\n\n"
             "【正文】\n"
             + "这是一段测试正文内容。\n" * 30
+            + "\n\n【话题标签】\n#不懂就问有问必答 #测试标签1 #测试标签2\n"
         )
 
         call_count = {"n": 0}
@@ -150,6 +152,7 @@ class TestOrchestratorRun(unittest.TestCase):
             "英文AI绘画prompt: A test scene\n\n"
             "【正文】\n"
             + "这是一段测试正文内容。\n" * 30
+            + "\n\n【话题标签】\n#不懂就问有问必答 #测试标签1 #测试标签2\n"
         )
 
         def fake_call_api(**kwargs):
@@ -212,6 +215,7 @@ class TestChiefEditorOrchestrate(unittest.TestCase):
             "英文AI绘画prompt: A test scene\n\n"
             "【正文】\n"
             + "这是一段测试正文内容。\n" * 30
+            + "\n\n【话题标签】\n#不懂就问有问必答 #测试标签1 #测试标签2\n"
         )
 
         def fake_call_api(**kwargs):

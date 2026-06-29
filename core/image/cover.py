@@ -352,8 +352,13 @@ def generate_cover_ai(prompt: str, title: str, subtitle: str, style: str = "warm
     p = PALETTE.get(style, PALETTE["warm_grey"])
     bg_img = None
 
-    # 按优先级尝试：pollinations → siliconflow（国内 fallback）→ dalle
-    providers = [_try_pollinations, _try_siliconflow, _try_dalle]
+    # 按 IMAGE_PROVIDER 配置选优先 provider；全部失败则 fallback 到模板
+    _provider_map = {
+        "siliconflow": [_try_siliconflow, _try_pollinations, _try_dalle],
+        "dalle": [_try_dalle, _try_siliconflow, _try_pollinations],
+        "pollinations": [_try_pollinations, _try_siliconflow, _try_dalle],
+    }
+    providers = _provider_map.get(IMAGE_PROVIDER, [_try_pollinations, _try_siliconflow, _try_dalle])
     for provider in providers:
         bg_img = provider(prompt)
         if bg_img is not None:

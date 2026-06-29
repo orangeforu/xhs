@@ -3,8 +3,8 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt, extract_json_from_llm
-from core.image_generator import generate_cover_template
+from core.utils import load_prompt, extract_json_from_llm, extract_visual_style
+from core.image_generator import generate_cover_ai
 
 logger = get_logger(__name__)
 
@@ -76,9 +76,10 @@ class CoverDesigner(BaseAgent):
 {trending_hint}
 
 请输出 JSON 格式的封面设计方案：
-{{"title": "...", "subtitle": "...", "style": "...", "rationale": "..."}}
+{{"title": "...", "subtitle": "...", "style": "...", "ai_prompt": "...", "rationale": "..."}}
 
 要求：
+0. ai_prompt 是一段**英文** AI 绘画 prompt（80-150词），描述封面背景画面。必须是温暖、柔和、有呼吸感的场景，必须包含 "soft warm lighting, cozy atmosphere, gentle pastel tones, emotional warmth"，禁止昏暗/阴冷/剪影/诡异。要有具体场景+人物动作（如 "a young woman sitting by a window holding a phone, warm afternoon light"）。
 1. title 不超过12个字（封面大字必须短而醒目，和笔记标题是两回事），3秒内能读完。必须具体，禁止"情感笔记""看完沉默了"等万能词
 2. **标题必须包含矛盾/反差**（数据证明：有矛盾的标题 CTR 是无矛盾的 2-3 倍）。例如："最让人心寒的不是吵架"（不吵架反而更心寒）、"越懂事的人越容易被忽视"（懂事≠被重视）。纯陈述句标题 CTR 极低。
 3. **标题应包含至少2个高CTR元素**（数据验证过的）：
@@ -103,13 +104,21 @@ class CoverDesigner(BaseAgent):
             design["style"] = style_override
             logger.info("使用系列绑定风格: %s", style_override)
         else:
-            # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
-            design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
+            # D-03：优先尊重写手在笔记里定的视觉风格（写作→封面配色闭环），
+            # 让情绪基调（crimson 愤怒/mist 代理正义等）真正落到封面上
+            writer_style = extract_visual_style(note_content)
+            if writer_style in ALL_STYLES and writer_style != "warm_grey":
+                design["style"] = writer_style
+                logger.info("沿用写手定的视觉风格: %s", writer_style)
+            else:
+                # 强制风格轮换：如果连续2次用了同一个风格，强制换一个
+                design["style"] = self._enforce_rotation(design.get("style", "warm_grey"), recent_styles)
 
-        # 冷调风格降权：如果选了冷调风格，有概率替换为暖调
+        # 冷调风格降权（D-03 弱化）：mist/cool/twilight 仍有价值（代理正义/怀旧），
+        # 仅 25% 概率替换为暖调，让情绪光谱在封面真正呈现
         if design["style"] in _COLD_STYLES and not style_override:
             import random
-            if random.random() < 0.6:  # 60% 概率替换为暖调
+            if random.random() < 0.25:
                 warm_choices = list(_WARM_FALLBACK.keys())
                 design["style"] = random.choices(warm_choices, weights=list(_WARM_FALLBACK.values()))[0]
                 logger.info("冷调风格降权: 替换为暖调 %s", design["style"])
@@ -131,7 +140,8 @@ class CoverDesigner(BaseAgent):
                 cover_paths["ai"] = ai_path
             else:
                 try:
-                    ai_result = generate_cover_template(
+                    ai_result = generate_cover_ai(
+                        prompt=design.get("ai_prompt", ""),
                         title=design["title"],
                         subtitle=design["subtitle"],
                         style=design.get("style", "warm_grey"),
@@ -210,6 +220,7 @@ class CoverDesigner(BaseAgent):
                 "title": parsed.get("title", ""),
                 "subtitle": parsed.get("subtitle", ""),
                 "style": parsed.get("style", "warm_grey"),
+                "ai_prompt": parsed.get("ai_prompt", ""),
                 "rationale": parsed.get("rationale", ""),
             }
             return design

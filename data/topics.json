@@ -358,7 +358,10 @@
       ],
       "pillar": "自我成长",
       "id": 21,
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-29T04:17:01.117442+00:00",
+      "generated_with_commit": "ea121fd",
+      "output_dir": "D:\\SoftWare\\User\\Vs\\xhs\\docs_agent\\approved\\停止精神内耗的3个方法亲测有效_2a91"
     },
     {
       "topic": "「讨好型人格」的人，最后都怎么样了？",
@@ -461,7 +464,10 @@
       ],
       "pillar": "亲密关系洞察",
       "id": 27,
-      "status": "not_started"
+      "status": "generated",
+      "generated_at": "2026-06-29T04:11:03.961071+00:00",
+      "generated_with_commit": "ea121fd",
+      "output_dir": "D:\\SoftWare\\User\\Vs\\xhs\\docs_agent\\approved\\PUA和为你好的唯一区别就一个字_97bf"
     },
     {
       "topic": "独居女生必看：5个让安全感翻倍的小习惯",

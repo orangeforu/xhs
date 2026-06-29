@@ -97,7 +97,9 @@ def _paginate_blocks(blocks: list) -> list:
             render_blocks.append(('__separator__', False, 0, None))
             continue
         font = body_font_bold if is_bold else body_font
-        wrapped = _wrap_text(para_text, font, _MAX_TEXT_W)
+        # 气泡用窄宽度换行（与 _draw_bubble 一致），避免分页低估行数导致页底溢出
+        wrap_width = int(_MAX_TEXT_W * 0.72) if side else _MAX_TEXT_W
+        wrapped = _wrap_text(para_text, font, wrap_width)
         render_blocks.append((wrapped, is_bold, len(wrapped), side))
 
     y_start = LAYOUT["page_top"]

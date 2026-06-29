@@ -292,6 +292,12 @@ class EmotionalWriter(BaseAgent):
             story_hint += f"\n**故事原型**：{brief['story_prototype']}"
         if brief.get("controversy_anchor"):
             story_hint += f"\n**争议锚点**：{brief['controversy_anchor']}"
+        if brief.get("series"):
+            story_hint += (
+                f"\n**所属系列**：《{brief['series']}》（你的固定栏目，追更感=涨粉关键）。"
+                f"在【互动钩子】之后，必须加一句系列引导，例如"
+                f"「这是《{brief['series']}》系列，关注我看下一篇 👇」。"
+            )
 
         # 热点内容特殊指导
         trending_hint = ""

@@ -454,7 +454,8 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
 
 def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -> list[str]:
     """解析笔记正文，生成所有内页图。"""
-    end_pattern = r'(?=\n\s*(?:\*?【|#{1,6}\s*【)|$)'
+    # 正文提取结束标记：【...】或 ## 非【的 markdown 标题（如 ## 封面文件）
+    end_pattern = r'(?=\n\s*(?:\*?【|#{1,6}\s*【|#{1,6}\s+[^【\n])|$)'
     body_match = re.search(r'\*?【正文】\*?\s*\n+(.*?)' + end_pattern, content, re.DOTALL)
     if not body_match:
         body_match = re.search(r'#{1,6}\s*\[?正文\]?.*?\n(.*?)' + end_pattern, content, re.DOTALL)

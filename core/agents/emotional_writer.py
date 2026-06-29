@@ -148,6 +148,20 @@ def _check_data_driven(content: str) -> list[str]:
     return issues
 
 
+def get_data_driven_results(content: str) -> dict:
+    """暴露写手自检的结构化结果，供特征提取使用。"""
+    issues = _check_data_driven(content)
+    return {
+        "self_check_issues": issues,
+        "self_check_issues_count": len(issues),
+        "has_anchor": not any("缺少具体物品" in i for i in issues),
+        "has_action": not any("缺少动作描写" in i for i in issues),
+        "has_collection": not any("缺少收藏元素" in i for i in issues),
+        "has_stance": not any("缺少站队点" in i for i in issues),
+        "has_five_sec": not any("缺少5秒行动" in i for i in issues),
+    }
+
+
 def _score_title_ctr(title: str) -> int:
     """基于历史数据给标题打CTR预测分（0-100）。"""
     score = 50
@@ -259,6 +273,7 @@ class EmotionalWriter(BaseAgent):
             "brief": brief,
             "content": content,
             "round_num": round_num,
+            "self_check": get_data_driven_results(content),
         }
 
         # 广播 draft 到总线

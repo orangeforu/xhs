@@ -151,7 +151,7 @@ def _load_topic_pool() -> list[dict]:
     return data.get("topics", [])
 
 
-def _update_topic_status(topic_str: str, status: str, output_dir: str | None = None, commit_hash: str = "") -> None:
+def _update_topic_status(topic_str: str, status: str, output_dir: str | None = None, commit_hash: str = "", features: dict | None = None) -> None:
     """更新选题状态并持久化到 topics.json（原子读-改-写，带文件锁保护）。"""
     import json as _json
 
@@ -169,6 +169,8 @@ def _update_topic_status(topic_str: str, status: str, output_dir: str | None = N
                         t["generated_at"] = datetime.now(timezone.utc).isoformat()
                         if commit_hash:
                             t["generated_with_commit"] = commit_hash
+                        if features:
+                            t["features"] = features
                     if output_dir:
                         t["output_dir"] = output_dir
                     break
@@ -295,9 +297,19 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
     # 获取当前代码版本
     commit_hash = _get_git_commit()
 
+    # 提取内容特征
+    from core.features import extract_features
+    features = extract_features(
+        content=draft.get("content", ""),
+        design=design,
+        review=review,
+        rounds=rounds,
+        self_check=draft.get("self_check"),
+    )
+
     # 保存笔记文件
     output_file = os.path.join(out_dir, "note.md")
-    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval, commit_hash=commit_hash)
+    write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval, commit_hash=commit_hash, features=features)
     logger.info("已保存到: %s", output_file)
 
     # 审核通过（pass/conditional）→ 直接放入 approved/，只有 fail 才留在 pending/
@@ -314,7 +326,7 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
         logger.info("审核通过 (%s)，笔记已移入 approved/", verdict)
 
     # 更新选题状态
-    _update_topic_status(brief["topic"], "generated", out_dir, commit_hash=commit_hash)
+    _update_topic_status(brief["topic"], "generated", out_dir, commit_hash=commit_hash, features=features)
     logger.info("选题状态已更新为 generated | 共迭代 %d 轮 | 最终等级: %s", rounds, review.get("grade", "B"))
 
     return {
@@ -324,6 +336,7 @@ def generate(topic: str | None = None, index: int | None = None, smart: bool = F
         "review": review,
         "preset_comments": comments,
         "rounds": rounds,
+        "features": features,
         "status": "completed",
     }
 
@@ -482,16 +495,29 @@ def generate_trending(max_count: int = 1) -> list[dict]:
         except Exception as e:
             logger.warning("标题评分失败（不影响主流程）: %s", e)
 
+        # 提取内容特征
+        from core.features import extract_features
+        features = extract_features(
+            content=draft.get("content", ""),
+            design=design,
+            review=review,
+            rounds=rounds,
+            self_check=draft.get("self_check"),
+        )
+
         # 保存笔记文件
+        commit_hash = _get_git_commit()
         output_file = os.path.join(out_dir, "note.md")
-        write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval)
+        write_note_file(output_file, brief, draft, review, cover_paths, inner_paths, comments, rounds, title_eval=title_eval, commit_hash=commit_hash, features=features)
         logger.info("热点内容已保存: %s", output_file)
         logger.info("选题状态: generated | 共迭代 %d 轮 | 最终等级: %s", rounds, review.get("grade", "B"))
 
+        # 更新选题状态（热点内容不写入 topics.json，因为没有对应选题）
         results.append({
             "trending_keyword": brief["trending_keyword"],
             "topic": brief["topic"],
             "output_dir": out_dir,
+            "features": features,
             "status": "completed",
         })
 

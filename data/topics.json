@@ -17,7 +17,7 @@
       "status": "published",
       "generated_at": "2026-06-24T13:45:22.630712+00:00",
       "generated_with_commit": "14c6860",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/恋爱三年才发现那些对你好的细节里藏着的分手信号_e363",
       "published_at": "2026-06-24T14:04:21.097169+00:00"
     },
     {
@@ -306,10 +306,40 @@
         "停止内耗"
       ],
       "pillar": "情绪疗愈",
-      "status": "approved",
-      "generated_at": "2026-05-29T16:07:19.836586+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
-      "approved_at": "2026-06-23T14:35:33+00:00"
+      "status": "published",
+      "generated_at": "2026-06-28T06:57:01.461840+00:00",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/你是不是又在自我攻击了觉察这3个内心对话瞬间就能停_ee77",
+      "approved_at": "2026-06-23T14:35:33+00:00",
+      "generated_with_commit": "b08ea77",
+      "features": {
+        "story_structure": "B",
+        "stance_point_page": 3,
+        "anchoring_items": [
+          "便签"
+        ],
+        "anchoring_item_count": 1,
+        "has_action_description": true,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 552,
+        "page_count": 4,
+        "bold_count": 5,
+        "emoji_count": 0,
+        "cover_title": "我差点又骂自己没用，但这次我没改方案，先改了这句话",
+        "cover_title_length": 25,
+        "cover_subtitle": "别急着讨伐自己，先问书桌前那3个问题",
+        "visual_style": "`warm_grey`",
+        "review_rounds": 4,
+        "final_grade": "A",
+        "verdict": "pass",
+        "issues_count": 0,
+        "self_check_issues_count": 2,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "published_at": "2026-06-28T14:03:24.368367+00:00"
     },
     {
       "id": 19,
@@ -358,10 +388,11 @@
       ],
       "pillar": "自我成长",
       "id": 21,
-      "status": "generated",
-      "generated_at": "2026-06-29T04:17:01.117442+00:00",
-      "generated_with_commit": "ea121fd",
-      "output_dir": "D:\\SoftWare\\User\\Vs\\xhs\\docs_agent\\approved\\停止精神内耗的3个方法亲测有效_2a91"
+      "status": "published",
+      "generated_at": "2026-06-28T05:49:46.014127+00:00",
+      "generated_with_commit": "158acd1",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/停止精神内耗的3个方法亲测有效_2a91",
+      "published_at": "2026-06-28T06:07:12.089750+00:00"
     },
     {
       "topic": "「讨好型人格」的人，最后都怎么样了？",
@@ -430,7 +461,7 @@
       "id": 25,
       "status": "published",
       "generated_at": "2026-06-03T16:19:36.900485+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/分手后还能做朋友吗评论区说出你的选择_d744",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/分手后还能做朋友吗评论区说出你的选择_d744",
       "approved_at": "2026-06-23T14:34:44+00:00",
       "published_at": "2026-06-23T14:59:03+00:00"
     },
@@ -464,10 +495,11 @@
       ],
       "pillar": "亲密关系洞察",
       "id": 27,
-      "status": "generated",
-      "generated_at": "2026-06-29T04:11:03.961071+00:00",
-      "generated_with_commit": "ea121fd",
-      "output_dir": "D:\\SoftWare\\User\\Vs\\xhs\\docs_agent\\approved\\PUA和为你好的唯一区别就一个字_97bf"
+      "status": "published",
+      "generated_at": "2026-06-25T14:50:54.919187+00:00",
+      "generated_with_commit": "9894470",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/PUA和为你好的唯一区别就一个字_97bf",
+      "published_at": "2026-06-25T15:01:14.629540+00:00"
     },
     {
       "topic": "独居女生必看：5个让安全感翻倍的小习惯",
@@ -516,7 +548,11 @@
       ],
       "pillar": "社交关系",
       "id": 30,
-      "status": "not_started"
+      "status": "published",
+      "generated_at": "2026-06-28T05:43:18.868002+00:00",
+      "generated_with_commit": "158acd1",
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/那个总是秒回你的人可能最不把你当回事_2741",
+      "published_at": "2026-06-28T06:07:12.089750+00:00"
     },
     {
       "id": 31,
@@ -841,6 +877,313 @@
       "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/archived/恋爱中最让人心寒的不是吵架是这3个瞬间_ad68",
       "approved_at": "2026-06-23T14:32:38+00:00",
       "published_at": "2026-06-23T14:54:44+00:00"
+    },
+    {
+      "id": 51,
+      "topic": "你不是懒，是能量太低了",
+      "title_formula": "概念解读式",
+      "target_interaction": "收藏驱动",
+      "angle": "很多人把低能量状态误判为懒，陷入自我攻击的恶性循环。从身体信号、心理损耗、环境消耗三个角度拆解，帮读者识别自己是否处于低能量状态，并给出温和的恢复路径。",
+      "keywords": [
+        "低能量",
+        "自我攻击",
+        "内耗",
+        "情绪管理"
+      ],
+      "pillar": "情绪疗愈",
+      "status": "published",
+      "generated_at": "2026-06-28T14:52:04.698259+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "你不是懒，是能量太低了",
+        "cover_title_length": 11,
+        "cover_subtitle": "3个表现，中1条就算透支了",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 1,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/你不是懒是能量太低了_9f4b",
+      "published_at": "2026-06-28T15:43:12.993677+00:00"
+    },
+    {
+      "id": 52,
+      "topic": "30岁以后才明白：朋友越来越少是好事",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "从害怕独处到享受孤独，30岁后学会做减法才是真正的成熟。不是被朋友抛弃，而是开始选择把时间花在对的人身上。",
+      "keywords": [
+        "孤独",
+        "朋友",
+        "30岁",
+        "成熟",
+        "社交"
+      ],
+      "pillar": "生活态度",
+      "status": "generated",
+      "generated_at": "2026-06-28T14:47:36.657192+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "F",
+        "stance_point_page": 1,
+        "anchoring_items": [
+          "拖鞋"
+        ],
+        "anchoring_item_count": 1,
+        "has_action_description": false,
+        "collection_elements": [
+          "清单",
+          "自检题"
+        ],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 553,
+        "page_count": 5,
+        "bold_count": 6,
+        "emoji_count": 5,
+        "cover_title": "1683个好友，只有3人记得我的生日",
+        "cover_title_length": 18,
+        "cover_subtitle": "删了400个名字后，我给自己煮了碗面",
+        "visual_style": "twilight",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "pass",
+        "issues_count": 0,
+        "self_check_issues_count": 1,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/30岁以后才明白朋友越来越少是好事_dccb"
+    },
+    {
+      "id": 53,
+      "topic": "为什么你总是觉得累？不是因为事情多，是因为你太用力了",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "真正的累不是身体累，是你每一件事都在用力。吃饭在想工作、休息在想社交、放松在想成长，大脑从来没有真正关机过。给出允许自己不使劲的心理许可。",
+      "keywords": [
+        "疲惫",
+        "放松",
+        "焦虑",
+        "生活态度"
+      ],
+      "pillar": "情绪疗愈",
+      "status": "not_started"
+    },
+    {
+      "id": 54,
+      "topic": "关于爱情，你该知道的3个反常识真相",
+      "title_formula": "概念解读式",
+      "target_interaction": "分享驱动",
+      "angle": "用反常识视角重新解读爱情中的常见误区：不是越爱越快乐，而是越敢做自己越快乐；不是越付出越被珍惜，而是有边界感的付出才有价值。",
+      "keywords": [
+        "爱情真相",
+        "反常识",
+        "亲密关系",
+        "自我价值"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "generated",
+      "generated_at": "2026-06-28T14:56:14.004599+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "其他",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "爱不是盲目付出，是聪明索取",
+        "cover_title_length": 13,
+        "cover_subtitle": "我花了3年才明白这个道理",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 3,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/关于爱情你该知道的3个反常识真相_072d"
+    },
+    {
+      "id": 55,
+      "topic": "下班后的3小时决定你3年后的样子",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "拒绝说教，用真实案例展示下班后不刷手机的人都在做什么：不是报课不是卷，而是做3件低成本高复利的小事。给读者可抄的作业。",
+      "keywords": [
+        "下班",
+        "个人成长",
+        "习惯",
+        "时间管理"
+      ],
+      "pillar": "自我成长",
+      "status": "generated",
+      "generated_at": "2026-06-28T14:39:36.623339+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "C",
+        "stance_point_page": null,
+        "anchoring_items": [
+          "笔记本",
+          "笔"
+        ],
+        "anchoring_item_count": 2,
+        "has_action_description": true,
+        "collection_elements": [
+          "方法步骤"
+        ],
+        "hook_type": "其他",
+        "has_five_sec_action": true,
+        "has_dead_hook": true,
+        "word_count": 661,
+        "page_count": 5,
+        "bold_count": 5,
+        "emoji_count": 1,
+        "cover_title": "下班后的3小时，决定你3年后的样子",
+        "cover_title_length": 17,
+        "cover_subtitle": "她用了这个方法，一年后跳槽涨薪50%",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "B",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 4,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/下班后的3小时决定你3年后的样子_995c"
+    },
+    {
+      "id": 56,
+      "topic": "那个从不主动联系你的人，其实早就给了你答案",
+      "title_formula": "概念解读式",
+      "target_interaction": "评论驱动",
+      "angle": "社交中最大的内耗是猜一个人的态度。从不主动就是答案，不回应就是回应。帮读者放下执念，把精力留给双向奔赴的关系。",
+      "keywords": [
+        "主动联系",
+        "社交",
+        "断联",
+        "放下"
+      ],
+      "pillar": "社交关系",
+      "status": "generated",
+      "generated_at": "2026-06-28T14:43:50.679194+00:00",
+      "generated_with_commit": "b64affc",
+      "features": {
+        "story_structure": "E",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": false,
+        "collection_elements": [],
+        "hook_type": "选择题",
+        "has_five_sec_action": false,
+        "has_dead_hook": false,
+        "word_count": 0,
+        "page_count": 0,
+        "bold_count": 0,
+        "emoji_count": 0,
+        "cover_title": "连续28天发早安晚安的人，后来怎么样了 💔",
+        "cover_title_length": 21,
+        "cover_subtitle": "他不是不会主动，只是对你按了静音。",
+        "visual_style": "mist",
+        "review_rounds": 2,
+        "final_grade": "B",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 3,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      },
+      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/approved/那个从不主动联系你的人其实早就给了你答案_0afd"
+    },
+    {
+      "id": 57,
+      "topic": "你不必让所有人都喜欢你，这是一种自由",
+      "title_formula": "观点冲击式",
+      "target_interaction": "评论驱动",
+      "angle": "讨好型人格的核心问题是把被喜欢当成了生存策略。用故事说明不是所有人喜欢你才值得被爱，而是你不需要所有人的喜欢也能活得很好。",
+      "keywords": [
+        "讨好型人格",
+        "自由",
+        "自我接纳",
+        "边界感"
+      ],
+      "pillar": "自我成长",
+      "status": "not_started"
+    },
+    {
+      "id": 58,
+      "topic": "情绪低落时，做这5件小事比想开点有用100倍",
+      "title_formula": "方法承诺式",
+      "target_interaction": "收藏驱动",
+      "angle": "每件小事都是一个5分钟就能完成的情绪急救动作：摸一个质感好的实物、写一张不寄出的纸条、整理一个角落。不是方法论，是行动清单。",
+      "keywords": [
+        "情绪低落",
+        "情绪急救",
+        "自我调节",
+        "疗愈"
+      ],
+      "pillar": "情绪疗愈",
+      "status": "not_started"
+    },
+    {
+      "id": 59,
+      "topic": "你的生活，是不是活成了等周末的样子",
+      "title_formula": "问句式",
+      "target_interaction": "评论驱动",
+      "angle": "周一到周五在等周末，周末在等下一次旅行，旅行结束又在等过年。用故事呈现这种等待的生活有多消耗人，唤醒读者从今天开始认真对待每一天。",
+      "keywords": [
+        "生活态度",
+        "等待",
+        "活在当下",
+        "幸福感"
+      ],
+      "pillar": "生活态度",
+      "status": "not_started"
+    },
+    {
+      "id": 60,
+      "topic": "越高冷的人，内心越脆弱",
+      "title_formula": "概念解读式",
+      "target_interaction": "评论驱动",
+      "angle": "用心理学角度拆解高冷行为：不是冷漠，是过度保护的自我防御。帮助读者理解身边的高冷人，也帮助高冷的人看见自己的脆弱被看见。",
+      "keywords": [
+        "高冷",
+        "脆弱",
+        "心理防御",
+        "共情"
+      ],
+      "pillar": "亲密关系洞察",
+      "status": "not_started"
     }
   ]
 }

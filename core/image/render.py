@@ -56,10 +56,10 @@ PALETTE = _freeze_dict({
         "cover_accent": (225, 140, 80),  # 封面用：更浓的暖橘
     },
     "warm_grey": {
-        "bg_top": (250, 247, 243), "bg_bottom": (238, 234, 228),
-        "title": (65, 55, 48), "subtitle": (130, 120, 110), "accent": (195, 180, 165),
-        "body": (90, 82, 75), "highlight": (50, 42, 36),
-        "cover_accent": (180, 140, 110),  # 封面用：咖啡色
+        "bg_top": (242, 234, 222), "bg_bottom": (218, 206, 188),
+        "title": (60, 50, 42), "subtitle": (125, 112, 98), "accent": (188, 166, 138),
+        "body": (85, 75, 65), "highlight": (45, 38, 30),
+        "cover_accent": (175, 130, 95),  # 封面用：咖啡色
     },
     "cool": {
         "bg_top": (245, 248, 252), "bg_bottom": (220, 230, 245),
@@ -74,10 +74,10 @@ PALETTE = _freeze_dict({
         "cover_accent": (80, 80, 80),  # 封面用：深灰
     },
     "twilight": {
-        "bg_top": (238, 236, 242), "bg_bottom": (220, 218, 228),
-        "title": (55, 50, 70), "subtitle": (110, 105, 130), "accent": (180, 170, 200),
-        "body": (85, 80, 100), "highlight": (45, 40, 60),
-        "cover_accent": (140, 120, 180),  # 封面用：紫色
+        "bg_top": (228, 222, 238), "bg_bottom": (198, 188, 222),
+        "title": (55, 50, 75), "subtitle": (110, 103, 132), "accent": (172, 158, 200),
+        "body": (82, 76, 100), "highlight": (42, 36, 62),
+        "cover_accent": (135, 112, 180),  # 封面用：紫色
     },
     "crimson": {
         "bg_top": (250, 240, 240), "bg_bottom": (242, 228, 228),

@@ -1387,9 +1387,39 @@
       ],
       "pillar": "社交关系",
       "series": "不敢说出口的话",
-      "status": "not_started",
-      "generated_at": null,
-      "output_dir": null
+      "status": "generated",
+      "generated_at": "2026-06-29T10:36:26.377025+00:00",
+      "output_dir": "D:\\SoftWare\\User\\Vs\\xhs\\docs_agent\\approved\\为什么朋友总把你当情绪垃圾桶_5067",
+      "generated_with_commit": "d7926af",
+      "features": {
+        "story_structure": "H",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": true,
+        "collection_elements": [
+          "清单",
+          "自检题"
+        ],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 897,
+        "page_count": 4,
+        "bold_count": 9,
+        "emoji_count": 3,
+        "cover_title": "你的深夜，凭什么我买单？",
+        "cover_title_length": 12,
+        "cover_subtitle": "凌晨2:17的来电",
+        "visual_style": "warm_grey",
+        "review_rounds": 2,
+        "final_grade": "A",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 3,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      }
     },
     {
       "id": 66,

@@ -45,40 +45,59 @@ def _parse_bubble(text: str):
 def _parse_to_blocks(text: str) -> list:
     """解析文本为 block 列表：(text, is_bold, is_separator, side)。
 
-    side 为 None（普通段）、"left"/"right"（对话气泡），向后兼容 3 元组访问。
+    连续的叙述短句合并为一个段落（紧凑渲染，避免"每句一行散开"）；
+    加粗金句、对话行、空行、--- 各自分段。向后兼容 3 元组访问。
     """
     blocks = []
+    current_lines = []
+
+    def _flush():
+        if not current_lines:
+            return
+        para = '\n'.join(current_lines)
+        clean = _BOLD_RE.sub(lambda m: m.group(1), para).strip()
+        clean = _EMOJI_RE.sub('', clean).strip()
+        if clean:
+            blocks.append((clean, False, False, None))
+        current_lines.clear()
+
     for raw in text.split('\n'):
         stripped = raw.strip()
         if not stripped:
+            _flush()  # 空行 → 段落分隔
             continue
         if stripped == '---':
+            _flush()
             blocks.append(('', False, True, None))
             continue
         if any(m in stripped for m in _SKIP_MARKERS):
             continue
-        if re.match(r'^话题标签[：:]', stripped):
+        if re.match(r'^话题标签[：:]', stripped) or re.match(r'^视觉风格[：:]', stripped):
             continue
-        if re.match(r'^视觉风格[：:]', stripped):
-            continue
-        if re.match(r'\[Image\s*#\d+\]', stripped):
-            continue
-        if re.match(r'^[（(]第?\d+页[）)]', stripped):
-            continue
-        if re.match(r'^第\d+页', stripped):
+        if re.match(r'\[Image\s*#\d+\]', stripped) or re.match(r'^[（(]第?\d+页[）)]', stripped) or re.match(r'^第\d+页', stripped):
             continue
         if stripped in ('warm_grey', 'twilight', 'crimson', 'mist', 'cool', 'warm', 'blank'):
             continue
         words = stripped.split()
         if words and all(w.startswith('#') for w in words):
             continue
-        is_bold = bool(_BOLD_RE.search(stripped))
-        clean = _BOLD_RE.sub(lambda m: m.group(1), stripped).strip()
-        clean = _EMOJI_RE.sub('', clean).strip()
-        if clean:
-            bubble = _parse_bubble(clean)
-            side = bubble[0] if bubble else None
-            blocks.append((clean, is_bold, False, side))
+        clean_line = _BOLD_RE.sub(lambda m: m.group(1), stripped).strip()
+        clean_line = _EMOJI_RE.sub('', clean_line).strip()
+        if not clean_line:
+            continue
+        # 加粗金句单独成段（不与叙述合并，保留高亮/放大）
+        if _BOLD_RE.search(stripped):
+            _flush()
+            blocks.append((clean_line, True, False, None))
+            continue
+        # 对话行（角色：内容）单独成段
+        bubble = _parse_bubble(clean_line)
+        if bubble:
+            _flush()
+            blocks.append((clean_line, False, False, bubble[0]))
+            continue
+        current_lines.append(clean_line)
+    _flush()
     return blocks
 
 
@@ -113,12 +132,15 @@ def _paginate_blocks(blocks: list) -> list:
     for item in render_blocks:
         tag, is_bold, line_count, side = item
         if tag == '__separator__':
-            if current_height + sep_height > usable_height and current_page:
+            # separator 渲染占 sep_height + para_spacing（与渲染层一致），
+            # 分页必须算入，否则多分隔符累积导致页底溢出
+            sep_total = sep_height + _PARA_SPACING
+            if current_height + sep_total > usable_height and current_page:
                 pages.append(current_page)
                 current_page = []
                 current_height = 0
             current_page.append(('__separator__', False, 0, None))
-            current_height += sep_height
+            current_height += sep_total
         else:
             block_height = line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
             if current_page:
@@ -148,9 +170,8 @@ def _calc_page_height(page_blocks: list) -> int:
         if tag == '__separator__':
             h += sep_height
         else:
-            if i > 0 and page_blocks[i - 1][0] != '__separator__':
-                h += _PARA_SPACING
             h += line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
+        h += _PARA_SPACING  # 渲染每 block 后都加 spacing（含最后），对齐渲染层
     return h
 
 
@@ -238,30 +259,8 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     y = y_start
     anchor_idx = (page_num - 1) % len(ANCHOR_SYMBOLS)
 
-    # 顶部装饰细线
-    draw.rectangle(
-        [(x_start, y_start - 30), (x_start + 80, y_start - 28)],
-        fill=(*cover_accent, 40),
-    )
-
-    # 左侧装饰竖线（底部渐隐）
-    stripe_w = 6
-    stripe_x = x_start - 18
-    stripe_full_end = y_limit - 40
-    draw.rectangle(
-        [(stripe_x, y_start), (stripe_x + stripe_w, stripe_full_end)],
-        fill=(*cover_accent, 60),
-    )
-    # 底部渐隐
-    fade_h = 40
-    for dy in range(fade_h):
-        alpha = int(60 * (1.0 - dy / fade_h))
-        y_pos = stripe_full_end + dy
-        draw.rectangle(
-            [(stripe_x, y_pos), (stripe_x + stripe_w, y_pos + 1)],
-            fill=(*cover_accent, alpha),
-        )
-
+    # 内页不再画廉价装饰线（原顶部短横线+左侧竖线被反馈"像PPT自选图形、廉价"），
+    # 高级感由背景渐变+光晕+留白+文字层次承担
     bg_top = p["bg_top"]
     accent = p["accent"]
     highlight_bg = (
@@ -275,9 +274,10 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         raw_height = _calc_page_height(page_blocks)
         usable_height = y_limit - y_start
         remaining = usable_height - raw_height
-        text_block_count = sum(1 for b in page_blocks if b[0] != '__separator__')
-        if text_block_count > 1 and remaining > 0:
-            actual_para_spacing = para_spacing + remaining // text_block_count
+        # 撑开分母用总 block 数（渲染每 block 后都加 spacing，含 separator）
+        total_block_count = len(page_blocks)
+        if total_block_count > 1 and remaining > 0:
+            actual_para_spacing = para_spacing + remaining // total_block_count
 
     text_block_indices = [i for i, b in enumerate(page_blocks) if b[0] != '__separator__']
     anchor_allowed = set(text_block_indices[:LAYOUT["anchor_max_per_page"]])
@@ -296,29 +296,12 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         side = block[3] if len(block) >= 4 else None
         if tag == '__separator__':
             sep_height = int(line_height * LAYOUT["separator_height_ratio"])
-            # 粗分割线 + 小圆点
-            draw.rectangle(
-                [(x_start, y + sep_height // 2 - 1), (x_start + 120, y + sep_height // 2 + 1)],
-                fill=(*cover_accent, 180),
-            )
-            dot_r = 5
-            dot_cx = x_start + 140
-            dot_cy = y + sep_height // 2
-            draw.ellipse(
-                [(dot_cx - dot_r, dot_cy - dot_r), (dot_cx + dot_r, dot_cy + dot_r)],
-                fill=(*cover_accent, 200),
-            )
+            # 纯留白分页（原粗分割线+圆点被反馈"横杠丑"，已移除，靠留白区分段落）
             y += sep_height + actual_para_spacing
             after_sep_or_first = True
             continue
 
-        # 对话气泡渲染（D-05）：把"角色：内容"行画成左右聊天气泡
-        if side:
-            y = _draw_bubble(draw, tag, side, y, x_start, p, cover_accent, body_font, line_height)
-            y += actual_para_spacing
-            after_sep_or_first = False
-            continue
-
+        # 对话不再渲染为气泡（用户反馈"气泡丑"，回归普通文字；_draw_bubble 保留备用）
         font = body_font_bold if is_bold else body_font
 
         last_text_idx = max((i for i, b in enumerate(page_blocks) if b[0] != '__separator__'), default=-1)

@@ -136,11 +136,11 @@ def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
         except OSError:
             continue
 
-    for fb in ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]:
-        try:
-            return ImageFont.truetype(fb, size)
-        except OSError:
-            continue
+    # 最后的 fallback：DejaVu Sans（不包含 CJK，但至少有拉丁字符）
+    try:
+        return ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", size)
+    except OSError:
+        pass
 
     raise OSError(
         f"无法加载任何字体。请确保 assets/fonts/ 下有 NotoSansSC-Regular.ttf 和 NotoSansSC-Bold.ttf，"
@@ -148,13 +148,31 @@ def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     )
 
 
-def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_width: int) -> list[str]:
-    """按最大宽度自动换行，正确处理原始换行符"""
-    lines = []
+def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_width: int,
+               balance_lines: bool = True) -> list[str]:
+    """按最大宽度自动换行，正确处理原始换行符。
+
+    balance_lines=True 时，段内最后一行过短会被平衡——从倒数第二行移字过来，
+    避免"12 字 + 3 字"这种难看的断行。
+    """
+    _CLOSE_PUNCT = set('。，！？：；、）」】）》…—–·')
+    _OPEN_PUNCT = set('（「【《')
+
+    def _char_width(ch: str) -> float:
+        try:
+            bbox = font.getbbox(ch)
+            return bbox[2] - bbox[0]
+        except (AttributeError, TypeError):
+            return 0
+
+    all_lines = []
     for paragraph in text.split('\n'):
         paragraph = paragraph.strip()
         if not paragraph:
             continue
+
+        # 逐字符换行
+        para_lines = []
         current = ""
         for char in paragraph:
             test = current + char
@@ -164,29 +182,68 @@ def _wrap_text(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, ma
             except (AttributeError, TypeError):
                 w = 0
             if w > max_width and current:
-                lines.append(current)
+                para_lines.append(current)
                 current = char
             else:
                 current = test
         if current:
-            lines.append(current)
+            para_lines.append(current)
 
-    _CLOSE_PUNCT = set('。，！？：；、）」】）》…—–·')
-    _OPEN_PUNCT = set('（「【《')
-    merged = []
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        if i + 1 < len(lines) and len(lines[i + 1]) == 1 and lines[i + 1] in _CLOSE_PUNCT:
-            merged.append(line + lines[i + 1])
-            i += 2
-        elif len(line) == 1 and line in _OPEN_PUNCT and i + 1 < len(lines):
-            merged.append(line + lines[i + 1])
-            i += 2
-        else:
-            merged.append(line)
-            i += 1
-    return merged
+        # 标点合并
+        merged = []
+        i = 0
+        while i < len(para_lines):
+            line = para_lines[i]
+            if i + 1 < len(para_lines) and len(para_lines[i + 1]) == 1 and para_lines[i + 1] in _CLOSE_PUNCT:
+                merged.append(line + para_lines[i + 1])
+                i += 2
+            elif len(line) == 1 and line in _OPEN_PUNCT and i + 1 < len(para_lines):
+                merged.append(line + para_lines[i + 1])
+                i += 2
+            else:
+                merged.append(line)
+                i += 1
+
+        # 末行平衡：最后一行太短时，从倒数第二行移字过来
+        if balance_lines and len(merged) >= 2:
+            last_len = len(merged[-1])
+            second_last_len = len(merged[-2])
+            # 末行不足倒数第二行的 35% → 平衡
+            if last_len < second_last_len * 0.35:
+                shift = min(2, second_last_len - 1)
+                merged[-1] = merged[-2][-shift:] + merged[-1]
+                merged[-2] = merged[-2][:-shift]
+
+        all_lines.extend(merged)
+
+    # 跨段落短行合并：消除"6字孤行"——相邻行中任一行太短就尝试合并
+    if balance_lines and len(all_lines) >= 2:
+        approx_max_chars = max_width // max(font.size, 1)
+        short_threshold = max(6, approx_max_chars // 3)  # 约 5-6 字
+        compacted = []
+        i = 0
+        while i < len(all_lines):
+            merged = False
+            if i + 1 < len(all_lines):
+                a, b = all_lines[i], all_lines[i + 1]
+                # 任一太短 → 尝试合并
+                if len(a) <= short_threshold or len(b) <= short_threshold:
+                    combined = a + b
+                    try:
+                        bbox = font.getbbox(combined)
+                        cw = bbox[2] - bbox[0]
+                    except (AttributeError, TypeError):
+                        cw = 0
+                    if cw <= max_width:
+                        compacted.append(combined)
+                        i += 2
+                        merged = True
+            if not merged:
+                compacted.append(all_lines[i])
+                i += 1
+        return compacted
+
+    return all_lines
 
 
 def _draw_gradient_bg(img: Image.Image, width: int, height: int, c1: tuple[int, int, int], c2: tuple[int, int, int]) -> None:
@@ -222,11 +279,17 @@ def _add_center_glow(img: Image.Image, palette: dict) -> Image.Image:
     return Image.alpha_composite(img, glow)
 
 
-def _add_noise_texture(img: Image.Image, intensity: int = 4) -> Image.Image:
-    """叠加极淡的噪点纹理，模拟纸质质感。"""
+def _add_noise_texture(img: Image.Image, intensity: int = 4, seed: int | None = None) -> Image.Image:
+    """叠加极淡的噪点纹理，模拟纸质质感。
+
+    Args:
+        img: 输入图像
+        intensity: 噪点强度（-intensity 到 +intensity 的随机偏移）
+        seed: 随机种子，用于可复现的结果；None 则使用系统时间
+    """
     if img.mode != "RGBA":
         img = img.convert("RGBA")
-    rng = random.Random()
+    rng = random.Random(seed)
     tile_size = 100
     noise = Image.new("RGBA", (tile_size, tile_size), (0, 0, 0, 0))
     pixels = []

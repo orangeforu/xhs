@@ -15,8 +15,6 @@ from core.image.render import (
 
 logger = get_logger(__name__)
 
-ANCHOR_SYMBOLS = ["●", "○", "◆"]  # solid circle, hollow circle, solid diamond
-
 _SKIP_MARKERS = ['【金句】', '【互动钩子】', '【话题标签】', '【视觉风格】', '【标题候选】', '【封面页】', '【正文】']
 _EMOJI_RE = re.compile(r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF\U00002600-\U000026FF]+")
 _BOLD_RE = re.compile(r'\*\*(.*?)\*\*')
@@ -102,47 +100,89 @@ def _parse_to_blocks(text: str) -> list:
 
 
 def _paginate_blocks(blocks: list) -> list:
-    """将 blocks 分页，返回 list[list[block]]。兼容 3 元组与 4 元组（含气泡 side）。"""
+    """将 blocks 分页，返回 list[list[block]]。兼容 3 元组与 4 元组（含气泡 side）。
+
+    超长段落会自动跨页分割，避免硬截断。
+    """
     body_font = _get_font(_BASE_FONT_SIZE, bold=False)
     body_font_bold = _get_font(_BASE_FONT_SIZE + LAYOUT["bold_extra"], bold=True)
     bubble_pad = LAYOUT.get("bubble_pad_y", 28)  # 气泡上下内边距总高
-
-    render_blocks = []
-    for block in blocks:
-        # 兼容旧 3 元组调用（测试/外部）与新的 4 元组（含 side）
-        para_text, is_bold, is_sep = block[0], block[1], block[2]
-        side = block[3] if len(block) >= 4 else None
-        if is_sep:
-            render_blocks.append(('__separator__', False, 0, None))
-            continue
-        font = body_font_bold if is_bold else body_font
-        # 气泡用窄宽度换行（与 _draw_bubble 一致），避免分页低估行数导致页底溢出
-        wrap_width = int(_MAX_TEXT_W * 0.72) if side else _MAX_TEXT_W
-        wrapped = _wrap_text(para_text, font, wrap_width)
-        render_blocks.append((wrapped, is_bold, len(wrapped), side))
 
     y_start = LAYOUT["page_top"]
     y_end = COVER_HEIGHT - LAYOUT["page_bottom_margin"]
     usable_height = y_end - y_start
     sep_height = int(_LINE_HEIGHT * LAYOUT["separator_height_ratio"])
 
+    # 预计算每个 block 的换行结果和高度
+    render_blocks = []
+    for block in blocks:
+        para_text, is_bold, is_sep = block[0], block[1], block[2]
+        side = block[3] if len(block) >= 4 else None
+        if is_sep:
+            render_blocks.append(('__separator__', False, 0, None, 0))
+            continue
+        font = body_font_bold if is_bold else body_font
+        wrap_width = int(_MAX_TEXT_W * 0.72) if side else _MAX_TEXT_W
+        wrapped = _wrap_text(para_text, font, wrap_width)
+        line_count = len(wrapped)
+        block_height = line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
+        render_blocks.append((wrapped, is_bold, line_count, side, block_height))
+
     pages = []
     current_page = []
     current_height = 0
+
     for item in render_blocks:
-        tag, is_bold, line_count, side = item
+        tag, is_bold, line_count, side, block_height = item
+
         if tag == '__separator__':
-            # separator 渲染占 sep_height + para_spacing（与渲染层一致），
-            # 分页必须算入，否则多分隔符累积导致页底溢出
-            sep_total = sep_height + _PARA_SPACING
-            if current_height + sep_total > usable_height and current_page:
+            # LLM 用 `---` 主动分页 → 尊重其语义决策，强制分页
+            # separator 本身不占用页面空间（它只是分页符，不是内容）
+            if current_page:
                 pages.append(current_page)
                 current_page = []
                 current_height = 0
-            current_page.append(('__separator__', False, 0, None))
-            current_height += sep_total
+            continue
+
+        # 超长段落跨页分割
+        # 单页可容纳的最大行数（每个 block 后都加 _PARA_SPACING，包括最后一个，与渲染层一致）
+        max_lines_per_page = int((usable_height - _PARA_SPACING - (bubble_pad if side else 0)) // _LINE_HEIGHT)
+        if line_count > max_lines_per_page:
+            # 段落太长，需要分割到多页
+            lines = tag if isinstance(tag, list) else [tag]
+            start_idx = 0
+            while start_idx < line_count:
+                # 计算当前页还能放多少行
+                if current_page:
+                    # 已有内容 → 当前 block 前需要加 _PARA_SPACING
+                    remaining_height = usable_height - current_height - _PARA_SPACING
+                else:
+                    # 空页 → 第一个 block 后才加 _PARA_SPACING
+                    remaining_height = usable_height - _PARA_SPACING
+                lines_this_page = min(int(remaining_height // _LINE_HEIGHT), line_count - start_idx)
+                if lines_this_page <= 0 or lines_this_page > max_lines_per_page:
+                    # 当前页已满或计算异常，开新页
+                    if current_page:
+                        pages.append(current_page)
+                        current_page = []
+                        current_height = 0
+                    lines_this_page = max_lines_per_page
+
+                end_idx = start_idx + lines_this_page
+                page_lines = lines[start_idx:end_idx]
+                partial_height = lines_this_page * _LINE_HEIGHT + (bubble_pad if side else 0) + _PARA_SPACING
+
+                current_page.append((page_lines, is_bold, lines_this_page, side))
+                current_height += partial_height
+                start_idx = end_idx
+
+                # 如果还有剩余行，开启新页
+                if start_idx < line_count:
+                    pages.append(current_page)
+                    current_page = []
+                    current_height = 0
         else:
-            block_height = line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
+            # 正常段落
             if current_page:
                 block_height += _PARA_SPACING
             if current_height + block_height > usable_height and current_page:
@@ -155,6 +195,29 @@ def _paginate_blocks(blocks: list) -> list:
 
     if current_page:
         pages.append(current_page)
+
+    # 相邻极短页合并：LLM 有时把行动句/短句单独用 --- 分页，产生"孤页"
+    # 如果前后两页合并后高度不超过可用高度，就合并
+    if len(pages) >= 2:
+        short_page_lines = 3  # ≤3 行的页面算"极短页"
+        merged_pages = []
+        i = 0
+        while i < len(pages):
+            page = pages[i]
+            page_lines = sum(b[2] for b in page if b[0] != '__separator__')
+            if page_lines <= short_page_lines and i > 0:
+                # 尝试合并到前一页
+                prev = merged_pages[-1]
+                combined = prev + [b for b in page if b[0] != '__separator__']
+                combined_h = _calc_page_height(combined)
+                if combined_h <= usable_height:
+                    merged_pages[-1] = combined
+                    i += 1
+                    continue
+            merged_pages.append(page)
+            i += 1
+        pages = merged_pages
+
     return pages
 
 
@@ -173,48 +236,6 @@ def _calc_page_height(page_blocks: list) -> int:
             h += line_count * _LINE_HEIGHT + (bubble_pad if side else 0)
         h += _PARA_SPACING  # 渲染每 block 后都加 spacing（含最后），对齐渲染层
     return h
-
-
-def _draw_bubble(draw, lines, side, y, x_start, palette, accent, font, line_height):
-    """渲染一条聊天气泡（D-05），返回气泡底部 y 坐标。
-
-    主角方（side="right"）→ 右侧暖色气泡；对方（side="left"）→ 左侧中性气泡。
-    lines 为已换行的文本行列表。
-    """
-    pad_x, pad_y = 28, 14
-    max_w = 0
-    for ln in lines:
-        try:
-            bbox = font.getbbox(ln)
-            w = bbox[2] - bbox[0]
-        except (AttributeError, TypeError):
-            w = 0
-        max_w = max(max_w, w)
-    text_w = min(max_w, int(_MAX_TEXT_W * 0.72))
-    bubble_w = text_w + pad_x * 2
-    bubble_h = len(lines) * line_height + pad_y * 2
-
-    margin_right = LAYOUT["margin_left"]
-    if side == "right":
-        bx = COVER_WIDTH - margin_right - bubble_w
-        fill = (*accent, 42)
-        text_color = palette["title"]
-    else:
-        bx = x_start
-        fill = (130, 130, 130, 26)
-        text_color = palette["body"]
-    by = y
-
-    draw.rounded_rectangle(
-        [(bx, by), (bx + bubble_w, by + bubble_h)],
-        radius=22,
-        fill=fill,
-    )
-    ty = by + pad_y
-    for ln in lines:
-        draw.text((bx + pad_x, ty), ln, font=font, fill=text_color)
-        ty += line_height
-    return by + bubble_h
 
 
 def generate_inner_page(text: str, page_num: int, total_pages: int, style: str = "warm_grey",
@@ -257,10 +278,8 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     y_limit = COVER_HEIGHT - LAYOUT["page_bottom_margin"]
 
     y = y_start
-    anchor_idx = (page_num - 1) % len(ANCHOR_SYMBOLS)
 
-    # 内页不再画廉价装饰线（原顶部短横线+左侧竖线被反馈"像PPT自选图形、廉价"），
-    # 高级感由背景渐变+光晕+留白+文字层次承担
+    # 高级感由背景渐变+光晕+留白+文字层次承担，不加任何装饰符号
     bg_top = p["bg_top"]
     accent = p["accent"]
     highlight_bg = (
@@ -270,17 +289,24 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
     )
 
     actual_para_spacing = para_spacing
-    if LAYOUT["last_page_expand"] and page_num == total_pages:
-        raw_height = _calc_page_height(page_blocks)
-        usable_height = y_limit - y_start
-        remaining = usable_height - raw_height
-        # 撑开分母用总 block 数（渲染每 block 后都加 spacing，含 separator）
-        total_block_count = len(page_blocks)
-        if total_block_count > 1 and remaining > 0:
-            actual_para_spacing = para_spacing + remaining // total_block_count
+    raw_height = _calc_page_height(page_blocks)
+    usable_height = y_limit - y_start
+    fill_ratio = raw_height / usable_height
+    # 短页面自动撑开，避免大片留白（但限制最大间距，防止过度拉伸）
+    if fill_ratio < 0.50:
+        target_height = int(usable_height * 0.50)
+        remaining = target_height - raw_height
+        block_count = max(len(page_blocks), 1)
+        if remaining > 0:
+            extra = min(remaining // block_count, para_spacing)  # 最大 2x
+            actual_para_spacing = para_spacing + extra
+        # 单 block 短页面：将内容从页顶下移，实现垂直居中
+        if len(page_blocks) == 1 and fill_ratio < 0.35:
+            y_shift = (usable_height - raw_height - actual_para_spacing) // 3
+            y += y_shift
 
     text_block_indices = [i for i, b in enumerate(page_blocks) if b[0] != '__separator__']
-    anchor_allowed = set(text_block_indices[:LAYOUT["anchor_max_per_page"]])
+    last_text_idx = text_block_indices[-1] if text_block_indices else -1
 
     after_sep_or_first = True
 
@@ -301,35 +327,24 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
             after_sep_or_first = True
             continue
 
-        # 对话不再渲染为气泡（用户反馈"气泡丑"，回归普通文字；_draw_bubble 保留备用）
+        # 对话不再渲染为气泡（用户反馈"气泡丑"，回归普通文字）
         font = body_font_bold if is_bold else body_font
 
-        last_text_idx = max((i for i, b in enumerate(page_blocks) if b[0] != '__separator__'), default=-1)
         is_last_text_block = (block_idx == last_text_idx)
         is_last_page = (page_num == total_pages)
         is_short = line_count <= 2 and sum(len(line) for line in tag) <= LAYOUT["last_block_max_chars"]
 
-        # 金句海报放大（D-06）：任何页结尾的短句都放大居中，不再只限最后一页
-        if is_last_text_block and is_short:
-            decor_y = y - 20
-            draw.rectangle(
-                [((COVER_WIDTH - 80) // 2, decor_y), ((COVER_WIDTH + 80) // 2, decor_y + 3)],
-                fill=(*cover_accent, 200),
-            )
-            y = decor_y + 30
-
+        # 金句海报放大（D-06）：
+        # 只在"前面有其他内容垫底"时才放大显示——避免整页一句话时莫名放大
+        # 保持左对齐，与页面其他文字一致；仅通过字号+装饰线区分重要度
+        has_lead_in = len(text_block_indices) >= 2
+        if is_last_text_block and is_short and has_lead_in:
             large_size = base_font_size + LAYOUT["last_block_font_boost"]
             large_font = _get_font(large_size, bold=True)
             large_lines = _wrap_text('\n'.join(tag), large_font, _MAX_TEXT_W)
             large_line_h = int(large_size * LAYOUT["line_height_ratio"])
             for line in large_lines:
-                try:
-                    bbox = large_font.getbbox(line)
-                    lw = bbox[2] - bbox[0]
-                except (AttributeError, TypeError):
-                    lw = 0
-                x = (COVER_WIDTH - lw) // 2
-                draw.text((x, y), line, font=large_font, fill=p["highlight"])
+                draw.text((x_start, y), line, font=large_font, fill=p["highlight"])
                 y += large_line_h
             y += actual_para_spacing
             continue
@@ -362,11 +377,6 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                 fill=(*cover_accent, 200),
             )
 
-        use_anchor = block_idx in anchor_allowed and not (is_last_page and is_last_text_block)
-
-        dot_size = int(base_font_size * 0.48)
-        dot_radius = dot_size // 2
-
         if is_bold:
             text_color = p["highlight"]
         elif after_sep_or_first:
@@ -377,28 +387,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         for i, line in enumerate(tag):
             if y >= y_limit:
                 break
-            if i == 0 and use_anchor:
-                dot_x = x_start + dot_radius
-                dot_y_center = y + dot_radius
-                anchor_sym = ANCHOR_SYMBOLS[anchor_idx]
-                if anchor_sym == "●":
-                    draw.ellipse(
-                        [(dot_x - dot_radius, dot_y_center - dot_radius),
-                         (dot_x + dot_radius, dot_y_center + dot_radius)],
-                        fill=cover_accent,
-                    )
-                else:
-                    draw.ellipse(
-                        [(dot_x - dot_radius, dot_y_center - dot_radius),
-                         (dot_x + dot_radius, dot_y_center + dot_radius)],
-                        outline=cover_accent,
-                        width=2,
-                    )
-                anchor_x = x_start + dot_size + int(base_font_size * 0.5)
-            else:
-                anchor_x = x_start
-
-            draw.text((anchor_x, y), line, font=font, fill=text_color)
+            draw.text((x_start, y), line, font=font, fill=text_color)
             y += line_height
 
         y += actual_para_spacing
@@ -414,19 +403,13 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         tw = 0
     page_y = COVER_HEIGHT - LAYOUT["page_number_y_offset"]
 
-    # 页码上方装饰线 + 两侧小圆点
+    # 页码上方细分隔线
     deco_y = page_y - 18
-    deco_w = 50
+    deco_w = 40
     draw.rectangle(
-        [((COVER_WIDTH - deco_w) // 2, deco_y), ((COVER_WIDTH + deco_w) // 2, deco_y + 2)],
-        fill=(*cover_accent, 140),
+        [((COVER_WIDTH - deco_w) // 2, deco_y), ((COVER_WIDTH + deco_w) // 2, deco_y + 1)],
+        fill=(*cover_accent, 80),
     )
-    for side in (-1, 1):
-        dot_cx = (COVER_WIDTH + side * (deco_w + 12)) // 2
-        draw.ellipse(
-            [(dot_cx - 2, deco_y - 1), (dot_cx + 2, deco_y + 3)],
-            fill=(*cover_accent, 100),
-        )
 
     draw.text(((COVER_WIDTH - tw) // 2, page_y), page_text, font=page_font, fill=p["subtitle"])
 
@@ -458,6 +441,29 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
     body = body_match.group(1).strip()
     body = re.split(r'\n\s*(?:\*?【金句】\*?|#{1,6}\s*\[?金句\]?)', body, maxsplit=1)[0]
 
+    # 剥离结尾的 CTA 行（"今天就把..."、"来评论区打卡"等行动号召不属于正文内页）
+    _CTA_PATTERNS = [
+        r'(?:今天|现在|立刻|马上)\w*就把?\w+',
+        r'来评论区\w*打卡',
+        r'来打卡',
+        r'做了的\w*打卡',
+        r'评论区\w*见',
+        r'试试\w*看',
+        r'扣[12].*$',
+    ]
+    body_lines = body.split('\n')
+    while body_lines:
+        last = body_lines[-1].strip()
+        if not last:
+            body_lines.pop()
+            continue
+        is_cta = any(re.search(p, last) for p in _CTA_PATTERNS)
+        if is_cta and len(last) < 30:
+            body_lines.pop()
+        else:
+            break
+    body = '\n'.join(body_lines).strip()
+
     blocks = _parse_to_blocks(body)
 
     if not blocks:
@@ -470,6 +476,31 @@ def generate_inner_pages(content: str, out_dir: str, style: str = "warm_grey") -
         logger.warning("分页后无内容，跳过内页生成")
         return []
 
+    # 页面填充率平衡：拆分填充率最高的页，使 max-min 差距 ≤ 30%
+    y_start = LAYOUT["page_top"]
+    y_limit = COVER_HEIGHT - LAYOUT["page_bottom_margin"]
+    usable_height = y_limit - y_start
+    for _balance_pass in range(3):  # 最多 3 轮平衡
+        page_heights = [_calc_page_height(p) for p in pages]
+        if len(page_heights) < 2:
+            break
+        max_h, min_h = max(page_heights), min(page_heights)
+        if max_h <= 0 or (max_h - min_h) / usable_height <= 0.30:
+            break
+        # 拆分填充率最高的页
+        max_idx = page_heights.index(max_h)
+        max_page = pages[max_idx]
+        text_blocks_in_page = [(i, b) for i, b in enumerate(max_page) if b[0] != '__separator__']
+        if len(text_blocks_in_page) < 2:
+            break  # 只有 1 个 block，无法拆分
+        # 在 block 中间位置切开
+        split_pos = text_blocks_in_page[len(text_blocks_in_page) // 2][0]
+        first = max_page[:split_pos]
+        second = max_page[split_pos:]
+        if first and second:
+            pages[max_idx:max_idx+1] = [first, second]
+
+    total_pages = len(pages)
     logger.info("📄 共 %d 页内页，开始生成...", total_pages)
 
     def _render_page(page_num: int) -> str | None:

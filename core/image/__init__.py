@@ -17,7 +17,7 @@ from core.image.cover import (
 from core.image.inner_page import (
     generate_inner_page, generate_inner_pages,
     _paginate_blocks, _calc_page_height, _parse_to_blocks,
-    ANCHOR_SYMBOLS, _SKIP_MARKERS, _EMOJI_RE, _BOLD_RE,
+    _SKIP_MARKERS, _EMOJI_RE, _BOLD_RE,
 )
 
 __all__ = [

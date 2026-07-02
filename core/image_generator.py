@@ -23,7 +23,7 @@ from core.image.cover import (  # noqa: F401
 from core.image.inner_page import (  # noqa: F401
     generate_inner_page, generate_inner_pages,
     _paginate_blocks, _calc_page_height, _parse_to_blocks,
-    ANCHOR_SYMBOLS, _SKIP_MARKERS, _EMOJI_RE, _BOLD_RE,
+    _SKIP_MARKERS, _EMOJI_RE, _BOLD_RE,
 )
 
 # __main__ 入口保持不变

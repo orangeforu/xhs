@@ -1,6 +1,6 @@
 import unittest
 
-from core.api_client import _extract_content
+from core.writer import _extract_content
 
 
 class TestExtractContent(unittest.TestCase):
@@ -34,17 +34,18 @@ class TestExtractContent(unittest.TestCase):
             _extract_content(data)
 
     def test_no_message(self):
-        # 无 message key：实现用 .get("message", {}) 容错，最终报"缺少 content"
+        # writer 版本对 message 缺失/非 dict 抛"缺少 message 字段"（比 api_client 更严格）
         data = {"choices": [{}]}
         with self.assertRaises(ValueError) as ctx:
             _extract_content(data)
-        self.assertIn("缺少 content", str(ctx.exception))
+        self.assertIn("缺少 message", str(ctx.exception))
 
     def test_no_content(self):
+        # writer 版本：message 为空 dict（falsy）→ 走"缺少 message 字段"分支
         data = {"choices": [{"message": {}}]}
         with self.assertRaises(ValueError) as ctx:
             _extract_content(data)
-        self.assertIn("缺少 content", str(ctx.exception))
+        self.assertIn("缺少 message", str(ctx.exception))
 
     def test_content_is_none(self):
         data = {"choices": [{"message": {"content": None}}]}

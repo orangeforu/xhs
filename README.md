@@ -70,20 +70,40 @@ streamlit run app.py                                # 审核工作台
 ## 项目结构
 
 ```
-├── app.py                  # Streamlit 审核工作台
+├── start.py                # 交互式菜单入口（推荐）
 ├── pipeline.py             # CLI 内容生成流水线
+├── generate_topics.py      # 选题池生成（情绪光谱均衡 + 搜索型问句配额）
+├── app.py                  # Streamlit 审核工作台
 ├── core/
-│   ├── config.py           # 配置、路径、JSON 读写、日志
-│   ├── writer.py           # LLM 调用：写作、审核、预设评论
-│   └── image_generator.py  # 封面 + 内页图片生成
+│   ├── config.py           # 配置、路径、JSON 读写（原子写 + 跨平台锁）、日志
+│   ├── writer.py           # 底层 LLM 调用（OpenAI 兼容 + 重试 + reasoning 回退）
+│   ├── agents/             # Multi-Agent 编排（7 个专家 + MessageBus）
+│   │   ├── orchestrator.py     # 创作编排器
+│   │   ├── chief_editor.py     # 主编决策（≤5 轮迭代）
+│   │   ├── emotional_writer.py # 情感写手（4 标题公式 / 7 结构）
+│   │   ├── cover_designer.py   # 封面设计（配色 + AI 绘画 prompt）
+│   │   ├── layout_artist.py    # 内页排版
+│   │   ├── content_editor.py   # 内容审核（S/A/B/C 评级）
+│   │   └── community_manager.py# 预设评论
+│   ├── image/              # 图片渲染子包
+│   │   ├── cover.py            # 封面生成（模板合成 + AI 绘画）
+│   │   ├── inner_page.py       # 内页分页渲染
+│   │   └── render.py           # 共享渲染工具（字体/渐变/排版）
+│   ├── image_generator.py  # 向后兼容 re-export 入口
+│   ├── topic_selector.py   # 选题智能推荐
+│   ├── publish_helpers.py  # 发布数据/评级/熔断
+│   └── utils.py            # 标签合规兜底等工具
+├── tabs/                   # Streamlit 工作台分页（审核/发布/选题/看板/日历/标准）
 ├── prompts/                # Prompt 模板（.md）
 ├── data/
 │   ├── topics.json         # 选题池
-│   └── performance.json    # 发布数据追踪
+│   ├── performance.json    # 发布数据追踪
+│   └── agent_memory/       # Agent 跨会话记忆
 ├── docs_agent/
-│   ├── pending/              # 新生成未发布的笔记
-│   ├── published/            # 已发布但未录入数据的笔记
-│   └── archived/             # 已发布且已录入数据的笔记
+│   ├── pending/              # 新生成未审核
+│   ├── approved/             # 已审核通过，待发布
+│   ├── published/            # 已发布，待录入数据
+│   └── archived/             # 已发布且已录入数据
 └── assets/
     └── fonts/              # 思源黑体字体文件
 ```

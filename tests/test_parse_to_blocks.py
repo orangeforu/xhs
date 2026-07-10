@@ -101,9 +101,11 @@ class TestWrapText(unittest.TestCase):
         self.assertGreater(len(lines), 1)
 
     def test_newlines_respected(self):
+        # 换行符被尊重：用窄宽度让每段超出"短行合并阈值"（max_width//font.size//3），
+        # 避免触发跨段落合并，从而验证 \n 仍按段切分。
         from PIL import ImageFont
         font = ImageFont.load_default()
-        lines = _wrap_text("第一行\n第二行\n第三行", font, 1000)
+        lines = _wrap_text("第一段文字内容\n第二段文字内容\n第三段文字内容", font, 100)
         self.assertEqual(len(lines), 3)
 
 

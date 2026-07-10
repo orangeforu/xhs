@@ -14,14 +14,18 @@ class TestPaginateBlocks(unittest.TestCase):
         self.assertEqual(len(pages[0]), 2)
 
     def test_separator_handling(self):
+        # separator 是强制分页符（commit 4381bb6 重构后语义）：
+        # 遇到 `---`/空行 → 分页，separator 自身不入页。
+        # 但两页都很短（≤3 行）时会触发极短页合并 → 重新合成 1 页。
         blocks = [
             ("段落1", False, False),
             ("", False, True),
             ("段落2", False, False),
         ]
         pages = _paginate_blocks(blocks)
+        # 合并后应为 1 页，且页内不应残留 separator（它只是分页符）
         self.assertEqual(len(pages), 1)
-        self.assertEqual(pages[0][1][0], "__separator__")
+        self.assertNotIn("__separator__", [b[0] for b in pages[0]])
 
     def test_bold_blocks(self):
         blocks = [

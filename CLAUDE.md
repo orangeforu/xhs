@@ -130,6 +130,6 @@ docs_agent/
 
 ## 环境依赖
 
-- Python 3.10+，复制 `.env.example` 为 `.env` 并填写 `LLM_API_KEY`。
+- Python 3.13+，复制 `.env.example` 为 `.env` 并填写 `LLM_API_KEY`。
 - 必须提供思源黑体字体：`assets/fonts/NotoSansSC-Regular.ttf` 和 `NotoSansSC-Bold.ttf`。缺失时按平台 fallback 系统黑体，但排版效果会下降。
 - `data/topics.json` 为必选文件，缺失时程序直接报错。

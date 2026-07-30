@@ -16,6 +16,7 @@ from core.publish_helpers import (
     extract_body_for_publish as _extract_body_for_publish,
     score_title as _score_title,
     check_compliance as _check_compliance,
+    resolve_topics,
 )
 
 logger = get_logger(__name__)
@@ -131,14 +132,21 @@ def auto_publish_notes(selected_notes: list, progress_bar=None) -> dict:
             logger.warning(f"⏭️ 跳过 {note['title']}: 健康检查未过")
             continue
 
-        tag_str = " ".join([f"#{t}" for t in note["tags"]]) if note["tags"] else ""
-        full_desc = f"{note['desc']}\n\n{tag_str}".strip()
+        # 话题标签：优先解析为真话题链接（进话题流量池），失败的降级纯文本
+        resolved_topics, unresolved_tags = resolve_topics(api, note["tags"])
+        plain_tags = " ".join([f"#{t}" for t in unresolved_tags]) if unresolved_tags else ""
+        full_desc = f"{note['desc']}\n\n{plain_tags}".strip()
+        if resolved_topics:
+            logger.info(f"✅ 真话题链接: {note['title']} -> {resolved_topics}")
+        if unresolved_tags:
+            logger.info(f"⚠️ 纯文本标签(未解析): {note['title']} -> {unresolved_tags}")
 
         try:
             success, msg, result = api.post_note({
                 "title": note["title"],
                 "desc": full_desc,
                 "media_type": "image",
+                "topics": resolved_topics,
                 "images": note["images"],
             })
 

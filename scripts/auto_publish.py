@@ -40,6 +40,9 @@ from scripts.xhs_auth_helper import get_creator_auth
 # ── 废笔记健康检查（防 LLM 思考链泄漏被发布）──
 from core.utils import check_note_health
 
+# ── 话题标签真链接解析（进话题流量池）──
+from core.publish_helpers import resolve_topics
+
 
 # ═══════════════════════════════════════════════════════════
 # 路径配置
@@ -149,25 +152,34 @@ def publish_note(api: XHS_Creator_Apis, note: dict, dry_run: bool = False) -> tu
     tags = note["tags"]
     images = note["images"]
 
-    # 构造话题标签字符串
-    tag_str = " ".join([f"#{t}" for t in tags]) if tags else ""
-    full_desc = f"{desc}\n\n{tag_str}".strip()
-
     logger.info(f"{'[预览] ' if dry_run else ''}准备发布: {title}")
     logger.info(f"  封面: {note['cover']}")
     logger.info(f"  内页: {len(images) - 1} 张")
     logger.info(f"  标签: {tags}")
 
     if dry_run:
+        # 预览：所有标签以纯文本展示（无 api 无法解析真话题）
+        tag_str = " ".join([f"#{t}" for t in tags]) if tags else ""
+        full_desc = f"{desc}\n\n{tag_str}".strip()
         logger.info("  [dry-run] 跳过实际发布")
         return True, None
 
+    # 实发布：优先把标签解析为真话题链接（进话题流量池），解析失败的降级纯文本
+    resolved_topics, unresolved_tags = resolve_topics(api, tags)
+    plain_tags = " ".join([f"#{t}" for t in unresolved_tags]) if unresolved_tags else ""
+    full_desc = f"{desc}\n\n{plain_tags}".strip()
+    if resolved_topics:
+        logger.info(f"  ✅ 真话题链接: {resolved_topics}")
+    if unresolved_tags:
+        logger.info(f"  ⚠️ 纯文本标签(未解析): {unresolved_tags}")
+
     try:
-        # 发布图文笔记
+        # 发布图文笔记：topics 会被 post_note 解析成结构化 hash_tag
         success, msg, result = api.post_note({
             "title": title,
             "desc": full_desc,
             "media_type": "image",
+            "topics": resolved_topics,
             "images": images,
         })
 

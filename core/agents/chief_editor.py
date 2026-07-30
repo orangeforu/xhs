@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as
 
 from core.agents.base import BaseAgent, MessageBus, Message
 from core.config import get_logger
-from core.utils import load_prompt, extract_visual_style, check_tags_compliance
+from core.utils import load_prompt, extract_visual_style, check_tags_compliance, check_note_health
 
 logger = get_logger(__name__)
 
@@ -171,6 +171,19 @@ class ChiefEditor(BaseAgent):
                             + "\n".join(f"- {i}" for i in tag_issues)
                             + "\n请输出 3-5 个精准话题标签（必带 #不懂就问有问必答），禁止 #情感 #恋爱 等泛词，不超过5个。",
                 "core_issue": "标签不合规（硬门禁）",
+            }
+
+        # 废笔记硬门禁：LLM 思考链泄漏/无标签段 -> 强制 revise
+        # glm-5.2 等模型可能把英文推理过程混进 content，审核 LLM 也会泄漏且给通过，必须代码兜底
+        health_issues = check_note_health(draft_content) if draft_content else []
+        if health_issues and round_num < 4:
+            return {
+                "action": "revise",
+                "feedback": "【内容异常 - 必须重写】\n"
+                            + "\n".join(f"- {i}" for i in health_issues)
+                            + "\n请直接输出小红书笔记正文（中文），不要输出分析/思考过程，"
+                            "结尾必须有【话题标签】段（3-5 个精准标签）。",
+                "core_issue": "废笔记（思考链泄漏/无标签段）",
             }
 
         verdict = review.get("verdict", "conditional")

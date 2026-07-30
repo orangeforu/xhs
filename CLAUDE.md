@@ -12,7 +12,14 @@ python start.py
 python pipeline.py --list                           # 列出选题池
 python pipeline.py --index N                        # 按编号生成单篇
 python pipeline.py --batch --max 3                  # 批量生成
-streamlit run app.py                                # 启动审核工作台
+streamlit run app.py                                # 启动审核工作台（6 个 tab，含一键发布助手）
+
+# 发布与数据采集（spider_xhs 集成，首次需小红书 APP 扫码登录）
+python scripts/auto_publish.py --dry-run            # 预览 approved/ 待发布笔记（不登录、不实际发布）
+python scripts/auto_publish.py --limit 3            # 发布 approved/ 笔记到小红书 -> published/
+python scripts/fetch_performance.py                 # 采集已发布笔记互动数据，更新 performance.json
+python scripts/competitor_analysis.py --save        # 竞品爆款分析，一键加入选题池
+python scripts/xhs_auth_helper.py --creator         # 单独登录/刷新创作者端 Cookie
 
 # 代码质量
 pytest                                              # 运行测试
@@ -111,9 +118,38 @@ docs_agent/
 - 用户确认「我发布了 XX」→ 整目录 `shutil.move` 到 `published/`
 - `app.py` 录入互动数据 → 整目录 `shutil.move` 到 `archived/`
 
-⚠️ **重要**：审核通过不等于已发布。只有用户明确说"我发布了 XX 笔记"才能标记为已发布。
+⚠️ **重要**：审核通过不等于已发布。只有经 `auto_publish.py` / 🚀「一键发布助手」tab 实际发布，或用户明确说"我发布了 XX 笔记"，才迁到 `published/`。
 
 一次性迁移脚本：`python scripts/reorganize_notes.py`（首次把历史混放的笔记按状态分到 4 个子目录）。
+
+### 自动发布与数据采集（spider_xhs 集成）
+
+`spider_xhs/` 是 git 子模块（`cv-cat/Spider_XHS`），提供小红书 PC 端采集 + 创作者端发布能力。`spider_xhs/__init__.py` 二次封装并导出 4 个类：`XHS_Apis`（PC 采集/搜索）、`XHS_Creator_Apis`（创作者发布）、`XHSPcAuth` / `XHSCreatorAuth`（两套登录认证）。运行时依赖 Node.js（用 `node_modules/crypto-js` 生成请求签名）。
+
+**认证层**（`scripts/xhs_auth_helper.py`）：Cookie 持久化到 `.cache/xhs_{pc,creator}_cookie.json`，首次扫码登录、后续复用、过期自动重扫。`get_pc_auth()` 供采集脚本用，`get_creator_auth()` 供发布脚本用。
+
+**三个自动化脚本**（均经 spider_xhs）：
+
+| 脚本 | 作用 | 目录迁移 |
+|---|---|---|
+| `scripts/auto_publish.py` | 登录创作者端，发布 `approved/` 笔记（`--dry-run` 预览 / `--limit N`），URL 写回 `note.md` | `approved/ -> published/` |
+| `scripts/fetch_performance.py` | 登录 PC 端采集 `published/`+`archived/` 互动数据，算 S/A/B/C 等级，更新 `performance.json`，触发熔断 | 仅更新数据 |
+| `scripts/competitor_analysis.py` | 登录 PC 端搜情感赛道爆款（>1000 赞），分析标题公式/标签，结合历史表现优化搜索词，可 `--save` 加入选题池 | 反哺 `topics.json` |
+
+**Streamlit 工作台**（`app.py`）现含 6 个 tab：📝待审核 / 📚选题池 / 📖创作标准 / 📈数据复盘 / 📅内容日历 / 🚀一键发布助手。其中：
+- `tabs/publish.py`（🚀 一键发布助手）：直接调 `XHS_Creator_Apis + get_creator_auth`，UI 勾选 approved 笔记即可自动发布，免去命令行。
+- `tabs/analytics.py`（📈 数据复盘）：录入互动数据、熔断预警、公式/支柱分析。
+
+**熔断机制**：最近 3 篇全 C 级 -> 触发熔断，侧边栏红字警告暂停发布、复盘选题（`app.py:_check_circuit_breaker` 与 `fetch_performance.py:_check_circuit_breaker`）。
+
+**完整闭环**（原"手动迁移"已部分自动化）：
+
+```
+pipeline 生成 -> pending/ -> app.py「通过」-> approved/
+   -> auto_publish.py / 🚀tab（创作者端 API 自动发布）-> published/（URL 写回 note.md）
+   -> fetch_performance.py（PC 端 API 采集互动）-> 更新 performance.json + 等级 + 熔断
+   -> competitor_analysis.py（历史表现反哺选题）-> 选题池
+```
 
 ## 平台调性约束
 

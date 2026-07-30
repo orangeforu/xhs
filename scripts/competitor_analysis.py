@@ -37,6 +37,9 @@ from spider_xhs import XHS_Apis
 # ── 导入 Cookie 持久化工具 ──
 from scripts.xhs_auth_helper import get_pc_auth
 
+# ── 笔记解析统一 schema ──
+from core.note_schema import NoteRecord
+
 
 # ═══════════════════════════════════════════════════════════
 # 配置
@@ -83,15 +86,7 @@ def analyze_title(title: str) -> dict:
 
 def extract_tags_from_note(note_detail: dict) -> list:
     """从笔记详情中提取话题标签。"""
-    tags = []
-    note_data = note_detail.get("data", {}).get("items", [{}])[0]
-    tag_list = note_data.get("note_card", {}).get("tag_list", [])
-    for tag in tag_list:
-        if isinstance(tag, dict):
-            name = tag.get("name", "")
-            if name:
-                tags.append(name)
-    return tags
+    return NoteRecord.from_api_detail(note_detail).tags
 
 
 def analyze_note(note: dict, api: XHS_Apis) -> dict:
@@ -105,32 +100,19 @@ def analyze_note(note: dict, api: XHS_Apis) -> dict:
         logger.warning(f"获取笔记详情失败: {note_url} - {msg}")
         return None
 
-    note_data = detail.get("data", {}).get("items", [{}])[0]
-    card = note_data.get("note_card", {})
-
-    title = card.get("title", "")
-    likes = card.get("interact_info", {}).get("liked_count", 0)
-    collects = card.get("interact_info", {}).get("collected_count", 0)
-    comments = card.get("interact_info", {}).get("comment_count", 0)
-
-    # 解析互动数据（可能是字符串）
-    likes = int(likes) if str(likes).isdigit() else 0
-    collects = int(collects) if str(collects).isdigit() else 0
-    comments = int(comments) if str(comments).isdigit() else 0
-
-    tags = extract_tags_from_note(detail)
-    title_analysis = analyze_title(title)
+    rec = NoteRecord.from_api_detail(detail, note_id=note["id"], url=note_url)
+    title_analysis = analyze_title(rec.title)
 
     return {
-        "title": title,
-        "url": note_url,
-        "likes": likes,
-        "collects": collects,
-        "comments": comments,
-        "tags": tags,
+        "title": rec.title,
+        "url": rec.url,
+        "likes": rec.likes,
+        "collects": rec.collects,
+        "comments": rec.comments,
+        "tags": rec.tags,
         "title_formula": title_analysis["formula"],
         "title_features": title_analysis,
-        "is_hot": likes >= HOT_LIKES_THRESHOLD,
+        "is_hot": rec.likes >= HOT_LIKES_THRESHOLD,
     }
 
 

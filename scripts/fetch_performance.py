@@ -31,6 +31,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from core.config import get_logger, load_performance_json, save_performance_json
 from core.publish_helpers import calculate_grade
+from core.note_schema import NoteRecord
 
 logger = get_logger(__name__)
 
@@ -127,29 +128,16 @@ def fetch_note_performance(note: dict, api: XHS_Apis) -> dict:
             logger.warning(f"获取笔记数据失败: {note_url} - {msg}")
             return None
 
-        note_data = detail.get("data", {}).get("items", [{}])[0]
-        card = note_data.get("note_card", {})
-        interact = card.get("interact_info", {})
-
-        likes = interact.get("liked_count", 0)
-        collects = interact.get("collected_count", 0)
-        comments = interact.get("comment_count", 0)
-        shares = interact.get("share_count", 0)
-
-        # 解析为整数
-        likes = int(likes) if str(likes).isdigit() else 0
-        collects = int(collects) if str(collects).isdigit() else 0
-        comments = int(comments) if str(comments).isdigit() else 0
-        shares = int(shares) if str(shares).isdigit() else 0
+        rec = NoteRecord.from_api_detail(detail, note_id=note["note_id"], url=note_url)
 
         return {
-            "note_id": note["note_id"],
-            "url": note_url,
-            "likes": likes,
-            "collects": collects,
-            "comments": comments,
-            "shares": shares,
-            "grade": calculate_grade(likes),
+            "note_id": rec.note_id,
+            "url": rec.url,
+            "likes": rec.likes,
+            "collects": rec.collects,
+            "comments": rec.comments,
+            "shares": rec.shares,
+            "grade": calculate_grade(rec.likes),
             "updated_at": datetime.now().isoformat(),
         }
 

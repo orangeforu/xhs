@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import streamlit as st
 
 from core.config import load_calendar_json, save_calendar_json
+from core.scheduler import ScheduledTask, get_scheduler
 
 PILLARS = ["亲密关系洞察", "自我成长", "社交关系", "情绪疗愈", "生活态度"]
 TIME_SLOTS = {
@@ -17,6 +18,10 @@ TIME_SLOTS = {
 def render_calendar_tab():
     """渲染内容日历 Tab。"""
     st.header("📅 内容日历")
+
+    # ── 定时生成（调度器）──
+    _render_scheduler_section()
+    st.divider()
 
     calendar_data = load_calendar_json()
 
@@ -171,3 +176,85 @@ def _render_week_comparison(calendar_data: dict, current_week: str):
             st.warning("⚠️ 上周完成率不足 50%，本周请加强执行力。")
     else:
         st.info("上周无计划记录。")
+
+
+# ═══════════════════════════════════════════════════════════
+# 定时生成（调度器）
+# ═══════════════════════════════════════════════════════════
+
+def _render_scheduler_section():
+    """渲染定时任务管理区。"""
+    st.subheader("⏰ 定时生成")
+    st.caption(
+        "按计划自动跑 `pipeline.py --smart` 生成笔记 / `fetch_performance.py` 采数。"
+        "常驻请用 `python scripts/scheduler_daemon.py`（开机启动）；此处可在应用内启动调度器并管理任务。"
+    )
+    sched = get_scheduler()
+
+    # 应用内启动调度器（幂等，不会起多个线程）
+    col_a, col_b = st.columns([1, 2])
+    with col_a:
+        if st.button("▶️ 应用内启动调度器", key="sched_start"):
+            sched.start()
+            st.success("调度器已在应用内启动（每30s轮询）。生产环境建议用 scheduler_daemon.py 常驻。")
+    with col_b:
+        st.caption(f"当前任务数：{len(sched.list_tasks())}（启用 {sum(1 for t in sched.list_tasks() if t.enabled)}）")
+
+    # 添加任务
+    with st.expander("➕ 添加定时任务"), st.form("sched_add_form"):
+        name = st.text_input("任务名", value="每日9点智能生成", key="sched_name")
+        action = st.selectbox(
+            "动作",
+            ["generate", "fetch_performance"],
+            format_func=lambda x: "生成笔记 (pipeline --smart)" if x == "generate" else "采集互动数据 (fetch_performance)",
+            key="sched_action",
+        )
+        mode = st.selectbox(
+            "模式",
+            ["cron", "daily", "interval"],
+            format_func=lambda x: {"cron": "cron 表达式", "daily": "每天定点", "interval": "间隔分钟"}[x],
+            key="sched_mode",
+        )
+        st.text_input("cron 表达式（分 时 日 月 周，如 `0 9 * * *`=每天9点）", value="0 9 * * *", key="sched_cron")
+        st.text_input("每天触发时间 HH:MM", value="09:00", key="sched_time")
+        st.number_input("间隔分钟（interval 模式）", min_value=1, max_value=10080, value=60, key="sched_interval")
+        if st.form_submit_button("添加任务"):
+            task = ScheduledTask(
+                id="",
+                name=name or "未命名",
+                mode=mode,
+                cron=st.session_state.get("sched_cron", "0 9 * * *"),
+                time_hhmm=st.session_state.get("sched_time", "09:00"),
+                interval_minutes=int(st.session_state.get("sched_interval", 60)),
+                action=action,
+            )
+            try:
+                # 校验 cron
+                if mode == "cron":
+                    from core.scheduler import next_cron_run
+                    next_cron_run(task.cron)  # 抛 ValueError 即非法
+                tid = sched.add_task(task)
+                st.success(f"已添加任务 id={tid}，下次触发 {task.next_run_at or '-'}")
+            except ValueError as e:
+                st.error(f"cron 表达式非法：{e}")
+            except Exception as e:
+                st.error(f"添加失败：{e}")
+
+    # 任务列表
+    tasks = sched.list_tasks()
+    if not tasks:
+        st.info("暂无定时任务。展开上面添加，或运行 `python scripts/scheduler_daemon.py --demo`。")
+        return
+    for t in tasks:
+        cols = st.columns([4, 1, 1])
+        with cols[0]:
+            st.write(f"{'✅' if t.enabled else '⏸️'} **{t.name}** · `{t.action}` · mode=`{t.mode}`")
+            st.caption(f"下次: {t.next_run_at or '-'} | 上次: {t.last_run_at or '-'} ({t.last_result or '-'})")
+        with cols[1]:
+            if st.button("启用/暂停", key=f"tog_{t.id}"):
+                sched.toggle_task(t.id)
+                st.rerun()
+        with cols[2]:
+            if st.button("🗑 删除", key=f"del_{t.id}"):
+                sched.remove_task(t.id)
+                st.rerun()

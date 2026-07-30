@@ -1,8 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
+import re
 
 from core.agents.base import BaseAgent, MessageBus, Message
 from core.config import get_logger
-from core.utils import load_prompt, extract_visual_style, check_tags_compliance, check_note_health
+from core.utils import load_prompt, extract_visual_style, check_tags_compliance, check_note_health, copy_overlap_ratio
 
 logger = get_logger(__name__)
 
@@ -91,7 +92,7 @@ class ChiefEditor(BaseAgent):
             grade_history.append(review.get("grade", "B") if review else "B")
 
             # 主编决策
-            decision = self._make_decision(draft, design_result, review, round_num, grade_history)
+            decision = self._make_decision(draft, design_result, review, round_num, grade_history, brief)
 
             if decision["action"] == "publish":
                 logger.info("主编决策: 通过 (%s)", decision["reason"])
@@ -104,6 +105,7 @@ class ChiefEditor(BaseAgent):
                 writer.record_outcome(grade, topic)
                 editor.record_outcome(grade, topic)
                 self._record_decision(grade, topic, round_num)
+                self._persist_kb_review(brief, review, decision, round_num)
                 return {
                     "status": "abandoned",
                     "reason": decision["reason"],
@@ -139,6 +141,8 @@ class ChiefEditor(BaseAgent):
 
         # 主编自己也记录
         self._record_decision(grade, topic, round_num)
+        # 通过审核 -> 沉淀为可复用 pattern 记录
+        self._persist_kb_pattern(brief, draft, review, round_num)
 
         logger.info("创作流程完成: %s | 最终 grade=%s | 共 %d 轮", topic, grade, round_num + 1)
 
@@ -155,7 +159,7 @@ class ChiefEditor(BaseAgent):
     # 结构模板列表，C 级时要求切换
     _STRUCTURE_TEMPLATES = ["经典金句前置", "对话开场", "倒叙冲击", "反问留白", "动作细节推动"]
 
-    def _make_decision(self, draft, design_result, review, round_num, grade_history=None) -> dict:
+    def _make_decision(self, draft, design_result, review, round_num, grade_history=None, brief=None) -> dict:
         """主编做最终决策。"""
         if not review:
             return {"action": "revise", "feedback": "审核服务暂时不可用，请保持内容质量重新提交", "core_issue": "审核服务异常"}
@@ -172,6 +176,19 @@ class ChiefEditor(BaseAgent):
                             + "\n请输出 3-5 个精准话题标签（必带 #不懂就问有问必答），禁止 #情感 #恋爱 等泛词，不超过5个。",
                 "core_issue": "标签不合规（硬门禁）",
             }
+
+        # 爆款复刻相似度硬门禁：brief 带 source_content 时，draft 与源笔记重叠过高 -> 强制重写
+        # 保留结构 / 互动机制，替换措辞与案例，禁止逐句照抄
+        source_content = (brief or {}).get("source_content", "")
+        if source_content and draft_content and round_num < 4:
+            overlap = copy_overlap_ratio(draft_content, source_content)
+            if overlap > 0.4:
+                return {
+                    "action": "revise",
+                    "feedback": f"【与源笔记相似度过高（{overlap:.0%}）- 必须重写】\n"
+                                "保留标题句式与互动机制，但替换具体措辞、案例细节、表达顺序。禁止逐句照抄。",
+                    "core_issue": f"复刻相似度过高（{overlap:.0%}）",
+                }
 
         # 废笔记硬门禁：LLM 思考链泄漏/无标签段 -> 强制 revise
         # glm-5.2 等模型可能把英文推理过程混进 content，审核 LLM 也会泄漏且给通过，必须代码兜底
@@ -295,6 +312,65 @@ class ChiefEditor(BaseAgent):
         else:
             mem.record_mediocre(context)
         mem.flush()
+
+    def _persist_kb_pattern(self, brief: dict, draft: dict, review: dict, round_num: int) -> None:
+        """通过审核的笔记沉淀为可复用 pattern 记录（知识库）。失败不阻断主流程。"""
+        try:
+            from core.knowledge_base import write_record
+            content = draft.get("content", "") if draft else ""
+            title = ""
+            m = re.search(r"【标题候选】\s*\n(.+?)(?:\n【|$)", content, re.DOTALL)
+            if m:
+                first = m.group(1).strip().split("\n")[0].strip()
+                title = re.sub(r"^[\d]+[.、\s]+", "", first)
+            visual = extract_visual_style(content)
+            grade = review.get("grade", "B") if review else "B"
+            strengths = review.get("strengths", []) if review else []
+            body = "成功结构可复用。" + (("优点：" + "；".join(str(s) for s in strengths[:3])) if strengths else "")
+            tags = [str(brief[k]) for k in ("title_formula", "series", "pillar") if brief.get(k)]
+            write_record(
+                "pattern",
+                summary=f"{grade}级模式：{brief.get('topic', '')[:40]}",
+                body=body,
+                grade=grade,
+                title=title,
+                title_formula=brief.get("title_formula", ""),
+                visual_style=visual,
+                series=brief.get("series", ""),
+                pillar=brief.get("pillar", ""),
+                rounds=round_num + 1,
+                tags=tags,
+                source_note=brief.get("topic", ""),
+            )
+        except Exception as e:
+            logger.warning("知识库 pattern 写入失败（不影响主流程）: %s", e)
+
+    def _persist_kb_review(self, brief: dict, review: dict, decision: dict, round_num: int) -> None:
+        """放弃的笔记沉淀为 review 记录（失败复盘）。失败不阻断主流程。"""
+        try:
+            from core.knowledge_base import write_record
+            grade = review.get("grade", "C") if review else "C"
+            issues = review.get("issues", []) if review else []
+            what_failed = decision.get("reason", "未知")
+            why = "；".join(str(i.get("problem", "")) for i in issues[:3]) if issues else "无具体 issue"
+            fix_next = "；".join(str(i.get("suggestion", "")) for i in issues[:3] if i.get("suggestion")) or "无"
+            tags = [str(brief[k]) for k in ("title_formula", "series") if brief.get(k)]
+            write_record(
+                "review",
+                summary=f"放弃选题：{brief.get('topic', '')[:40]}（{grade}级）",
+                body=f"## 失败原因\n{what_failed}\n\n## 为什么\n{why}\n\n## 下次怎么改\n{fix_next}",
+                grade=grade,
+                what_failed=what_failed,
+                why=why,
+                fix_next_time=fix_next,
+                title_formula=brief.get("title_formula", ""),
+                series=brief.get("series", ""),
+                rounds=round_num + 1,
+                tags=tags,
+                source_note=brief.get("topic", ""),
+            )
+        except Exception as e:
+            logger.warning("知识库 review 写入失败（不影响主流程）: %s", e)
 
     def handle(self, message: Message) -> None:
         pass

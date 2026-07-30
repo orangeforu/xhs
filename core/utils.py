@@ -3,7 +3,9 @@
 import json
 import re
 
-from core.config import PROMPTS_DIR
+from core.config import PROJECT_ROOT, PROMPTS_DIR, get_logger
+
+logger = get_logger(__name__)
 
 
 def extract_json_from_llm(raw: str) -> dict | None:
@@ -53,6 +55,31 @@ def load_prompt(name: str) -> str:
         return f.read()
 
 
+def load_persona() -> str:
+    """加载账号人设（所有对外文案的唯一人设来源）。
+
+    从项目根目录的 ``persona.md`` 读取。缺失时返回空串并告警（不阻断，
+    向后兼容--没有 persona.md 时 Agent 退化为只读自身 prompt）。
+    """
+    path = PROJECT_ROOT / "persona.md"
+    if not path.exists():
+        logger.warning("persona.md 不存在: %s，人设未注入", path)
+        return ""
+    with open(path, encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def load_prompt_with_persona(name: str) -> str:
+    """加载 prompt 并在最前面注入人设（persona.md）。
+
+    把 ``persona.md`` 内容拼到 ``prompts/<name>.md`` 之前，用 ``---`` 分隔。
+    人设缺失时退化为纯 prompt（等同 ``load_prompt``）。
+    """
+    persona = load_persona()
+    base = load_prompt(name)
+    return f"{persona}\n\n---\n\n{base}" if persona else base
+
+
 def clean_md(text: str) -> str:
     """去掉 Markdown 加粗、斜体、反引号等标记。"""
     if not text:
@@ -79,6 +106,27 @@ def extract_visual_style(content: str) -> str:
         if style in PALETTE:
             return style
     return "warm_grey"
+
+
+def copy_overlap_ratio(text_a: str, text_b: str, ngram: int = 4) -> float:
+    """n-gram Jaccard 相似度，检测爆款复刻是否照抄。0=无重叠，1=完全相同。
+
+    用于 ChiefEditor 相似度硬门禁：复刻模式下若 draft 与源笔记重叠过高，强制重写
+    （保留结构 / 互动机制，替换措辞与案例）。空白不计入 n-gram。
+    """
+    if not text_a or not text_b:
+        return 0.0
+
+    def _ngrams(t: str) -> set[str]:
+        t = re.sub(r"\s+", "", t)
+        if len(t) < ngram:
+            return {t} if t else set()
+        return {t[i:i + ngram] for i in range(len(t) - ngram + 1)}
+
+    a, b = _ngrams(text_a), _ngrams(text_b)
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
 
 
 # ── 话题标签确定性清洗（D-01）──

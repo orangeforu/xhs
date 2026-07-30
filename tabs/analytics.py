@@ -8,6 +8,7 @@ from pathlib import Path
 import streamlit as st
 
 from core.config import load_performance_json, save_performance_json, load_topics_json, PROJECT_ROOT
+from core.fans_history import load_fans_history
 from core.publish_helpers import (
     calculate_grade as _calculate_grade,
     calc_interaction_rate as _calc_interaction_rate,
@@ -192,11 +193,33 @@ def render_analytics_tab(cb_tripped: bool = False, cb_streak: int = 0):
     _render_engagement_input(performance)
 
     _render_summary_metrics(summary, notes, cb_tripped)
+    _render_fans_growth()
     _render_formula_analysis(notes)
     _render_pillar_analysis(notes)
     _render_interaction_analysis(notes)
     _render_recommendations(notes)
     _render_publishing_insights(notes)
+
+
+def _render_fans_growth():
+    """渲染粉丝增长曲线（来自 account_diagnostic.py / 采数时的快照）。"""
+    history = load_fans_history()
+    if not history:
+        return
+    with st.expander("📈 粉丝增长趋势", expanded=False):
+        fans_series = {h["timestamp"][:10]: h["fans"] for h in history}
+        latest = history[-1]["fans"]
+        first = history[0]["fans"]
+        delta = latest - first
+        cols = st.columns(3)
+        with cols[0]:
+            st.metric("当前粉丝", latest)
+        with cols[1]:
+            st.metric("首笔记录", first)
+        with cols[2]:
+            st.metric("区间净增", delta, delta if delta else 0)
+        st.line_chart(fans_series)
+        st.caption(f"共 {len(history)} 笔快照。跑 `python scripts/account_diagnostic.py` 可刷新。")
 
 
 def _render_summary_metrics(summary: dict, notes: list, cb_tripped: bool):

@@ -4,6 +4,7 @@ import re
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger, load_performance_json
 from core.utils import load_prompt
+from core.knowledge_retrieval import retrieve_patterns_for_brief, retrieve_related_notes
 
 logger = get_logger(__name__)
 
@@ -53,6 +54,9 @@ class TopicStrategist(BaseAgent):
 - story_prototype: {brief.get("story_prototype", "")}
 - controversy_anchor: {brief.get("controversy_anchor", "")}
 {trending_hint}
+{retrieve_patterns_for_brief(brief)}
+
+{retrieve_related_notes(brief.get("topic", ""))}
 
 **历史表现摘要**：
 {json.dumps(performance, ensure_ascii=False, indent=2)}

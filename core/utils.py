@@ -3,7 +3,9 @@
 import json
 import re
 
-from core.config import PROMPTS_DIR
+from core.config import PROJECT_ROOT, PROMPTS_DIR, get_logger
+
+logger = get_logger(__name__)
 
 
 def extract_json_from_llm(raw: str) -> dict | None:
@@ -53,6 +55,31 @@ def load_prompt(name: str) -> str:
         return f.read()
 
 
+def load_persona() -> str:
+    """加载账号人设（所有对外文案的唯一人设来源）。
+
+    从项目根目录的 ``persona.md`` 读取。缺失时返回空串并告警（不阻断，
+    向后兼容--没有 persona.md 时 Agent 退化为只读自身 prompt）。
+    """
+    path = PROJECT_ROOT / "persona.md"
+    if not path.exists():
+        logger.warning("persona.md 不存在: %s，人设未注入", path)
+        return ""
+    with open(path, encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def load_prompt_with_persona(name: str) -> str:
+    """加载 prompt 并在最前面注入人设（persona.md）。
+
+    把 ``persona.md`` 内容拼到 ``prompts/<name>.md`` 之前，用 ``---`` 分隔。
+    人设缺失时退化为纯 prompt（等同 ``load_prompt``）。
+    """
+    persona = load_persona()
+    base = load_prompt(name)
+    return f"{persona}\n\n---\n\n{base}" if persona else base
+
+
 def clean_md(text: str) -> str:
     """去掉 Markdown 加粗、斜体、反引号等标记。"""
     if not text:
@@ -79,6 +106,27 @@ def extract_visual_style(content: str) -> str:
         if style in PALETTE:
             return style
     return "warm_grey"
+
+
+def copy_overlap_ratio(text_a: str, text_b: str, ngram: int = 4) -> float:
+    """n-gram Jaccard 相似度，检测爆款复刻是否照抄。0=无重叠，1=完全相同。
+
+    用于 ChiefEditor 相似度硬门禁：复刻模式下若 draft 与源笔记重叠过高，强制重写
+    （保留结构 / 互动机制，替换措辞与案例）。空白不计入 n-gram。
+    """
+    if not text_a or not text_b:
+        return 0.0
+
+    def _ngrams(t: str) -> set[str]:
+        t = re.sub(r"\s+", "", t)
+        if len(t) < ngram:
+            return {t} if t else set()
+        return {t[i:i + ngram] for i in range(len(t) - ngram + 1)}
+
+    a, b = _ngrams(text_a), _ngrams(text_b)
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
 
 
 # ── 话题标签确定性清洗（D-01）──
@@ -165,6 +213,56 @@ def check_tags_compliance(content: str) -> list[str]:
     generic = [t for t in tags if t in GENERIC_TAG_BLACKLIST]
     if generic:
         issues.append(f"含降权泛标签：{', '.join('#' + t for t in generic)}")
+    return issues
+
+
+# ── 废笔记健康检查（防 LLM 思考链泄漏进发布流程）──
+# 模型（如 glm-5.2）有时把英文推理过程混进 content 返回，_extract_content 不剥离，
+# 导致整篇笔记变成思考链。本检查在三道防线复用：主编门禁 / 发布前置校验 / UI 标记。
+THINKING_LEAK_PATTERNS = [
+    r"\bLet me\b",
+    r"\bLet's\b",
+    r"\bI need to\b",
+    r"\bI'll\b",
+    r"\bI should\b",
+    r"\bHmm\b",
+    r"\bThe user wants\b",
+    r"\bwait\b.*\bLet me\b",
+]
+THINKING_LEAK_RE = re.compile("|".join(THINKING_LEAK_PATTERNS), re.IGNORECASE)
+
+
+def check_note_health(content: str) -> list[str]:
+    """检查笔记是否为废笔记（LLM 思考链泄漏/无标签段/英文占比异常），返回问题列表（空=健康）。
+
+    防止 glm-5.2 等模型把思考过程混进 content 后一路过关被发布。三道防线复用：
+    - 生成时：ChiefEditor 门禁拦截，废草稿 revise（与 check_tags_compliance 并列）
+    - 发布时：auto_publish / 🚀tab 前置校验，废笔记拒绝发布
+    - UI：🚀tab 标记问题笔记
+
+    判定规则（命中任一即视为废笔记）：
+    1. 思考链特征词命中 ≥2 处（Let me / I need to / Hmm 等）
+    2. 正文英文词 > 20 且 > 中文字数 × 0.5（小红书情感笔记以中文为主）
+
+    注：标签段缺失不在此检查范围（由 check_tags_compliance 专门负责），
+    避免误伤"写手漏标签但内容正常"的笔记。
+    """
+    if not content:
+        return ["内容为空"]
+
+    issues: list[str] = []
+
+    # 1. 思考链泄漏特征词
+    leaks = THINKING_LEAK_RE.findall(content)
+    if len(leaks) >= 2:
+        issues.append(f"疑似 LLM 思考链泄漏（命中 {len(leaks)} 处英文推理特征词）")
+
+    # 2. 英文占比异常
+    chinese = len(re.findall(r"[一-鿿]", content))
+    english_words = len(re.findall(r"[a-zA-Z]+", content))
+    if english_words > 20 and english_words > chinese * 0.5:
+        issues.append(f"英文占比异常（英文词 {english_words} vs 中文字 {chinese}）")
+
     return issues
 
 

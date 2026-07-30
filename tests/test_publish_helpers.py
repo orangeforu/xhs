@@ -1,14 +1,15 @@
 import unittest
 
 from core.publish_helpers import (
-    calculate_grade,
-    calc_interaction_rate,
     calc_formula_stats,
+    calc_interaction_rate,
     calc_pillar_stats,
+    calculate_grade,
     check_compliance,
-    recalculate_summary,
-    extract_title_candidates,
     extract_body_for_publish,
+    extract_title_candidates,
+    recalculate_summary,
+    resolve_topics,
     score_title,
 )
 
@@ -244,6 +245,47 @@ class TestScoreTitle(unittest.TestCase):
         ]}
         result = score_title("你有没有过这种感觉？💔", perf)
         self.assertFalse(any("缺乏多样性" in r for r in result["reasons"]))
+
+
+class _FakeTopicApi:
+    """模拟 XHS_Creator_Apis.get_topic：按关键字返回不同结果。"""
+
+    def __init__(self, resolved: set[str], fail: set[str] | None = None):
+        self._resolved = resolved
+        self._fail = fail or set()
+
+    def get_topic(self, keyword, proxies=None):
+        if keyword in self._fail:
+            # 模拟 get_topic 抛异常
+            raise RuntimeError(f"network error for {keyword}")
+        if keyword in self._resolved:
+            return True, "ok", {"data": {"topic_info_dtos": [{"id": "1", "link": "x", "name": keyword}]}}
+        # 解析成功但无匹配话题
+        return True, "ok", {"data": {"topic_info_dtos": []}}
+
+
+class TestResolveTopics(unittest.TestCase):
+    def test_resolved_and_unresolved_split(self):
+        api = _FakeTopicApi(resolved={"不懂就问有问必答", "失恋互助"})
+        resolved, unresolved = resolve_topics(api, ["不懂就问有问必答", "失恋互助", "冷门标签XYZ"])
+        self.assertEqual(resolved, ["不懂就问有问必答", "失恋互助"])
+        self.assertEqual(unresolved, ["冷门标签XYZ"])
+
+    def test_api_exception_degrades_to_plain_text(self):
+        api = _FakeTopicApi(resolved={"失恋互助"}, fail={"炸了的话题"})
+        resolved, unresolved = resolve_topics(api, ["炸了的话题", "失恋互助"])
+        self.assertEqual(resolved, ["失恋互助"])
+        self.assertEqual(unresolved, ["炸了的话题"])
+
+    def test_empty_tags(self):
+        api = _FakeTopicApi(resolved=set())
+        self.assertEqual(resolve_topics(api, []), ([], []))
+
+    def test_all_unresolved(self):
+        api = _FakeTopicApi(resolved=set())
+        resolved, unresolved = resolve_topics(api, ["a", "b"])
+        self.assertEqual(resolved, [])
+        self.assertEqual(unresolved, ["a", "b"])
 
 
 if __name__ == "__main__":

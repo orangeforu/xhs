@@ -2,6 +2,7 @@
 
 import json
 import re
+from typing import Any
 
 from core.config import get_logger
 
@@ -109,6 +110,45 @@ def check_compliance(content: str, title: str, tags: list[str], image_count: int
         "issues": issues,
         "warnings": warnings,
     }
+
+
+def resolve_topics(api: Any, tags: list[str]) -> tuple[list[str], list[str]]:
+    """预解析话题标签，返回 (可解析为真话题的, 不可解析降级纯文本的)。
+
+    spider_xhs 的 ``post_note`` 会把 ``topics`` 里每个标签走
+    ``/web_api/sns/v1/search/topic`` 解析成结构化 ``hash_tag``（可点击、
+    进话题流量池），但解析失败会 ``raise RuntimeError`` 中断整篇发布。
+    这里预先逐个解析，过滤掉失败标签，避免一个冷门标签炸掉整篇笔记。
+
+    Args:
+        api: ``XHS_Creator_Apis`` 实例（需有 ``get_topic`` 方法）。
+        tags: 话题标签列表。
+
+    Returns:
+        ``(resolved, unresolved)``：resolved 传给 ``post_note`` 的 ``topics``
+        生成真话题链接；unresolved 由调用方以纯文本 ``#tag`` 追加到 desc
+        （仍可见，只是不进话题流量池）。
+    """
+    resolved: list[str] = []
+    unresolved: list[str] = []
+    for tag in tags:
+        try:
+            success, msg, res_json = api.get_topic(tag)
+        except Exception as e:  # get_topic 自身异常不影响整篇
+            unresolved.append(tag)
+            logger.warning("话题「%s」解析异常（%s），降级为纯文本", tag, e)
+            continue
+        if not success or not res_json:
+            unresolved.append(tag)
+            logger.warning("话题「%s」解析失败（%s），降级为纯文本", tag, msg)
+            continue
+        dtos = (res_json.get("data") or {}).get("topic_info_dtos") or []
+        if not dtos:
+            unresolved.append(tag)
+            logger.info("话题「%s」无匹配话题，降级为纯文本", tag)
+            continue
+        resolved.append(tag)
+    return resolved, unresolved
 
 
 def recalculate_summary(performance: dict) -> None:

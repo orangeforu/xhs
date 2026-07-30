@@ -1,24 +1,268 @@
-"""Tab 6: 一键发布助手。"""
+"""Tab 6: 一键发布助手 — 支持手动复制和自动发布到小红书。"""
 
 import glob
 import os
 import re
+import shutil
+import sys
+from datetime import datetime
+from pathlib import Path
 
 import streamlit as st
 
-from core.config import load_topics_json, load_performance_json
+from core.config import load_topics_json, load_performance_json, get_logger
 from core.publish_helpers import (
     extract_title_candidates as _extract_title_candidates,
     extract_body_for_publish as _extract_body_for_publish,
     score_title as _score_title,
     check_compliance as _check_compliance,
+    resolve_topics,
 )
+
+logger = get_logger(__name__)
+
+# ── 导入 Spider_XHS ──
+sys.path.insert(0, str(Path(__file__).parent.parent / "spider_xhs"))
+from spider_xhs import XHS_Creator_Apis
+
+# ── 导入 Cookie 持久化工具 ──
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from scripts.xhs_auth_helper import get_creator_auth
+
+# ── 废笔记健康检查（防 LLM 思考链泄漏被发布）──
+from core.utils import check_note_health
+
+
+# ═══════════════════════════════════════════════════════════
+# 自动发布相关
+# ═══════════════════════════════════════════════════════════
+
+APPROVED_DIR = Path(__file__).parent.parent / "docs_agent" / "approved"
+PUBLISHED_DIR = Path(__file__).parent.parent / "docs_agent" / "published"
+
+
+def extract_title_from_md(content: str) -> str:
+    """从 note.md 提取标题。"""
+    m = re.search(r'^title:\s*(.+?)$', content, re.MULTILINE | re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r'^#\s+(.+?)$', content, re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+    return "未命名笔记"
+
+
+def extract_desc_from_md(content: str) -> str:
+    """从 note.md 提取正文描述。"""
+    content = re.sub(r'^---\s*\n.*?---\s*\n', '', content, flags=re.DOTALL)
+    content = re.sub(r'^#\s+.+?\n', '', content)
+    content = re.sub(r'!\[.*?\]\(.*?\)', '', content)
+    content = re.sub(r'\[.*?\]\(.*?\)', '', content)
+    return content.strip()[:500]
+
+
+def extract_tags_from_md(content: str) -> list:
+    """从 note.md 提取话题标签。"""
+    tags = re.findall(r'#(\w+)', content)
+    return list(dict.fromkeys(tags))
+
+
+def get_approved_notes() -> list:
+    """获取 approved/ 目录下的所有笔记。"""
+    if not APPROVED_DIR.exists():
+        return []
+    notes = []
+    for d in APPROVED_DIR.iterdir():
+        if not d.is_dir():
+            continue
+        note_md = d / "note.md"
+        if not note_md.exists():
+            continue
+        with open(note_md, 'r', encoding='utf-8') as f:
+            content = f.read()
+        cover = d / "cover_ai.png"
+        if not cover.exists():
+            for alt in ["cover.png", "cover.jpg", "cover.jpeg"]:
+                alt_path = d / alt
+                if alt_path.exists():
+                    cover = alt_path
+                    break
+        inner_pages = sorted([
+            p for p in d.iterdir()
+            if p.name.startswith("inner_page") and p.suffix.lower() in ('.png', '.jpg', '.jpeg')
+        ])
+        if not cover.exists():
+            continue
+        notes.append({
+            "dir": d,
+            "name": d.name,
+            "title": extract_title_from_md(content),
+            "desc": extract_desc_from_md(content),
+            "tags": extract_tags_from_md(content),
+            "health_issues": check_note_health(content),
+            "cover": str(cover),
+            "images": [str(cover)] + [str(p) for p in inner_pages],
+        })
+    return notes
+
+
+def auto_publish_notes(selected_notes: list, progress_bar=None) -> dict:
+    """自动发布选中的笔记到小红书。"""
+    results = {"success": 0, "failed": 0, "details": []}
+
+    # 登录创作者平台（带 Cookie 持久化）
+    logger.info("正在登录小红书创作者平台...")
+    auth = get_creator_auth()
+    api = XHS_Creator_Apis(auth).bootstrap()
+    logger.info("登录成功！")
+
+    total = len(selected_notes)
+    for i, note in enumerate(selected_notes):
+        if progress_bar:
+            progress_bar.progress((i) / total, text=f"正在发布: {note['title'][:20]}...")
+
+        # 废笔记双保险：即使 UI 选中也拒绝发布
+        if note.get("health_issues"):
+            results["failed"] += 1
+            results["details"].append({
+                "title": note["title"],
+                "status": "skipped",
+                "msg": "健康检查未过，已拦截: " + "; ".join(note["health_issues"]),
+            })
+            logger.warning(f"⏭️ 跳过 {note['title']}: 健康检查未过")
+            continue
+
+        # 话题标签：优先解析为真话题链接（进话题流量池），失败的降级纯文本
+        resolved_topics, unresolved_tags = resolve_topics(api, note["tags"])
+        plain_tags = " ".join([f"#{t}" for t in unresolved_tags]) if unresolved_tags else ""
+        full_desc = f"{note['desc']}\n\n{plain_tags}".strip()
+        if resolved_topics:
+            logger.info(f"✅ 真话题链接: {note['title']} -> {resolved_topics}")
+        if unresolved_tags:
+            logger.info(f"⚠️ 纯文本标签(未解析): {note['title']} -> {unresolved_tags}")
+
+        try:
+            success, msg, result = api.post_note({
+                "title": note["title"],
+                "desc": full_desc,
+                "media_type": "image",
+                "topics": resolved_topics,
+                "images": note["images"],
+            })
+
+            if success:
+                # 提取笔记 URL
+                note_url = _extract_note_url_from_result(result, api, note["title"])
+
+                # 将 URL 追加到 note.md
+                if note_url:
+                    _append_url_to_note_md(note["dir"], note_url)
+
+                # 移动到 published/
+                target = PUBLISHED_DIR / note["dir"].name
+                if target.exists():
+                    j = 1
+                    while True:
+                        target = PUBLISHED_DIR / f"{note['dir'].name}_{j}"
+                        if not target.exists():
+                            break
+                        j += 1
+                PUBLISHED_DIR.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(note["dir"]), str(target))
+
+                results["success"] += 1
+                results["details"].append({
+                    "title": note["title"],
+                    "status": "success",
+                    "msg": f"发布成功" + (f" | {note_url}" if note_url else ""),
+                    "url": note_url,
+                })
+                logger.info(f"✅ 发布成功: {note['title']}" + (f" | {note_url}" if note_url else ""))
+            else:
+                results["failed"] += 1
+                results["details"].append({
+                    "title": note["title"],
+                    "status": "failed",
+                    "msg": msg,
+                })
+                logger.error(f"❌ 发布失败: {note['title']} - {msg}")
+        except Exception as e:
+            results["failed"] += 1
+            results["details"].append({
+                "title": note["title"],
+                "status": "error",
+                "msg": str(e),
+            })
+            logger.error(f"❌ 发布异常: {note['title']} - {e}")
+
+    if progress_bar:
+        progress_bar.progress(1.0, text="发布完成！")
+
+    return results
+
+
+def _extract_note_url_from_result(result: dict, api, title: str) -> str | None:
+    """从 post_note 结果或已发布列表中提取笔记 URL。"""
+    if not result:
+        return None
+
+    # 尝试直接从响应中提取 note_id
+    note_id = None
+    data = result.get("data", {})
+    if isinstance(data, dict):
+        # 常见字段: note_id, id, noteId
+        for key in ("note_id", "id", "noteId"):
+            if key in data:
+                note_id = str(data[key])
+                break
+
+    # 如果直接提取失败，从已发布列表中按标题匹配
+    if not note_id:
+        try:
+            success, msg, notes = api.get_all_posted_notes()
+            if success and notes:
+                # 按时间倒序，找标题匹配的
+                for n in reversed(notes):
+                    note_title = n.get("title", "")
+                    if note_title and title in note_title or note_title in title:
+                        note_id = n.get("note_id") or n.get("id")
+                        if note_id:
+                            break
+        except Exception as e:
+            logger.warning(f"从已发布列表获取 note_id 失败: {e}")
+
+    if note_id:
+        return f"https://www.xiaohongshu.com/explore/{note_id}"
+    return None
+
+
+def _append_url_to_note_md(note_dir: Path, note_url: str) -> None:
+    """将笔记 URL 追加到 note.md 末尾。"""
+    note_md = note_dir / "note.md"
+    if not note_md.exists():
+        return
+    try:
+        with open(note_md, "a", encoding="utf-8") as f:
+            f.write(f"\n\n## 发布记录\n\n")
+            f.write(f"**笔记 URL**: {note_url}\n")
+            f.write(f"**发布时间**: {datetime.now().isoformat()}\n")
+        logger.info(f"  📝 已追加 URL 到 note.md: {note_url}")
+    except Exception as e:
+        logger.warning(f"  追加 URL 到 note.md 失败: {e}")
 
 
 def render_publish_tab():
-    """渲染一键发布助手 Tab。"""
+    """渲染一键发布助手 Tab — 支持手动复制和自动发布。"""
     st.header("🚀 一键发布助手")
-    st.caption("选择笔记 → 挑选标题 → 复制正文 → 按顺序上传图片 → 粘贴预设评论")
+
+    # ── 自动发布区域 ──
+    with st.expander("🤖 自动发布到小红书（新功能）", expanded=True):
+        _render_auto_publish_section()
+
+    st.divider()
+
+    # ── 手动发布区域 ──
+    st.caption("或手动复制发布：选择笔记 → 挑选标题 → 复制正文 → 按顺序上传图片 → 粘贴预设评论")
 
     topics_data = load_topics_json()
     topics = topics_data.get("topics", [])
@@ -74,6 +318,70 @@ def render_publish_tab():
 
     with col_right:
         _render_image_guide(out_dir)
+
+
+def _render_auto_publish_section():
+    """渲染自动发布区域。"""
+    st.subheader("🤖 自动发布")
+    st.caption("从 approved/ 目录读取已审核通过的笔记，自动发布到小红书创作者平台")
+
+    notes = get_approved_notes()
+
+    if not notes:
+        st.info("approved/ 目录下没有待自动发布的笔记。请先在「待审核笔记」Tab 中点击「✅ 通过」审核笔记。")
+        return
+
+    st.write(f"发现 **{len(notes)}** 篇待发布笔记：")
+
+    # 显示笔记列表，支持选择
+    selected = []
+    for note in notes:
+        col1, col2, col3 = st.columns([3, 1, 1])
+        unhealthy = bool(note.get("health_issues"))
+        with col1:
+            st.write(f"📄 **{note['title']}**")
+            st.caption(f"标签: {', '.join(note['tags'])} | 图片: {len(note['images'])} 张")
+            if unhealthy:
+                st.error("⚠️ 健康检查未过，已禁用发布：\n- " + "\n- ".join(note["health_issues"]))
+        with col2:
+            # 预览封面
+            if note['cover']:
+                st.image(note['cover'], width=80)
+        with col3:
+            if st.checkbox("选择发布", key=f"select_{note['name']}", disabled=unhealthy):
+                selected.append(note)
+        st.divider()
+
+    if selected:
+        st.write(f"已选择 **{len(selected)}** 篇笔记")
+
+        # 发布按钮
+        if st.button("🚀 开始自动发布", type="primary", disabled=len(selected) == 0):
+            progress_bar = st.progress(0, text="准备发布...")
+            status_text = st.empty()
+
+            try:
+                status_text.info("正在登录小红书创作者平台，请使用 App 扫描弹出的二维码...")
+                results = auto_publish_notes(selected, progress_bar=progress_bar)
+
+                # 显示结果
+                status_text.empty()
+                progress_bar.empty()
+
+                st.success(f"发布完成！成功 {results['success']} 篇，失败 {results['failed']} 篇")
+
+                for detail in results['details']:
+                    if detail['status'] == 'success':
+                        st.success(f"✅ {detail['title']}: {detail['msg']}")
+                    else:
+                        st.error(f"❌ {detail['title']}: {detail['msg']}")
+
+            except Exception as e:
+                progress_bar.empty()
+                status_text.empty()
+                st.error(f"发布过程出错: {e}")
+    else:
+        st.info("请勾选要发布的笔记")
 
 
 def _render_compliance_check(raw_content: str, selected_topic: dict, out_dir: str, body: str):

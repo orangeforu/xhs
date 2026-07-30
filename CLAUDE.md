@@ -142,6 +142,8 @@ docs_agent/
 
 **熔断机制**：最近 3 篇全 C 级 -> 触发熔断，侧边栏红字警告暂停发布、复盘选题（`app.py:_check_circuit_breaker` 与 `fetch_performance.py:_check_circuit_breaker`）。
 
+**话题标签真链接解析**（`core/publish_helpers.py: resolve_topics`）：发布前逐个调 `get_topic` 把标签解析为真话题链接（进话题流量池、可点击），解析失败的降级为纯文本 `#tag`（仍可见但不进流量池），避免冷门标签解析 `raise RuntimeError` 中断整篇发布。dry-run 无 api，全部纯文本展示。
+
 **完整闭环**（原"手动迁移"已部分自动化）：
 
 ```
@@ -151,6 +153,16 @@ pipeline 生成 -> pending/ -> app.py「通过」-> approved/
    -> competitor_analysis.py（历史表现反哺选题）-> 选题池
 ```
 
+### 废笔记健康检查（防 LLM 思考链泄漏）
+
+glm-5.2 等模型可能把英文推理过程（`Let me analyze...`）混进 `content` 返回，`core/writer.py:_extract_content` 不剥离，导致整篇笔记变成思考链（正文英文占比异常、无实质内容）。审核 LLM 同样泄漏且可能给通过，必须代码兜底。三道防线：
+
+- **`core/utils.py: check_note_health(content)`**：检测思考链特征词（≥2 处，如 `Let me`/`I need to`/`Hmm`）+ 英文占比异常（英文词 >20 且 > 中文字 ×0.5），返回问题列表。标签段缺失**不**在此检查（由 `check_tags_compliance` 负责，避免误伤漏标签的正常笔记）。
+- **生成时拦截**：`ChiefEditor._make_decision` 加 health 硬门禁（与标签门禁并列），废笔记 -> revise，feedback 指出思考链泄漏。
+- **发布前置校验**：`auto_publish.py:parse_note` 与 `tabs/publish.py` 发布前校验，废笔记跳过发布；🚀tab UI 标红 + 禁用勾选 + `auto_publish_notes` 双保险拦截。
+
+实测：思考链泄漏废笔记（命中 49 处特征词）被精准拦截；正常中文笔记（含 `#不懂就问有问必答` 等标签）无误判。
+
 ## 平台调性约束
 
 - **陪伴感优先于分析感**：情感内容必须像闺蜜夜聊，禁止理性分析和下定义式表达。
@@ -158,7 +170,7 @@ pipeline 生成 -> pending/ -> app.py「通过」-> approved/
 
 ## 涨粉优化约定（2026-06 改造，详见 `docs/涨粉优化执行计划.md`）
 
-- **话题标签（D-01/D-02）**：3-5 个精准标签，禁用泛词（#情感 #恋爱 等）。`core/utils.py: sanitize_tags` 在写手产出后确定性兜底，`ChiefEditor` 硬门禁拦截不合规标签。**凡 prompt 写了但 LLM 不稳定遵守的规则，一律用代码兜底**，不依赖 LLM 自觉。
+- **话题标签（D-01/D-02）**：3-5 个精准标签，禁用泛词（#情感 #恋爱 等）。`core/utils.py: sanitize_tags` 在写手产出后确定性兜底，`ChiefEditor` 硬门禁拦截不合规标签。**凡 prompt 写了但 LLM 不稳定遵守的规则，一律用代码兜底**，不依赖 LLM 自觉。发布时 `resolve_topics` 把标签解析为真话题链接进流量池（见「自动发布与数据采集」）。
 - **内页气泡（D-05）**：`_parse_to_blocks` 识别"角色：内容"对话行，渲染成左右聊天气泡（主角方右暖色、对方左灰），不再拍扁成纯文字。block 结构为 4 元组 `(text, is_bold, is_sep, side)`，向后兼容 3 元组调用与索引访问。
 - **金句海报（D-06）**：任何页结尾短句居中放大成海报页（`last_block_font_boost=18`），便于截图传播。
 - **选题（D-07）**：`generate_topics.py` 强制情绪光谱均衡（≥4 种情绪）+ 搜索型问句配额（≥2 个），避免单一"隐性伤害"赛道锁死。

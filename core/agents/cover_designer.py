@@ -4,7 +4,8 @@ import re
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
 from core.utils import load_prompt, extract_json_from_llm, extract_visual_style
-from core.image_generator import generate_cover_ai
+from core.image_generator import generate_cover_ai, generate_cover_template
+from core.config import COVER_USE_AI
 
 logger = get_logger(__name__)
 
@@ -147,7 +148,7 @@ class CoverDesigner(BaseAgent):
         # 硬约束：封面大字标题 ≤12 字，防止排版崩溃
         design["title"] = _enforce_cover_title_length(design["title"])
 
-        # 生成文字模板封面（大字标题 + 渐变背景，小红书信息流中 CTR 更高）
+        # 生成封面（默认模板大字封面 CTR 更高；AI 绘画需显式 COVER_USE_AI=true）
         cover_path = None
         cover_paths = {}
         if output_path:
@@ -160,16 +161,27 @@ class CoverDesigner(BaseAgent):
                 cover_paths["ai"] = ai_path
             else:
                 try:
-                    ai_result = generate_cover_ai(
-                        prompt=design.get("ai_prompt", ""),
-                        title=design["title"],
-                        subtitle=design["subtitle"],
-                        style=design.get("style", "warm_grey"),
-                        output_path=ai_path,
-                    )
-                    if ai_result:
-                        cover_paths["ai"] = ai_result
-                        cover_path = ai_result
+                    if COVER_USE_AI:
+                        ai_result = generate_cover_ai(
+                            prompt=design.get("ai_prompt", ""),
+                            title=design["title"],
+                            subtitle=design["subtitle"],
+                            style=design.get("style", "warm_grey"),
+                            output_path=ai_path,
+                        )
+                        if ai_result:
+                            cover_paths["ai"] = ai_result
+                            cover_path = ai_result
+                    else:
+                        tpl_result = generate_cover_template(
+                            title=design["title"],
+                            subtitle=design["subtitle"],
+                            style=design.get("style", "warm_grey"),
+                            output_path=ai_path,
+                        )
+                        if tpl_result:
+                            cover_paths["ai"] = tpl_result
+                            cover_path = tpl_result
                 except Exception as e:
                     logger.warning("封面生成失败: %s", e)
 

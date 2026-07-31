@@ -31,6 +31,9 @@ PROMPTS_DIR = PROJECT_ROOT / "prompts"
 # ── 集中管理的环境变量 ──
 IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "pollinations").lower()
 IMAGE_API_KEY = os.getenv("IMAGE_API_KEY", "")
+# 封面是否走 AI 绘画。默认 false：模板大字封面 CTR 更高（见 CLAUDE.md），
+# AI 绘画塑料感 + 文字可读性差，仅显式 COVER_USE_AI=true 时才调 AI provider。
+COVER_USE_AI = os.getenv("COVER_USE_AI", "false").lower() in ("1", "true", "yes", "on")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("KIMI_API_KEY", "")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1"))
 LLM_MODEL = os.getenv("LLM_MODEL", "kimi-k2-6")

@@ -322,12 +322,48 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         side = block[3] if len(block) >= 4 else None
         if tag == '__separator__':
             sep_height = int(line_height * LAYOUT["separator_height_ratio"])
-            # 纯留白分页（原粗分割线+圆点被反馈"横杠丑"，已移除，靠留白区分段落）
+            # 分页装饰：小符号居中，既标记换页又不喧宾夺主
+            deco = LAYOUT.get("separator_deco", "· · ·")
+            deco_font = _get_font(base_font_size - 8)
+            try:
+                bbox = deco_font.getbbox(deco)
+                tw = bbox[2] - bbox[0]
+            except (AttributeError, TypeError):
+                tw = 0
+            draw.text(((COVER_WIDTH - tw) // 2, y), deco, font=deco_font, fill=(*p["subtitle"], 120))
             y += sep_height + actual_para_spacing
             after_sep_or_first = True
             continue
 
-        # 对话不再渲染为气泡（用户反馈"气泡丑"，回归普通文字）
+        # 对话气泡渲染（简化版：左右色块区分，无圆角阴影）
+        if side:
+            font = body_font_bold if is_bold else body_font
+            # 气泡尺寸
+            bubble_pad = LAYOUT.get("bubble_pad_y", 28)
+            bubble_text_w = int(_MAX_TEXT_W * 0.72)
+            wrapped_bubble = _wrap_text('\n'.join(tag), font, bubble_text_w)
+            line_h = int(base_font_size * LAYOUT["line_height_ratio"])
+            bubble_h = len(wrapped_bubble) * line_h + bubble_pad
+            # 色块背景
+            if side == "right":
+                bx = COVER_WIDTH - LAYOUT["margin_left"] - bubble_text_w - 40
+                bg = (*cover_accent, 45)
+                text_c = p["highlight"]
+            else:
+                bx = LAYOUT["margin_left"]
+                bg = (*p["bg_top"], 120)
+                text_c = p["body"]
+            draw.rectangle(
+                [(bx, y - 6), (bx + bubble_text_w + 40, y + bubble_h - 6)],
+                fill=bg,
+            )
+            for line in wrapped_bubble:
+                draw.text((bx + 20, y), line, font=font, fill=text_c)
+                y += line_h
+            y += actual_para_spacing
+            after_sep_or_first = False
+            continue
+
         font = body_font_bold if is_bold else body_font
 
         is_last_text_block = (block_idx == last_text_idx)
@@ -349,7 +385,7 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
             y += actual_para_spacing
             continue
 
-        # 加粗文字 — 左侧色块高亮
+        # 加粗金句 — 荧光笔晕染高亮（不规则边缘，模拟真实标记笔）
         if is_bold:
             max_line_w = 0
             for line in tag:
@@ -360,22 +396,34 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
                     lw = 0
                 max_line_w = max(max_line_w, lw)
             block_h = line_count * line_height
-            pad_x = 20
-            pad_y = 12
+            pad_x = 16
+            pad_y = 10
             rect_x1 = x_start - pad_x
             rect_y1 = y - pad_y
-            rect_x2 = x_start + max_line_w + pad_x
+            rect_x2 = min(x_start + max_line_w + pad_x, COVER_WIDTH - 60)
             rect_y2 = y + block_h + pad_y
-            rect_x2 = min(rect_x2, COVER_WIDTH - 60)
-            draw.rectangle(
-                [(rect_x1, rect_y1), (rect_x2, rect_y2)],
-                fill=highlight_bg,
-            )
-            # 左侧色条
-            draw.rectangle(
-                [(rect_x1, rect_y1), (rect_x1 + 5, rect_y2)],
-                fill=(*cover_accent, 200),
-            )
+            # 荧光笔晕染：半透明色块 + 轻微随机边缘抖动
+            import random
+            rng = random.Random(hash(tag[0]) if tag else 0)
+            for offset in range(8, 0, -2):
+                alpha = int(25 * (1 - offset / 10))
+                jitter_x = rng.randint(-offset, offset)
+                jitter_y = rng.randint(-offset // 2, offset // 2)
+                draw.rectangle(
+                    [(rect_x1 + jitter_x, rect_y1 + jitter_y),
+                     (rect_x2 + jitter_x, rect_y2 + jitter_y)],
+                    fill=(*cover_accent, alpha),
+                )
+            # 底部波浪下划线（模拟手写标记感）
+            wave_y = y + block_h + 4
+            wave_w = max_line_w
+            wave_segments = min(12, max(4, wave_w // 40))
+            for seg in range(wave_segments):
+                sx = x_start + seg * (wave_w / wave_segments)
+                ex = x_start + (seg + 1) * (wave_w / wave_segments)
+                mid_y = wave_y + (3 if seg % 2 == 0 else -3)
+                draw.line([(sx, wave_y), ((sx + ex) / 2, mid_y), (ex, wave_y)],
+                          fill=(*cover_accent, 180), width=3)
 
         if is_bold:
             text_color = p["highlight"]
@@ -403,13 +451,15 @@ def generate_inner_page(text: str, page_num: int, total_pages: int, style: str =
         tw = 0
     page_y = COVER_HEIGHT - LAYOUT["page_number_y_offset"]
 
-    # 页码上方细分隔线
-    deco_y = page_y - 18
-    deco_w = 40
-    draw.rectangle(
-        [((COVER_WIDTH - deco_w) // 2, deco_y), ((COVER_WIDTH + deco_w) // 2, deco_y + 1)],
-        fill=(*cover_accent, 80),
-    )
+    # 页码上方小圆点装饰
+    deco = LAYOUT.get("page_number_deco", "◦")
+    deco_font = _get_font(LAYOUT["page_number_font_size"] + 4)
+    try:
+        bbox = deco_font.getbbox(deco)
+        dw = bbox[2] - bbox[0]
+    except (AttributeError, TypeError):
+        dw = 0
+    draw.text(((COVER_WIDTH - dw) // 2, page_y - 20), deco, font=deco_font, fill=(*cover_accent, 100))
 
     draw.text(((COVER_WIDTH - tw) // 2, page_y), page_text, font=page_font, fill=p["subtitle"])
 

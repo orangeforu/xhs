@@ -14,6 +14,9 @@ from core.config import load_topics_json, load_performance_json, get_logger
 from core.publish_helpers import (
     extract_title_candidates as _extract_title_candidates,
     extract_body_for_publish as _extract_body_for_publish,
+    extract_title as extract_title_from_md,
+    extract_desc as extract_desc_from_md,
+    extract_tags as extract_tags_from_md,
     score_title as _score_title,
     check_compliance as _check_compliance,
     resolve_topics,
@@ -39,32 +42,6 @@ from core.utils import check_note_health
 
 APPROVED_DIR = Path(__file__).parent.parent / "docs_agent" / "approved"
 PUBLISHED_DIR = Path(__file__).parent.parent / "docs_agent" / "published"
-
-
-def extract_title_from_md(content: str) -> str:
-    """从 note.md 提取标题。"""
-    m = re.search(r'^title:\s*(.+?)$', content, re.MULTILINE | re.IGNORECASE)
-    if m:
-        return m.group(1).strip()
-    m = re.search(r'^#\s+(.+?)$', content, re.MULTILINE)
-    if m:
-        return m.group(1).strip()
-    return "未命名笔记"
-
-
-def extract_desc_from_md(content: str) -> str:
-    """从 note.md 提取正文描述。"""
-    content = re.sub(r'^---\s*\n.*?---\s*\n', '', content, flags=re.DOTALL)
-    content = re.sub(r'^#\s+.+?\n', '', content)
-    content = re.sub(r'!\[.*?\]\(.*?\)', '', content)
-    content = re.sub(r'\[.*?\]\(.*?\)', '', content)
-    return content.strip()[:500]
-
-
-def extract_tags_from_md(content: str) -> list:
-    """从 note.md 提取话题标签。"""
-    tags = re.findall(r'#(\w+)', content)
-    return list(dict.fromkeys(tags))
 
 
 def get_approved_notes() -> list:

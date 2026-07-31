@@ -21,7 +21,16 @@
 
 import json
 import os
+import sys
 from pathlib import Path
+
+# Windows GBK 终端打不出 emoji/特殊字符（✅ ▀ 等），强制 UTF-8 输出
+if sys.platform.startswith("win"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 # 将项目根目录加入路径
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -76,7 +85,7 @@ def get_pc_auth():
     """
     import sys
 
-    sys.path.insert(0, str(PROJECT_ROOT / "spider_xhs"))
+    sys.path.insert(0, str(PROJECT_ROOT))
     from spider_xhs import XHSPcAuth
 
     # 先尝试读取已保存的 Cookie
@@ -122,7 +131,7 @@ def get_creator_auth():
     """
     import sys
 
-    sys.path.insert(0, str(PROJECT_ROOT / "spider_xhs"))
+    sys.path.insert(0, str(PROJECT_ROOT))
     from spider_xhs import XHSCreatorAuth
 
     # 先尝试读取已保存的 Cookie
@@ -149,6 +158,35 @@ def get_creator_auth():
 
     # Cookie 不存在或已过期，扫码登录
     print("[xhs_auth] 请使用小红书 APP 扫描弹出的二维码（创作者端）...")
+
+    # Windows GBK 终端打不出 ASCII 二维码字符（▀ 等），
+    # 改成保存 PNG 文件，手动打开扫描，跨平台稳定。
+    import sys as _sys
+
+    if _sys.platform.startswith("win"):
+        from apis.xhs_creator_login_apis import XHSCreatorLoginApi
+
+        _qr_path = PROJECT_ROOT / ".cache" / "xhs_creator_qrcode.png"
+        _qr_path.parent.mkdir(parents=True, exist_ok=True)
+
+        def _save_qr_image(url):
+            import qrcode
+
+            qr = qrcode.QRCode(box_size=10, border=4)
+            qr.add_data(url)
+            qr.make(fit=True)
+            qr.make_image(fill_color="black", back_color="white").save(str(_qr_path))
+            print(f"[xhs_auth] 二维码已保存为图片: {_qr_path}")
+            print("[xhs_auth] 请打开该图片，用小红书 APP 扫码（5 分钟内有效）...")
+            try:
+                import os as _os
+
+                _os.startfile(str(_qr_path))  # 自动用默认图片查看器打开
+            except Exception:
+                print("[xhs_auth] 自动打开失败，请手动双击该 PNG 文件")
+
+        XHSCreatorLoginApi.show_qrcode_terminal = staticmethod(_save_qr_image)
+
     auth = XHSCreatorAuth.from_qrcode_login(show_in_terminal=True)
 
     # 保存 Cookie

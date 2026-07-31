@@ -35,9 +35,38 @@
       ],
       "pillar": "亲密关系洞察",
       "status": "generated",
-      "generated_at": "2026-05-28T14:05:30.573152+00:00",
-      "output_dir": "/Users/linnie/Code/yilinbst/vs/xhs/docs_agent/published/原来恋爱脑不是病是大脑在向你发出一种深层需求信号_cb74",
-      "series": "不敢说出口的话"
+      "generated_at": "2026-07-30T15:45:20.171958+00:00",
+      "output_dir": "D:\\software\\vs\\xhs\\docs_agent\\approved\\原来恋爱脑不是病是大脑在向你发出一种深层需求信号_cb74",
+      "series": "不敢说出口的话",
+      "generated_with_commit": "0402c42",
+      "features": {
+        "story_structure": "H",
+        "stance_point_page": null,
+        "anchoring_items": [],
+        "anchoring_item_count": 0,
+        "has_action_description": true,
+        "collection_elements": [
+          "方法步骤"
+        ],
+        "hook_type": "选择题",
+        "has_five_sec_action": true,
+        "has_dead_hook": false,
+        "word_count": 683,
+        "page_count": 4,
+        "bold_count": 6,
+        "emoji_count": 0,
+        "cover_title": "你不是恋爱脑",
+        "cover_title_length": 6,
+        "cover_subtitle": "你只是太想把那几颗糖变成一座糖果屋",
+        "visual_style": "mist",
+        "review_rounds": 1,
+        "final_grade": "B",
+        "verdict": "conditional",
+        "issues_count": 0,
+        "self_check_issues_count": 4,
+        "published_day_of_week": null,
+        "data_collection_days": null
+      }
     },
     {
       "id": 3,

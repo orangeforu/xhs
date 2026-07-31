@@ -205,6 +205,36 @@ def extract_body_for_publish(content: str) -> str:
     return body.strip()
 
 
+def extract_title(content: str) -> str:
+    """从 note.md 提取发布用标题。
+
+    优先 YAML frontmatter 的 ``title:``，回退首个 ``# 标题``，再回退占位符。
+    单一真源：auto_publish.py / tabs/publish.py / knowledge_retrieval.py 均引此函数。
+    """
+    m = re.search(r"^title:\s*(.+?)$", content, re.MULTILINE | re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r"^#\s+(.+?)$", content, re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+    return "未命名笔记"
+
+
+def extract_desc(content: str) -> str:
+    """从 note.md 提取正文描述（去掉 frontmatter / 标题 / 图片标记），取前 500 字。"""
+    content = re.sub(r"^---\s*\n.*?---\s*\n", "", content, flags=re.DOTALL)
+    content = re.sub(r"^#\s+.+?\n", "", content)
+    content = re.sub(r"!\[.*?\]\(.*?\)", "", content)
+    content = re.sub(r"\[.*?\]\(.*?\)", "", content)
+    return content.strip()[:500]
+
+
+def extract_tags(content: str) -> list[str]:
+    """从 note.md 提取话题标签（``#标签``），按出现顺序去重。"""
+    tags = re.findall(r"#(\w+)", content)
+    return list(dict.fromkeys(tags))
+
+
 def score_title(title: str, performance: dict) -> dict:
     """给标题打分，返回分数和分析。"""
     notes = performance.get("notes", [])

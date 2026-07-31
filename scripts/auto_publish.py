@@ -40,8 +40,8 @@ from scripts.xhs_auth_helper import get_creator_auth
 # ── 废笔记健康检查（防 LLM 思考链泄漏被发布）──
 from core.utils import check_note_health
 
-# ── 话题标签真链接解析（进话题流量池）──
-from core.publish_helpers import resolve_topics
+# ── 话题标签真链接解析（进话题流量池）+ note.md 解析单一真源 ──
+from core.publish_helpers import resolve_topics, extract_title, extract_desc, extract_tags
 
 
 # ═══════════════════════════════════════════════════════════
@@ -55,40 +55,8 @@ PUBLISHED_DIR = PROJECT_ROOT / "docs_agent" / "published"
 # ═══════════════════════════════════════════════════════════
 # 笔记解析
 # ═══════════════════════════════════════════════════════════
-
-def extract_title(content: str) -> str:
-    """从 note.md 提取标题。"""
-    # 匹配 # 标题 或 YAML frontmatter 的 title
-    m = re.search(r'^title:\s*(.+?)$', content, re.MULTILINE | re.IGNORECASE)
-    if m:
-        return m.group(1).strip()
-    m = re.search(r'^#\s+(.+?)$', content, re.MULTILINE)
-    if m:
-        return m.group(1).strip()
-    return "未命名笔记"
-
-
-def extract_desc(content: str) -> str:
-    """从 note.md 提取正文描述（去掉 frontmatter 和标题）。"""
-    # 去掉 YAML frontmatter
-    content = re.sub(r'^---\s*\n.*?---\s*\n', '', content, flags=re.DOTALL)
-    # 去掉第一个 # 标题
-    content = re.sub(r'^#\s+.+?\n', '', content)
-    # 去掉 Markdown 图片标记
-    content = re.sub(r'!\[.*?\]\(.*?\)', '', content)
-    # 去掉特殊标记
-    content = re.sub(r'\[.*?\]\(.*?\)', '', content)
-    # 取前 500 字作为描述
-    desc = content.strip()[:500]
-    return desc
-
-
-def extract_tags(content: str) -> list:
-    """从 note.md 提取话题标签。"""
-    # 匹配 #标签 格式
-    tags = re.findall(r'#(\w+)', content)
-    # 去重
-    return list(dict.fromkeys(tags))
+# note.md 的 title/desc/tags 提取已收敛到 core.publish_helpers，
+# 此处仅保留 parse_note（目录级解析：拼装图片路径 + 健康检查）。
 
 
 def parse_note(note_dir: Path) -> dict:

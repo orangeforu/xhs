@@ -47,11 +47,10 @@ def retrieve_patterns_for_brief(brief: dict, limit: int = 3) -> str:
 
 
 def _extract_title(note_md_text: str) -> str:
-    m = re.search(r"^title:\s*(.+?)$", note_md_text, re.MULTILINE | re.IGNORECASE)
-    if m:
-        return m.group(1).strip()
-    m = re.search(r"^#\s+(.+?)$", note_md_text, re.MULTILINE)
-    return m.group(1).strip() if m else "（无标题）"
+    # 复用 core.publish_helpers 的单一真源实现
+    from core.publish_helpers import extract_title
+
+    return extract_title(note_md_text)
 
 
 def _extract_grade(note_md_text: str) -> str:

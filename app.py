@@ -127,12 +127,41 @@ elif cb_streak > 0:
     st.sidebar.warning(f"⚠️ 连续 {cb_streak} 篇 C 级，再发 {3 - cb_streak} 篇将触发熔断。")
 
 st.sidebar.header("📋 快捷操作")
-if st.sidebar.button("🚀 生成新笔记"):
-    st.sidebar.info("请在 Terminal 运行：python pipeline.py --index N")
+if st.sidebar.button("🧠 智能生成新笔记"):
+    st.session_state["trigger_smart_generate"] = True
 if st.sidebar.button("📦 批量生成"):
-    st.sidebar.info("请在 Terminal 运行：python pipeline.py --batch")
+    st.session_state["trigger_batch_generate"] = True
 if st.sidebar.button("📁 打开项目文件夹"):
     open_folder(os.path.dirname(os.path.abspath(__file__)))
+
+# 侧边栏触发的生成动作（在主区域顶部执行，带进度展示）
+if st.session_state.get("trigger_smart_generate") or st.session_state.get("trigger_batch_generate"):
+    from tabs._generate_helper import (
+        batch_generate_with_progress,
+        check_api_key,
+        generate_with_progress,
+        render_result,
+    )
+
+    if check_api_key():
+        if st.session_state.get("trigger_smart_generate"):
+            with st.status("AI 正在挑选最优选题并生成…", expanded=True):
+                progress = st.empty()
+                result, logs = generate_with_progress(smart=True, status_container=progress)
+            render_result(result, logs)
+        elif st.session_state.get("trigger_batch_generate"):
+            with st.status("正在批量生成 3 篇…", expanded=True):
+                progress = st.empty()
+                success, abandoned, failed, logs = batch_generate_with_progress(
+                    max_count=3, smart=False, status_container=progress
+                )
+            st.info(f"批量完成：✅成功 {success} | ⚠️放弃 {abandoned} | ❌失败 {failed}")
+            if logs:
+                with st.expander("📜 生成日志", expanded=False):
+                    st.code("\n".join(logs), language="text")
+    st.session_state.pop("trigger_smart_generate", None)
+    st.session_state.pop("trigger_batch_generate", None)
+    st.rerun()
 
 # ── Main Tabs ──
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([

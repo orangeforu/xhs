@@ -19,7 +19,7 @@ def render_review_tab():
     generated_topics = [t for t in topics if t.get("status") == "generated"]
 
     if not generated_topics:
-        st.info("暂无待审核笔记。运行 pipeline.py 生成后，笔记会出现在这里。")
+        st.info("暂无待审核笔记。去「📚选题池」tab 点「生成笔记」即可，无需命令行。")
     else:
         for t in generated_topics:
             _render_topic_card(t, topics_data, topics)
@@ -99,7 +99,20 @@ def _handle_feedback(t: dict, topics_data: dict):
                     t["status"] = "not_started"
                     save_topics_json(topics_data)
                     st.session_state.pop(f"show_feedback_{t['id']}", None)
-                    st.success(f"修改意见已保存，选题已重置为待生成状态。请使用 pipeline.py --topic \"{t['topic']}\" 重新生成。")
+                    # 页内直接重新生成（带进度），不再跳终端
+                    from tabs._generate_helper import (
+                        check_api_key,
+                        generate_with_progress,
+                        render_result,
+                    )
+
+                    if check_api_key():
+                        with st.status("正在根据修改意见重新生成…", expanded=True):
+                            progress = st.empty()
+                            result, logs = generate_with_progress(
+                                topic=t["topic"], status_container=progress
+                            )
+                        render_result(result, logs, topic_label=t["topic"])
                     st.rerun()
                 else:
                     st.warning("请输入修改意见")
@@ -118,6 +131,7 @@ def _handle_reject(t: dict, out_dir: str, topics_data: dict):
         c1, c2 = st.columns(2)
         with c1:
             if st.button("确认打回", key=f"confirm_yes_{t['id']}"):
+                topic_name = t["topic"]
                 t["status"] = "not_started"
                 if os.path.exists(out_dir):
                     shutil.rmtree(out_dir)
@@ -125,7 +139,20 @@ def _handle_reject(t: dict, out_dir: str, topics_data: dict):
                     t.pop(k, None)
                 save_topics_json(topics_data)
                 st.session_state.pop(f"confirm_reject_{t['id']}", None)
-                st.error(f"{t['topic']} 已打回。请调整 pipeline.py 的 prompt 后重新生成。")
+                # 页内直接重新生成（不带旧 feedback，全新创作）
+                from tabs._generate_helper import (
+                    check_api_key,
+                    generate_with_progress,
+                    render_result,
+                )
+
+                if check_api_key():
+                    with st.status(f"正在重新生成「{topic_name}」…", expanded=True):
+                        progress = st.empty()
+                        result, logs = generate_with_progress(
+                            topic=topic_name, status_container=progress
+                        )
+                    render_result(result, logs, topic_label=topic_name)
                 st.rerun()
         with c2:
             if st.button("取消", key=f"confirm_no_{t['id']}"):

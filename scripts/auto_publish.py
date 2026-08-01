@@ -142,13 +142,20 @@ def publish_note(api: XHS_Creator_Apis, note: dict, dry_run: bool = False) -> tu
         logger.info(f"  ⚠️ 纯文本标签(未解析): {unresolved_tags}")
 
     try:
+        # spider_xhs 的 upload_media 期望 images 是 bytes（np.frombuffer 解码 + data=file 上传），
+        # 传路径字符串会报 "a bytes-like object is required, not 'str'"。读成 bytes。
+        image_bytes_list = []
+        for img_path in images:
+            with open(img_path, "rb") as f:
+                image_bytes_list.append(f.read())
+
         # 发布图文笔记：topics 会被 post_note 解析成结构化 hash_tag
         success, msg, result = api.post_note({
             "title": title,
             "desc": full_desc,
             "media_type": "image",
             "topics": resolved_topics,
-            "images": images,
+            "images": image_bytes_list,
         })
 
         if success:

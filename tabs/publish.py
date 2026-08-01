@@ -119,13 +119,28 @@ def auto_publish_notes(selected_notes: list, progress_bar=None) -> dict:
             logger.info(f"⚠️ 纯文本标签(未解析): {note['title']} -> {unresolved_tags}")
 
         try:
+            # spider_xhs 的 upload_media/get_file_info 期望 images 是 bytes（np.frombuffer 解码 + data=file 上传），
+            # 传路径字符串会报 "a bytes-like object is required, not 'str'"。这里把路径读成 bytes。
+            image_bytes_list = []
+            for img_path in note["images"]:
+                with open(img_path, "rb") as f:
+                    image_bytes_list.append(f.read())
+
             success, msg, result = api.post_note({
                 "title": note["title"],
                 "desc": full_desc,
                 "media_type": "image",
                 "topics": resolved_topics,
-                "images": note["images"],
+                "images": image_bytes_list,
             })
+
+            # 打印完整响应，定位"成功但笔记不存在"的误报
+            import json as _json
+            try:
+                logger.info(f"  post_note 返回 success={success} msg={msg!r}")
+                logger.info(f"  post_note 完整 result: {_json.dumps(result, ensure_ascii=False)[:800]}")
+            except Exception as e:
+                logger.warning(f"  打印 result 失败: {e}; result={result!r}")
 
             if success:
                 # 提取笔记 URL

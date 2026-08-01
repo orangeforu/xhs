@@ -49,3 +49,6 @@ build/
 # Tool caches
 .mypy_cache/
 .ruff_cache/
+
+# Node（spider_xhs 签名用 crypto-js，本地安装，不提交）
+node_modules/

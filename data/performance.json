@@ -772,6 +772,16 @@
         "data_collection_days": null
       },
       "published_day_of_week": 7
+    },
+    {
+      "note_id": "6a6e0c8e0000000022032c95",
+      "url": "https://www.xiaohongshu.com/explore/6a6e0c8e0000000022032c95",
+      "likes": 0,
+      "collects": 0,
+      "comments": 0,
+      "shares": 0,
+      "grade": "C",
+      "updated_at": "2026-08-01T23:37:56.181380"
     }
   ],
   "summary": {
@@ -797,5 +807,25 @@
       "B": 8,
       "pending": 3
     }
+  },
+  "stats": {
+    "total_notes": 36,
+    "total_likes": 3,
+    "total_collects": 6,
+    "total_comments": 0,
+    "avg_likes": 0.1,
+    "grade_distribution": {
+      "S": 0,
+      "A": 12,
+      "B": 8,
+      "C": 8,
+      "": 5,
+      "pending": 3
+    },
+    "updated_at": "2026-08-01T23:37:56.181622"
+  },
+  "circuit_breaker": {
+    "tripped": false,
+    "streak": 1
   }
 }

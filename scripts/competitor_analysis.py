@@ -90,30 +90,50 @@ def extract_tags_from_note(note_detail: dict) -> list:
 
 
 def analyze_note(note: dict, api: XHS_Apis) -> dict:
-    """分析单篇笔记。"""
+    """分析单篇笔记。优先用搜索结果自带的 note_card，拿不到再调详情接口。"""
     note_url = f"https://www.xiaohongshu.com/explore/{note['id']}"
 
-    # 获取详细内容
-    success, msg, detail = api.get_note_info(note_url)
+    # 搜索结果里通常已带 note_card（含 interact_info/title/tag_list），直接用，省一次请求
+    note_card = note.get("note_card") or {}
+    if not note_card.get("interact_info"):
+        # 搜索结果缺 note_card，fallback 到详情接口
+        success, msg, detail = api.get_note_info(note_url)
+        if success and detail:
+            note_card = (detail.get("data") or {}).get("note_card") or detail.get("note_card") or {}
 
-    if not success:
-        logger.warning(f"获取笔记详情失败: {note_url} - {msg}")
+    if not note_card:
+        logger.warning(f"笔记无 card 数据: {note_url}")
         return None
 
-    rec = NoteRecord.from_api_detail(detail, note_id=note["id"], url=note_url)
-    title_analysis = analyze_title(rec.title)
+    interact = note_card.get("interact_info", {})
+    if not isinstance(interact, dict):
+        interact = {}
+    tag_list = note_card.get("tag_list", [])
+    tags = [t.get("name", "") for t in tag_list if isinstance(t, dict) and t.get("name")]
+
+    title = note_card.get("display_title") or note_card.get("title", "") or ""
+    likes = _to_int_local(interact.get("liked_count", 0))
+    title_analysis = analyze_title(title)
 
     return {
-        "title": rec.title,
-        "url": rec.url,
-        "likes": rec.likes,
-        "collects": rec.collects,
-        "comments": rec.comments,
-        "tags": rec.tags,
+        "title": title,
+        "url": note_url,
+        "likes": likes,
+        "collects": _to_int_local(interact.get("collected_count", 0)),
+        "comments": _to_int_local(interact.get("comment_count", 0)),
+        "tags": tags,
         "title_formula": title_analysis["formula"],
         "title_features": title_analysis,
-        "is_hot": rec.likes >= HOT_LIKES_THRESHOLD,
+        "is_hot": likes >= HOT_LIKES_THRESHOLD,
     }
+
+
+def _to_int_local(v) -> int:
+    """容错地把字符串数字转 int。"""
+    try:
+        return int(str(v).replace(",", "").strip() or 0)
+    except (ValueError, TypeError):
+        return 0
 
 
 def generate_topic_suggestion(note: dict) -> dict:
@@ -311,6 +331,44 @@ def print_performance_insights(insights: dict):
     if insights["avoid_formulas"]:
         print(f"\n🚫 建议回避公式: {', '.join(insights['avoid_formulas'])}")
     print("=" * 60)
+
+
+def save_to_topics(results: list, topics_data: dict) -> dict:
+    """把爆款分析结果转成选题，去重后追加到 topics.json。
+
+    原 main 调用了同名函数但项目里未定义（历史 bug），在此补齐实现。
+    """
+    from datetime import datetime
+
+    existing = topics_data.get("topics", [])
+    existing_titles = {t.get("topic") for t in existing}
+    next_id = max((t.get("id", 0) for t in existing), default=0) + 1
+
+    added = 0
+    for r in results:
+        title = r.get("title", "").strip()
+        if not title or title in existing_titles:
+            continue
+        existing.append({
+            "id": next_id,
+            "topic": title,
+            "title_formula": r.get("title_formula", ""),
+            "target_interaction": "共鸣驱动",
+            "angle": f"借鉴爆款公式「{r.get('title_formula', '')}」(原赞{r.get('likes', 0)})",
+            "keywords": r.get("tags", [])[:5],
+            "pillar": "自我成长",
+            "status": "not_started",
+            "reference_url": r.get("url", ""),
+            "reference_likes": r.get("likes", 0),
+            "added_at": datetime.now().isoformat(),
+        })
+        existing_titles.add(title)
+        next_id += 1
+        added += 1
+
+    topics_data["topics"] = existing
+    logger.info(f"新增 {added} 个爆款选题到选题池（去重后）")
+    return topics_data
 
 
 def main():

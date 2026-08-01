@@ -108,6 +108,18 @@ THINKING_LEAK_PATTERNS = [
     r"\bHmm\b",
     r"\bThe user wants\b",
     r"\bwait\b.*\bLet me\b",
+    # 中文思考链特征（glm-5.2 等模型用中文推理时泄漏的开头套话）
+    r"好的[，,]我",
+    r"我需要认真处理",
+    r"先梳理一下",
+    r"我[要需]先理[一清]下",
+    r"让我[来想想]",
+    r"这是一个.*的?任务",
+    r"选题是",
+    r"要求.*驱动",
+    r"铁律",
+    r"接下来我",
+    r"我先.*分析",
 ]
 THINKING_LEAK_RE = re.compile("|".join(THINKING_LEAK_PATTERNS), re.IGNORECASE)
 

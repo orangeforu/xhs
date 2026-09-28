@@ -124,7 +124,9 @@ docs_agent/
 
 ### 自动发布与数据采集（spider_xhs 集成）
 
-`spider_xhs/` 是 git 子模块（`cv-cat/Spider_XHS`），提供小红书 PC 端采集 + 创作者端发布能力。`spider_xhs/__init__.py` 二次封装并导出 4 个类：`XHS_Apis`（PC 采集/搜索）、`XHS_Creator_Apis`（创作者发布）、`XHSPcAuth` / `XHSCreatorAuth`（两套登录认证）。运行时依赖 Node.js（用 `node_modules/crypto-js` 生成请求签名）。
+`spider_xhs/` 是 **vendored 目录**（2026-09 改造：原 git 子模块锁定的提交被上游 force-push 清除无法拉取，改为直接 vendor `cv-cat/Spider_XHS` 源码），提供小红书 PC 端采集 + 创作者端发布能力。`spider_xhs/__init__.py` 为本项目自写的**惰性封装层**（PEP 562 `__getattr__`），导出 4 个类：`XHS_Apis`（PC 采集/搜索）、`XHS_Creator_Apis`（创作者发布）、`XHSPcAuth` / `XHSCreatorAuth`（两套登录认证）。惰性导入保证缺 curl_cffi/PyExecJS 等可选依赖时 `import spider_xhs` 不报错，不拖垮 Streamlit 工作台。运行时依赖 Node.js（用 `node_modules/crypto-js` 生成请求签名）。
+
+⚠️ **合规红线（2026 平台治理）**：小红书 2026-07 已批量处置 42 万「AI 托管」账号（自动注册/自动发布/模拟真人互动）。约定：**发布只能人工触发**（`auto_publish.py` 启动有合规横幅），`core/scheduler.py` 刻意只提供 `generate` / `fetch_performance` 两个动作、不提供发布动作。禁止把 auto_publish 接入任何定时任务。
 
 **认证层**（`scripts/xhs_auth_helper.py`）：Cookie 持久化到 `.cache/xhs_{pc,creator}_cookie.json`，首次扫码登录、后续复用、过期自动重扫。`get_pc_auth()` 供采集脚本用，`get_creator_auth()` 供发布脚本用。
 

@@ -11,6 +11,12 @@
 两种运行方式：
 1. ``scripts/scheduler_daemon.py``：常驻守护（Windows 计划任务 / systemd），生产用。
 2. ``tabs/calendar.py`` 的「⏰ 定时生成」区：在 Streamlit 应用内启动调度器 + 管理任务。
+
+⚠️ 合规红线（2026 平台治理，刻意设计）：action 只有 ``generate`` /
+``fetch_performance`` 两种，**刻意不提供 auto_publish**。小红书 2026-07 已批量
+处置 42 万「AI 托管」账号（自动注册/自动发布/模拟真人互动）——调度器只自动化
+"生成草稿"和"采集数据"，发布必须由人工经 app.py / auto_publish.py 逐篇确认。
+不要往 ``_build_command`` 里加发布动作。
 """
 
 import json

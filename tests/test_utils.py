@@ -1,6 +1,6 @@
 import unittest
 
-from core.utils import clean_md, load_prompt, sanitize_tags, sanitize_tags_in_content
+from core.utils import clean_md, load_prompt, sanitize_tags, sanitize_tags_in_content, check_note_health
 
 
 class TestCleanMd(unittest.TestCase):
@@ -82,6 +82,40 @@ class TestSanitizeTags(unittest.TestCase):
         # 其他 section 不受影响
         self.assertIn("warm_grey", new)
         self.assertIn("【正文】", new)
+
+
+class TestNoteHealth(unittest.TestCase):
+    """测试废笔记健康检查（防 LLM 思考链泄漏进发布流程）。"""
+
+    def test_healthy_note_passes(self):
+        """正常中文笔记 + 标签段 -> 无问题。"""
+        content = (
+            "她盯着手机看了第七遍。桌上美式凉透。\n\n"
+            "**你内耗的不是那句话，是你替他说了十句话。**\n\n"
+            "【话题标签】\n#不懂就问有问必答 #情绪反刍 #心理后台"
+        )
+        self.assertEqual(check_note_health(content), [])
+
+    def test_thinking_leak_detected(self):
+        """LLM 英文思考链泄漏 -> 检出。"""
+        content = (
+            "Let me analyze the feedback carefully.\n"
+            "Let me rewrite from scratch using Structure A.\n"
+            "Hmm, wait. Let me check the requirements.\n"
+            "【话题标签】\n#情绪反刍"
+        )
+        issues = check_note_health(content)
+        self.assertTrue(any("思考链泄漏" in i for i in issues))
+
+    def test_english_heavy_detected(self):
+        """英文占比异常 -> 检出。"""
+        content = "Let me think about this carefully. " * 30
+        issues = check_note_health(content)
+        self.assertTrue(any("英文占比" in i for i in issues))
+
+    def test_empty_content(self):
+        """空内容 -> 检出。"""
+        self.assertEqual(check_note_health(""), ["内容为空"])
 
 
 if __name__ == "__main__":

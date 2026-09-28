@@ -131,7 +131,7 @@ class TestUpdateTopicStatus(unittest.TestCase):
                 {"topic": "测试B", "status": "not_started"},
             ]
         }
-        topics_path.write_text(json.dumps(data, ensure_ascii=False))
+        topics_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         lock_path.touch()
 
         with patch("pipeline.DATA_DIR", Path(tmp)):

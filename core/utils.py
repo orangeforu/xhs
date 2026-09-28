@@ -1,9 +1,17 @@
-"""公共工具函数 — 消除各模块间的重复代码。"""
+"""公共工具函数 — 消除各模块间的重复代码。
+
+本模块保留【通用工具】（LLM 输出解析 / prompt 加载 / Markdown 清洗 /
+相似度 / 笔记文件 IO）。领域业务规则（标签卫生、废笔记健康检查）已迁至
+``core.note_rules``，此处 re-export 维持旧调用点兼容——新代码请直接
+``from core.note_rules import ...``。
+"""
 
 import json
 import re
 
-from core.config import PROMPTS_DIR
+from core.config import PROJECT_ROOT, PROMPTS_DIR, get_logger
+
+logger = get_logger(__name__)
 
 
 def extract_json_from_llm(raw: str) -> dict | None:
@@ -53,6 +61,31 @@ def load_prompt(name: str) -> str:
         return f.read()
 
 
+def load_persona() -> str:
+    """加载账号人设（所有对外文案的唯一人设来源）。
+
+    从项目根目录的 ``persona.md`` 读取。缺失时返回空串并告警（不阻断，
+    向后兼容--没有 persona.md 时 Agent 退化为只读自身 prompt）。
+    """
+    path = PROJECT_ROOT / "persona.md"
+    if not path.exists():
+        logger.warning("persona.md 不存在: %s，人设未注入", path)
+        return ""
+    with open(path, encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def load_prompt_with_persona(name: str) -> str:
+    """加载 prompt 并在最前面注入人设（persona.md）。
+
+    把 ``persona.md`` 内容拼到 ``prompts/<name>.md`` 之前，用 ``---`` 分隔。
+    人设缺失时退化为纯 prompt（等同 ``load_prompt``）。
+    """
+    persona = load_persona()
+    base = load_prompt(name)
+    return f"{persona}\n\n---\n\n{base}" if persona else base
+
+
 def clean_md(text: str) -> str:
     """去掉 Markdown 加粗、斜体、反引号等标记。"""
     if not text:
@@ -81,91 +114,42 @@ def extract_visual_style(content: str) -> str:
     return "warm_grey"
 
 
-# ── 话题标签确定性清洗（D-01）──
-# 营销号高频泛词黑名单：搜索价值≈0 且易触发降权（用户已认可）
-GENERIC_TAG_BLACKLIST = {
-    "情感", "恋爱", "两性关系", "爱情", "生活", "日常",
-    "心理", "女生必看", "治愈", "思考", "反思",
-    "情感共鸣", "深夜感慨", "自我提升", "恋爱脑", "情侣相处",
-    "关系经营", "女性成长", "清醒",
-}
-REQUIRED_TAG = "不懂就问有问必答"
-MAX_TAGS = 5
-MIN_TAGS = 3
+def copy_overlap_ratio(text_a: str, text_b: str, ngram: int = 4) -> float:
+    """n-gram Jaccard 相似度，检测爆款复刻是否照抄。0=无重叠，1=完全相同。
 
-
-def sanitize_tags(raw_tag_line: str, keywords: list[str] | None = None) -> str:
-    """确定性清洗话题标签：去泛词、补必带词、截断到 3-5 个。
-
-    不依赖 LLM 自觉遵守 prompt 规则——凡 prompt 写了但 LLM 不稳定遵守的，
-    一律用确定性代码兜底。返回空格分隔的 "#标签1 #标签2 ..." 字符串。
+    用于 ChiefEditor 相似度硬门禁：复刻模式下若 draft 与源笔记重叠过高，强制重写
+    （保留结构 / 互动机制，替换措辞与案例）。空白不计入 n-gram。
     """
-    tags = re.findall(r"#([^#\s]+)", raw_tag_line)
-    seen: set[str] = set()
-    deduped: list[str] = []
-    for t in tags:
-        t = t.strip()
-        if t and t not in seen:
-            seen.add(t)
-            deduped.append(t)
+    if not text_a or not text_b:
+        return 0.0
 
-    # 过滤泛词黑名单
-    cleaned = [t for t in deduped if t not in GENERIC_TAG_BLACKLIST]
+    def _ngrams(t: str) -> set[str]:
+        t = re.sub(r"\s+", "", t)
+        if len(t) < ngram:
+            return {t} if t else set()
+        return {t[i:i + ngram] for i in range(len(t) - ngram + 1)}
 
-    # 必带词兜底
-    if not any(REQUIRED_TAG in t for t in cleaned):
-        cleaned.insert(0, REQUIRED_TAG)
-
-    # 截断到上限
-    cleaned = cleaned[:MAX_TAGS]
-
-    # 不足下限时用选题 keywords 补精准长尾词
-    if len(cleaned) < MIN_TAGS and keywords:
-        for kw in keywords:
-            kw = kw.strip()
-            if kw and kw not in seen and kw not in GENERIC_TAG_BLACKLIST:
-                cleaned.append(kw)
-                seen.add(kw)
-                if len(cleaned) >= MAX_TAGS:
-                    break
-        cleaned = cleaned[:MAX_TAGS]
-
-    return " ".join(f"#{t}" for t in cleaned)
+    a, b = _ngrams(text_a), _ngrams(text_b)
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
 
 
-def sanitize_tags_in_content(content: str, keywords: list[str] | None = None) -> str:
-    """对 note.md 中【话题标签】段做确定性清洗，返回清洗后的整篇内容。
-
-    匹配 "【话题标签】\\n<标签行>"，把标签行替换为清洗结果。
-    """
-    m = re.search(r"(【话题标签】\s*\n)([^\n【]+)", content)
-    if not m:
-        return content
-    cleaned = sanitize_tags(m.group(2), keywords)
-    return content[: m.start(2)] + cleaned + content[m.end(2):]
-
-
-def check_tags_compliance(content: str) -> list[str]:
-    """检查 note.md 标签是否合规，返回问题列表（空 = 合规）。
-
-    用于 D-02 主编硬门禁：标签数量越界或含泛词时强制重写，
-    不依赖 LLM 审核自觉（实测 LLM 会无视"3-5个"规则给通过）。
-    """
-    m = re.search(r"【话题标签】\s*\n([^\n【]+)", content)
-    if not m:
-        # 无标签段不报：真实笔记由 prompt 强制输出标签段，缺标签通常意味着
-        # content 并非合法笔记（如异常/mock 产物）。本检查只针对"已有标签段"的质量。
-        return []
-    tags = re.findall(r"#([^#\s]+)", m.group(1))
-    issues = []
-    if len(tags) > MAX_TAGS:
-        issues.append(f"标签过多（{len(tags)}个，要求 3-5 个）")
-    if len(tags) < MIN_TAGS:
-        issues.append(f"标签过少（{len(tags)}个，要求 3-5 个）")
-    generic = [t for t in tags if t in GENERIC_TAG_BLACKLIST]
-    if generic:
-        issues.append(f"含降权泛标签：{', '.join('#' + t for t in generic)}")
-    return issues
+# ── 话题标签卫生 + 废笔记健康检查 ──
+# 领域业务规则已迁至 core.note_rules；此处 re-export 维持旧调用点兼容。
+# 新代码请直接 from core.note_rules import ...
+from core.note_rules import (  # noqa: F401
+    GENERIC_TAG_BLACKLIST,
+    REQUIRED_TAG,
+    MAX_TAGS,
+    MIN_TAGS,
+    THINKING_LEAK_PATTERNS,
+    THINKING_LEAK_RE,
+    sanitize_tags,
+    sanitize_tags_in_content,
+    check_tags_compliance,
+    check_note_health,
+)
 
 
 FORMULA_INSTRUCTIONS = {

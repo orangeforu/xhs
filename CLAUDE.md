@@ -12,7 +12,14 @@ python start.py
 python pipeline.py --list                           # 列出选题池
 python pipeline.py --index N                        # 按编号生成单篇
 python pipeline.py --batch --max 3                  # 批量生成
-streamlit run app.py                                # 启动审核工作台
+streamlit run app.py                                # 启动审核工作台（6 个 tab，含一键发布助手）
+
+# 发布与数据采集（spider_xhs 集成，首次需小红书 APP 扫码登录）
+python scripts/auto_publish.py --dry-run            # 预览 approved/ 待发布笔记（不登录、不实际发布）
+python scripts/auto_publish.py --limit 3            # 发布 approved/ 笔记到小红书 -> published/
+python scripts/fetch_performance.py                 # 采集已发布笔记互动数据，更新 performance.json
+python scripts/competitor_analysis.py --save        # 竞品爆款分析，一键加入选题池
+python scripts/xhs_auth_helper.py --creator         # 单独登录/刷新创作者端 Cookie
 
 # 代码质量
 pytest                                              # 运行测试
@@ -111,9 +118,50 @@ docs_agent/
 - 用户确认「我发布了 XX」→ 整目录 `shutil.move` 到 `published/`
 - `app.py` 录入互动数据 → 整目录 `shutil.move` 到 `archived/`
 
-⚠️ **重要**：审核通过不等于已发布。只有用户明确说"我发布了 XX 笔记"才能标记为已发布。
+⚠️ **重要**：审核通过不等于已发布。只有经 `auto_publish.py` / 🚀「一键发布助手」tab 实际发布，或用户明确说"我发布了 XX 笔记"，才迁到 `published/`。
 
 一次性迁移脚本：`python scripts/reorganize_notes.py`（首次把历史混放的笔记按状态分到 4 个子目录）。
+
+### 自动发布与数据采集（spider_xhs 集成）
+
+`spider_xhs/` 是 git 子模块（`cv-cat/Spider_XHS`），提供小红书 PC 端采集 + 创作者端发布能力。`spider_xhs/__init__.py` 二次封装并导出 4 个类：`XHS_Apis`（PC 采集/搜索）、`XHS_Creator_Apis`（创作者发布）、`XHSPcAuth` / `XHSCreatorAuth`（两套登录认证）。运行时依赖 Node.js（用 `node_modules/crypto-js` 生成请求签名）。
+
+**认证层**（`scripts/xhs_auth_helper.py`）：Cookie 持久化到 `.cache/xhs_{pc,creator}_cookie.json`，首次扫码登录、后续复用、过期自动重扫。`get_pc_auth()` 供采集脚本用，`get_creator_auth()` 供发布脚本用。
+
+**三个自动化脚本**（均经 spider_xhs）：
+
+| 脚本 | 作用 | 目录迁移 |
+|---|---|---|
+| `scripts/auto_publish.py` | 登录创作者端，发布 `approved/` 笔记（`--dry-run` 预览 / `--limit N`），URL 写回 `note.md` | `approved/ -> published/` |
+| `scripts/fetch_performance.py` | 登录 PC 端采集 `published/`+`archived/` 互动数据，算 S/A/B/C 等级，更新 `performance.json`，触发熔断 | 仅更新数据 |
+| `scripts/competitor_analysis.py` | 登录 PC 端搜情感赛道爆款（>1000 赞），分析标题公式/标签，结合历史表现优化搜索词，可 `--save` 加入选题池 | 反哺 `topics.json` |
+
+**Streamlit 工作台**（`app.py`）现含 6 个 tab：📝待审核 / 📚选题池 / 📖创作标准 / 📈数据复盘 / 📅内容日历 / 🚀一键发布助手。其中：
+- `tabs/publish.py`（🚀 一键发布助手）：直接调 `XHS_Creator_Apis + get_creator_auth`，UI 勾选 approved 笔记即可自动发布，免去命令行。
+- `tabs/analytics.py`（📈 数据复盘）：录入互动数据、熔断预警、公式/支柱分析。
+
+**熔断机制**：最近 3 篇全 C 级 -> 触发熔断，侧边栏红字警告暂停发布、复盘选题（`app.py:_check_circuit_breaker` 与 `fetch_performance.py:_check_circuit_breaker`）。
+
+**话题标签真链接解析**（`core/publish_helpers.py: resolve_topics`）：发布前逐个调 `get_topic` 把标签解析为真话题链接（进话题流量池、可点击），解析失败的降级为纯文本 `#tag`（仍可见但不进流量池），避免冷门标签解析 `raise RuntimeError` 中断整篇发布。dry-run 无 api，全部纯文本展示。
+
+**完整闭环**（原"手动迁移"已部分自动化）：
+
+```
+pipeline 生成 -> pending/ -> app.py「通过」-> approved/
+   -> auto_publish.py / 🚀tab（创作者端 API 自动发布）-> published/（URL 写回 note.md）
+   -> fetch_performance.py（PC 端 API 采集互动）-> 更新 performance.json + 等级 + 熔断
+   -> competitor_analysis.py（历史表现反哺选题）-> 选题池
+```
+
+### 废笔记健康检查（防 LLM 思考链泄漏）
+
+glm-5.2 等模型可能把英文推理过程（`Let me analyze...`）混进 `content` 返回，`core/writer.py:_extract_content` 不剥离，导致整篇笔记变成思考链（正文英文占比异常、无实质内容）。审核 LLM 同样泄漏且可能给通过，必须代码兜底。三道防线：
+
+- **`core/utils.py: check_note_health(content)`**：检测思考链特征词（≥2 处，如 `Let me`/`I need to`/`Hmm`）+ 英文占比异常（英文词 >20 且 > 中文字 ×0.5），返回问题列表。标签段缺失**不**在此检查（由 `check_tags_compliance` 负责，避免误伤漏标签的正常笔记）。
+- **生成时拦截**：`ChiefEditor._make_decision` 加 health 硬门禁（与标签门禁并列），废笔记 -> revise，feedback 指出思考链泄漏。
+- **发布前置校验**：`auto_publish.py:parse_note` 与 `tabs/publish.py` 发布前校验，废笔记跳过发布；🚀tab UI 标红 + 禁用勾选 + `auto_publish_notes` 双保险拦截。
+
+实测：思考链泄漏废笔记（命中 49 处特征词）被精准拦截；正常中文笔记（含 `#不懂就问有问必答` 等标签）无误判。
 
 ## 平台调性约束
 
@@ -122,7 +170,7 @@ docs_agent/
 
 ## 涨粉优化约定（2026-06 改造，详见 `docs/涨粉优化执行计划.md`）
 
-- **话题标签（D-01/D-02）**：3-5 个精准标签，禁用泛词（#情感 #恋爱 等）。`core/utils.py: sanitize_tags` 在写手产出后确定性兜底，`ChiefEditor` 硬门禁拦截不合规标签。**凡 prompt 写了但 LLM 不稳定遵守的规则，一律用代码兜底**，不依赖 LLM 自觉。
+- **话题标签（D-01/D-02）**：3-5 个精准标签，禁用泛词（#情感 #恋爱 等）。`core/utils.py: sanitize_tags` 在写手产出后确定性兜底，`ChiefEditor` 硬门禁拦截不合规标签。**凡 prompt 写了但 LLM 不稳定遵守的规则，一律用代码兜底**，不依赖 LLM 自觉。发布时 `resolve_topics` 把标签解析为真话题链接进流量池（见「自动发布与数据采集」）。
 - **内页气泡（D-05）**：`_parse_to_blocks` 识别"角色：内容"对话行，渲染成左右聊天气泡（主角方右暖色、对方左灰），不再拍扁成纯文字。block 结构为 4 元组 `(text, is_bold, is_sep, side)`，向后兼容 3 元组调用与索引访问。
 - **金句海报（D-06）**：任何页结尾短句居中放大成海报页（`last_block_font_boost=18`），便于截图传播。
 - **选题（D-07）**：`generate_topics.py` 强制情绪光谱均衡（≥4 种情绪）+ 搜索型问句配额（≥2 个），避免单一"隐性伤害"赛道锁死。

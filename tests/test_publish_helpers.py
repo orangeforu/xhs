@@ -1,14 +1,18 @@
 import unittest
 
 from core.publish_helpers import (
-    calculate_grade,
-    calc_interaction_rate,
     calc_formula_stats,
+    calc_interaction_rate,
     calc_pillar_stats,
+    calculate_grade,
     check_compliance,
-    recalculate_summary,
-    extract_title_candidates,
     extract_body_for_publish,
+    extract_desc,
+    extract_tags,
+    extract_title,
+    extract_title_candidates,
+    recalculate_summary,
+    resolve_topics,
     score_title,
 )
 
@@ -244,6 +248,107 @@ class TestScoreTitle(unittest.TestCase):
         ]}
         result = score_title("你有没有过这种感觉？💔", perf)
         self.assertFalse(any("缺乏多样性" in r for r in result["reasons"]))
+
+
+class _FakeTopicApi:
+    """模拟 XHS_Creator_Apis.get_topic：按关键字返回不同结果。"""
+
+    def __init__(self, resolved: set[str], fail: set[str] | None = None):
+        self._resolved = resolved
+        self._fail = fail or set()
+
+    def get_topic(self, keyword, proxies=None):
+        if keyword in self._fail:
+            # 模拟 get_topic 抛异常
+            raise RuntimeError(f"network error for {keyword}")
+        if keyword in self._resolved:
+            return True, "ok", {"data": {"topic_info_dtos": [{"id": "1", "link": "x", "name": keyword}]}}
+        # 解析成功但无匹配话题
+        return True, "ok", {"data": {"topic_info_dtos": []}}
+
+
+class TestResolveTopics(unittest.TestCase):
+    def test_resolved_and_unresolved_split(self):
+        api = _FakeTopicApi(resolved={"不懂就问有问必答", "失恋互助"})
+        resolved, unresolved = resolve_topics(api, ["不懂就问有问必答", "失恋互助", "冷门标签XYZ"])
+        self.assertEqual(resolved, ["不懂就问有问必答", "失恋互助"])
+        self.assertEqual(unresolved, ["冷门标签XYZ"])
+
+    def test_api_exception_degrades_to_plain_text(self):
+        api = _FakeTopicApi(resolved={"失恋互助"}, fail={"炸了的话题"})
+        resolved, unresolved = resolve_topics(api, ["炸了的话题", "失恋互助"])
+        self.assertEqual(resolved, ["失恋互助"])
+        self.assertEqual(unresolved, ["炸了的话题"])
+
+    def test_empty_tags(self):
+        api = _FakeTopicApi(resolved=set())
+        self.assertEqual(resolve_topics(api, []), ([], []))
+
+    def test_all_unresolved(self):
+        api = _FakeTopicApi(resolved=set())
+        resolved, unresolved = resolve_topics(api, ["a", "b"])
+        self.assertEqual(resolved, [])
+        self.assertEqual(unresolved, ["a", "b"])
+
+
+class TestExtractTitle(unittest.TestCase):
+    """extract_title 单一真源 — 锁住 auto_publish / tabs/publish / knowledge_retrieval 共用的行为。"""
+
+    def test_yaml_frontmatter_title_wins(self):
+        content = "---\ntitle: YAML标题\n---\n# markdown标题"
+        self.assertEqual(extract_title(content), "YAML标题")
+
+    def test_markdown_h1_fallback(self):
+        content = "# 你不是恋爱脑\n\n正文"
+        self.assertEqual(extract_title(content), "你不是恋爱脑")
+
+    def test_first_h1_when_multiple(self):
+        # MULTILINE ^ 锚定每行，re.search 返回第一个匹配
+        content = "# 第一标题\n正文\n# 第二标题"
+        self.assertEqual(extract_title(content), "第一标题")
+
+    def test_no_title_returns_placeholder(self):
+        self.assertEqual(extract_title("只有正文没有标题"), "未命名笔记")
+
+    def test_strips_whitespace(self):
+        content = "#   带空格的标题  \n"
+        self.assertEqual(extract_title(content), "带空格的标题")
+
+
+class TestExtractDesc(unittest.TestCase):
+    def test_strips_frontmatter_and_h1(self):
+        content = "---\ntitle: T\n---\n# 标题\n正文本体"
+        self.assertEqual(extract_desc(content), "正文本体")
+
+    def test_strips_image_and_link_markup(self):
+        content = "# 标题\n![alt](img.png)普通文字[点这](http://x)"
+        self.assertEqual(extract_desc(content), "普通文字")
+
+    def test_truncates_to_500(self):
+        body = "字" * 600
+        content = f"# 标题\n{body}"
+        self.assertEqual(len(extract_desc(content)), 500)
+
+    def test_strips_leading_whitespace(self):
+        content = "# 标题\n\n\n  前导空白正文"
+        self.assertEqual(extract_desc(content), "前导空白正文")
+
+
+class TestExtractTags(unittest.TestCase):
+    def test_basic_extraction(self):
+        content = "正文 #恋爱脑 #深夜 标签"
+        self.assertEqual(extract_tags(content), ["恋爱脑", "深夜"])
+
+    def test_dedup_keeps_order(self):
+        content = "#a #b #a #c #b"
+        self.assertEqual(extract_tags(content), ["a", "b", "c"])
+
+    def test_empty_returns_empty(self):
+        self.assertEqual(extract_tags("没有标签的正文"), [])
+
+    def test_no_false_positive_on_hash_in_text(self):
+        # # 后无词字符 → 不算标签
+        self.assertEqual(extract_tags("标题 # 标题"), [])
 
 
 if __name__ == "__main__":

@@ -1,30 +1,43 @@
-"""图片生成 — 向后兼容入口。
+"""图片生成 — 向后兼容入口（稳定薄封装）。
 
 所有实现已拆分到 core.image 子包：
-  - core.image.render   — 共享渲染工具（字体、渐变、排版常量）
-  - core.image.cover    — 封面生成（AI 绘画 + 模板合成）
+  - core.image.render     — 共享渲染工具（字体、渐变、排版常量）
+  - core.image.cover      — 封面生成（AI 绘画 + 模板合成）
   - core.image.inner_page — 内页生成（分页、解析、渲染）
 
-本文件仅做 re-export，保持 `from core.image_generator import ...` 不变。
+本文件仅 re-export 外部真正在用的符号，保持
+``from core.image_generator import ...`` 调用不变。需要其它内部细节时
+请直接从对应子模块导入（如 ``from core.image.inner_page import _parse_to_blocks``）。
 """
 
-# 重新导出所有公开 API
-from core.image.render import (  # noqa: F401
-    COVER_WIDTH, COVER_HEIGHT, LAYOUT, PALETTE,
-    FONT_REGULAR, FONT_BOLD,
-    _get_font, _wrap_text, _draw_gradient_bg, _add_center_glow, _add_noise_texture,
-    _calc_font_size,
-    _BASE_FONT_SIZE, _LINE_HEIGHT, _PARA_SPACING, _MAX_TEXT_W,
+from core.image.render import COVER_WIDTH, COVER_HEIGHT, LAYOUT, PALETTE, _wrap_text
+from core.image.cover import (
+    generate_cover_template,
+    generate_cover_ai,
+    generate_all_covers,
 )
-from core.image.cover import (  # noqa: F401
-    generate_cover_template, generate_cover_ai, generate_all_covers,
-    _http_get_with_retry,
+from core.image.inner_page import (
+    generate_inner_page,
+    generate_inner_pages,
+    _paginate_blocks,
+    _parse_to_blocks,
 )
-from core.image.inner_page import (  # noqa: F401
-    generate_inner_page, generate_inner_pages,
-    _paginate_blocks, _calc_page_height, _parse_to_blocks,
-    _SKIP_MARKERS, _EMOJI_RE, _BOLD_RE,
-)
+
+__all__ = [
+    "COVER_WIDTH",
+    "COVER_HEIGHT",
+    "LAYOUT",
+    "PALETTE",
+    "generate_cover_template",
+    "generate_cover_ai",
+    "generate_all_covers",
+    "generate_inner_page",
+    "generate_inner_pages",
+    # 内部符号：历史上有外部/测试直接从此入口引用，保留兼容
+    "_wrap_text",
+    "_paginate_blocks",
+    "_parse_to_blocks",
+]
 
 # __main__ 入口保持不变
 if __name__ == "__main__":

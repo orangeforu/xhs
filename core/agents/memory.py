@@ -15,11 +15,18 @@ _registry_lock = threading.Lock()
 
 
 def _flush_all() -> None:
-    """进程退出时 flush 所有 dirty 的 AgentMemory。"""
+    """进程退出时 flush 所有 dirty 的 AgentMemory。
+
+    atexit 时机特殊（解释器可能在拆卸中），单个实例 flush 失败不应中断
+    其余实例的持久化，也不应向 stderr 抛栈——吞掉并记录即可。
+    """
     with _registry_lock:
         instances = list(_registry)
     for mem in instances:
-        mem.flush()
+        try:
+            mem.flush()
+        except Exception as e:  # noqa: BLE001 — atexit 容错，不阻断其余 flush
+            logger.warning("退出时 flush %s 记忆失败: %s", getattr(mem, "agent_name", "?"), e)
 
 
 atexit.register(_flush_all)

@@ -2,6 +2,7 @@
 
 import json
 import re
+from typing import Any
 
 from core.config import get_logger
 
@@ -111,6 +112,45 @@ def check_compliance(content: str, title: str, tags: list[str], image_count: int
     }
 
 
+def resolve_topics(api: Any, tags: list[str]) -> tuple[list[str], list[str]]:
+    """预解析话题标签，返回 (可解析为真话题的, 不可解析降级纯文本的)。
+
+    spider_xhs 的 ``post_note`` 会把 ``topics`` 里每个标签走
+    ``/web_api/sns/v1/search/topic`` 解析成结构化 ``hash_tag``（可点击、
+    进话题流量池），但解析失败会 ``raise RuntimeError`` 中断整篇发布。
+    这里预先逐个解析，过滤掉失败标签，避免一个冷门标签炸掉整篇笔记。
+
+    Args:
+        api: ``XHS_Creator_Apis`` 实例（需有 ``get_topic`` 方法）。
+        tags: 话题标签列表。
+
+    Returns:
+        ``(resolved, unresolved)``：resolved 传给 ``post_note`` 的 ``topics``
+        生成真话题链接；unresolved 由调用方以纯文本 ``#tag`` 追加到 desc
+        （仍可见，只是不进话题流量池）。
+    """
+    resolved: list[str] = []
+    unresolved: list[str] = []
+    for tag in tags:
+        try:
+            success, msg, res_json = api.get_topic(tag)
+        except Exception as e:  # get_topic 自身异常不影响整篇
+            unresolved.append(tag)
+            logger.warning("话题「%s」解析异常（%s），降级为纯文本", tag, e)
+            continue
+        if not success or not res_json:
+            unresolved.append(tag)
+            logger.warning("话题「%s」解析失败（%s），降级为纯文本", tag, msg)
+            continue
+        dtos = (res_json.get("data") or {}).get("topic_info_dtos") or []
+        if not dtos:
+            unresolved.append(tag)
+            logger.info("话题「%s」无匹配话题，降级为纯文本", tag)
+            continue
+        resolved.append(tag)
+    return resolved, unresolved
+
+
 def recalculate_summary(performance: dict) -> None:
     """根据 notes 数据重算 summary 统计。"""
     notes = performance.get("notes", [])
@@ -163,6 +203,36 @@ def extract_body_for_publish(content: str) -> str:
     body = re.sub(r"^#+\s*", "", body, flags=re.MULTILINE)
     body = re.sub(r"\n{3,}", "\n\n", body)
     return body.strip()
+
+
+def extract_title(content: str) -> str:
+    """从 note.md 提取发布用标题。
+
+    优先 YAML frontmatter 的 ``title:``，回退首个 ``# 标题``，再回退占位符。
+    单一真源：auto_publish.py / tabs/publish.py / knowledge_retrieval.py 均引此函数。
+    """
+    m = re.search(r"^title:\s*(.+?)$", content, re.MULTILINE | re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r"^#\s+(.+?)$", content, re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+    return "未命名笔记"
+
+
+def extract_desc(content: str) -> str:
+    """从 note.md 提取正文描述（去掉 frontmatter / 标题 / 图片标记），取前 500 字。"""
+    content = re.sub(r"^---\s*\n.*?---\s*\n", "", content, flags=re.DOTALL)
+    content = re.sub(r"^#\s+.+?\n", "", content)
+    content = re.sub(r"!\[.*?\]\(.*?\)", "", content)
+    content = re.sub(r"\[.*?\]\(.*?\)", "", content)
+    return content.strip()[:500]
+
+
+def extract_tags(content: str) -> list[str]:
+    """从 note.md 提取话题标签（``#标签``），按出现顺序去重。"""
+    tags = re.findall(r"#(\w+)", content)
+    return list(dict.fromkeys(tags))
 
 
 def score_title(title: str, performance: dict) -> dict:

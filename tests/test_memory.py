@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from core.agents.memory import AgentMemory
+from core.agents.memory import AgentMemory, _registry
 
 
 class TestAgentMemory(unittest.TestCase):
@@ -14,9 +14,14 @@ class TestAgentMemory(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp()
         self.patcher = patch("core.agents.memory.AGENT_MEMORY_DIR", Path(self.tmpdir))
         self.patcher.start()
+        # 清理全局注册表，避免上一轮测试的实例残留干扰 atexit flush
+        _registry.clear()
 
     def tearDown(self):
         self.patcher.stop()
+        # 移除本轮测试创建的实例，防止 atexit._flush_all 对已销毁 tmpdir 的
+        # 实例 flush 触发 Windows PermissionError
+        _registry.clear()
         import shutil
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 

@@ -2,7 +2,7 @@ import re
 
 from core.agents.base import BaseAgent, MessageBus, Message, MessageType
 from core.config import get_logger
-from core.utils import load_prompt, FORMULA_INSTRUCTIONS, sanitize_tags_in_content
+from core.utils import load_prompt_with_persona, FORMULA_INSTRUCTIONS, sanitize_tags_in_content
 
 logger = get_logger(__name__)
 
@@ -247,7 +247,7 @@ class EmotionalWriter(BaseAgent):
     """情感写手 Agent — 负责创作和修改笔记正文。"""
 
     def __init__(self, bus: MessageBus):
-        prompt = load_prompt("agent_writer")
+        prompt = load_prompt_with_persona("agent_writer")
         super().__init__("emotional_writer", prompt, bus)
 
     def write(self, brief: dict, round_num: int = 0, feedback: str = "") -> dict:

@@ -254,7 +254,7 @@ class EmotionalWriter(BaseAgent):
         """创作或重写笔记。带内容守卫：禁词命中时自动重试一次。"""
         feedback = feedback or ""
         user_prompt = self._build_write_prompt(brief, feedback)
-        content = self.think(user_prompt, temperature=0.8, max_tokens=2800)
+        content = self.think(user_prompt, temperature=0.8, max_tokens=8000)
 
         # 写手自检：数据驱动检查清单（提交前自查）
         data_issues = _check_data_driven(content)
@@ -262,7 +262,7 @@ class EmotionalWriter(BaseAgent):
             logger.warning("写手自检发现 %d 个问题，自动修补: %s", len(data_issues), data_issues[:3])
             self_fix_feedback = (feedback or "") + "\n\n【系统自检发现以下问题，请在不改变故事核心的前提下修补】\n" + "\n".join(f"- {i}" for i in data_issues)
             self_fix_prompt = self._build_write_prompt(brief, self_fix_feedback)
-            content = self.think(self_fix_prompt, temperature=0.5, max_tokens=2800)
+            content = self.think(self_fix_prompt, temperature=0.5, max_tokens=8000)
 
         # 内容守卫：检查禁词（仅第一轮，重写轮由审核官反馈驱动）
         guard_issues = _check_content_guard(content)
@@ -270,7 +270,7 @@ class EmotionalWriter(BaseAgent):
             logger.warning("内容守卫命中 %d 个问题，自动重试: %s", len(guard_issues), guard_issues[:3])
             retry_feedback = (feedback or "") + "\n\n【系统自动检测到以下问题，请务必避免】\n" + "\n".join(f"- {i}" for i in guard_issues)
             retry_prompt = self._build_write_prompt(brief, retry_feedback)
-            content = self.think(retry_prompt, temperature=0.6, max_tokens=2800)
+            content = self.think(retry_prompt, temperature=0.6, max_tokens=8000)
             guard_issues = _check_content_guard(content)
             if guard_issues:
                 logger.warning("重试后仍有 %d 个守卫问题（交由审核官处理）: %s", len(guard_issues), guard_issues[:3])

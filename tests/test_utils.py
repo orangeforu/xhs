@@ -33,7 +33,8 @@ class TestLoadPrompt(unittest.TestCase):
 
     def test_load_existing_prompt(self):
         content = load_prompt("agent_writer")
-        self.assertIn("情感博主", content)
+        # v3 转型后为「打工人 AI 提效」方向人设
+        self.assertIn("打工人", content)
 
     def test_load_nonexistent_raises(self):
         with self.assertRaises(FileNotFoundError):

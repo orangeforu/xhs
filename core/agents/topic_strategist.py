@@ -63,7 +63,7 @@ class TopicStrategist(BaseAgent):
 3. 基于历史数据，这个选题的标题公式和互动目标是否最优？
 {"4. 热点元素是否自然融入故事？标题是否包含热点关键词以获取搜索流量？" if is_trending else ""}
 """
-        raw = self.think(prompt, temperature=0.6, max_tokens=1200)
+        raw = self.think(prompt, temperature=0.6, max_tokens=3000)
 
         # 解析 enriched brief（简单提取 key-value）
         enriched = dict(brief)

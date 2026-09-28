@@ -301,7 +301,7 @@ def evaluate_title_llm(title: str, topic: str = "") -> dict:
                 {"role": "user", "content": prompt},
             ],
             temperature=0.3,
-            max_tokens=800,
+            max_tokens=2500,
         )
         raw = _extract_content(data)
 

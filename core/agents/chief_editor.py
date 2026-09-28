@@ -127,7 +127,15 @@ class ChiefEditor(BaseAgent):
                 }
 
         # ── 生成预设评论 ──
-        comments = community.generate_comments(draft["content"], round_num=round_num)
+        # 2026 合规改造：小红书将 AI 批量生成评论/模拟真人互动列为违规形态，
+        # 默认禁用（PRESET_COMMENTS_ENABLED=false）。发布后评论区的真人互动
+        # 由 BOSS 亲自回复（见 note.md 发布前自查清单）。
+        from core.config import PRESET_COMMENTS_ENABLED
+        if PRESET_COMMENTS_ENABLED:
+            comments = community.generate_comments(draft["content"], round_num=round_num)
+        else:
+            logger.warning("预设评论已禁用（2026 平台合规要求）。如需开启请设置 PRESET_COMMENTS_ENABLED=true（不推荐）")
+            comments = {}
 
         # ── 记录各 agent 的学习记忆 ──
         grade = review.get("grade", "B") if review else "B"

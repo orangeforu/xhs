@@ -56,7 +56,7 @@ grade 规则（必须严格遵守正态分布 S:A:B:C ≈ 1:3:5:1）：
 - B: 及格但平庸，缺乏惊喜
 - C: 有明显问题，需要重写
 """
-        raw = self.think(review_prompt, temperature=0.3, max_tokens=2500)
+        raw = self.think(review_prompt, temperature=0.3, max_tokens=6000)
         parsed = self._parse_review(raw)
 
         # 第二轮：读者体验视角（并行不阻塞主审核，失败不影响结果）
@@ -120,7 +120,7 @@ grade 规则（必须严格遵守正态分布 S:A:B:C ≈ 1:3:5:1）：
         """读者体验视角审核，失败返回 None。"""
         try:
             reader_prompt_filled = self.reader_prompt.replace("{note_content}", note_content)
-            raw = self.think(reader_prompt_filled, temperature=0.5, max_tokens=1500)
+            raw = self.think(reader_prompt_filled, temperature=0.5, max_tokens=2500)
             parsed = extract_json_from_llm(raw)
             if parsed:
                 return parsed

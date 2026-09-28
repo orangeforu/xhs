@@ -254,6 +254,9 @@ def write_note_file(
                 f.write(f"- {path}\n")
         if preset_comments.get("comments"):
             f.write("\n## 预设评论（发布后使用）\n\n")
+            f.write("> ⚠️ 合规提醒：小红书 2026 新规将批量/模板化评论列为低差营销评论治理对象。"
+                    "以下评论仅作互动思路参考，**发布时不要用多个账号粘贴相同评论**，"
+                    "真人评论请由 BOSS 用自己的话手写回复。\n\n")
             # 优先使用分类评论
             classified = preset_comments.get("comments_classified", [])
             if classified:
@@ -279,6 +282,14 @@ def write_note_file(
                 f.write("\n### 博主回复模板\n\n")
                 for r in reply_templates:
                     f.write(f"- {r}\n")
+        # 发布前人工自查清单（2026 合规改造：替代已禁用的预设评论模块）
+        if not preset_comments.get("comments"):
+            f.write("\n## 发布前自查清单（BOSS 必做）\n\n")
+            f.write("- [ ] **真人改写槽位已替换**：正文中的 `✍️` 标记已全部替换为 BOSS 的真实经历/口语（这是 AI 辅助与 AI 托管的分界线）\n")
+            f.write("- [ ] **AI 标注**：发布页勾选「笔记含 AI 辅助创作」；正文开头加一句\"本篇 AI 辅助整理，经历是真实的\"\n")
+            f.write("- [ ] **违禁词自查**：无「最/第一/绝对/100%」等极限词\n")
+            f.write("- [ ] **无站外导流**：正文/评论区/简介无任何微信、谐音、水印联系方式\n")
+            f.write("- [ ] **评论区真人运营**：发布后 1 小时内亲自回复每条评论，用日常口语，不复制粘贴\n")
         # 内容特征
         if features:
             from core.features import features_to_yaml

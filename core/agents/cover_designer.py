@@ -111,7 +111,7 @@ class CoverDesigner(BaseAgent):
 
 **风格轮换要求**：最近使用过的风格是 {recent_styles}。请优先选择不同的风格，避免视觉同质化。
 """
-        raw = self.think(design_prompt, temperature=0.7, max_tokens=800)
+        raw = self.think(design_prompt, temperature=0.7, max_tokens=2500)
 
         # 解析 JSON
         design = self._parse_design(raw)

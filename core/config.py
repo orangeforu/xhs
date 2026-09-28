@@ -35,6 +35,12 @@ LLM_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("KIMI_API_KEY", "")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1"))
 LLM_MODEL = os.getenv("LLM_MODEL", "kimi-k2-6")
 
+# 预设评论开关（2026 合规改造）
+# 小红书 2026 年新规将"AI 批量生成评论/模拟真人互动"列为专项打击对象
+# （低差营销评论治理 + AI 托管账号治理公告）。默认关闭，开启需显式设置
+# PRESET_COMMENTS_ENABLED=true（不推荐，账号有封禁风险）。
+PRESET_COMMENTS_ENABLED = os.getenv("PRESET_COMMENTS_ENABLED", "false").lower() == "true"
+
 
 # ── 跨平台文件锁 ──
 if platform.system() in ("Linux", "Darwin"):

@@ -6,11 +6,15 @@
 
 | 文件 | 说明 | 状态 |
 |---|---|---|
-| `workflow-01-weekly-report.md` | 旗舰工作流完整成稿（兼免费样张，即营销证明） | ✅ 可用 |
-| `workflows-outline.md` | 其余 9 条的生产清单（来源选题 + 各自 Audit 角度 + SKU 结构） | 待生产 |
+| `workflow-01-weekly-report.md` | 旗舰工作流完整成稿（兼免费样张，即营销证明） | ✅ 成稿，**已实测**（源自小红书项目真实使用） |
+| `workflow-02~10-*.md` | 其余 9 条完整初稿（结构对齐 01，各有独有 Audit 角度） | ⚠️ **初稿，待 BOSS 逐条实测**（见下） |
+| `anti-bs-cheat-sheet.md` | 通用 Anti-BS 速查表（SKU 含金件，复购口碑来源） | ⚠️ 随 02-10 实测后定稿 |
+| `workflows-outline.md` | 生产清单（来源选题 + Audit 角度 + SKU 结构） | ✅ 02-10 已按清单成稿 |
 | `listing-gumroad.md` | 上架物料：标题/描述/定价/BOSS 待办 | ✅ 可用 |
 
-**生产流水线复用**：02-10 条初稿可用本项目 multi-agent 流水线生成（英文版 prompt 待写入 `prompts/`），但**每条必须人工实测一遍**再入库——Audit 部分是产品差异化，不容注水。素材源头是 `data/topics.json` 的 15 个 AI 提效选题（本产品就是小红书项目的资产回收：账号死了，工厂改喂货架）。
+**上架前质检流程（不可跳过，约 2-3 小时）**：本产品卖的就是"实测过的防坑清单"，所以 02-10 每条必须 BOSS 拿真实工作场景跑一遍——prompt 是否好用、Audit 是否真的抓住了问题、Failure Modes 是否属实。**卖 Audit 的产品自己没 Audit 过 = 打脸**。实测中发现的修正直接改进对应文件。
+
+**生产方式说明**：02-10 由 Claude 直接成稿（比改造中文笔记流水线更快更准）；multi-agent 流水线复用留给后续 v2 变体（for Freelancers / for Etsy Sellers 中文或英文批量生产）。素材源头是 `data/topics.json` 的 15 个 AI 提效选题（本产品就是小红书项目的资产回收：账号死了，工厂改喂货架）。
 
 ## 线 B：Etsy/Shopify 卖家工具（暂不建目录）
 

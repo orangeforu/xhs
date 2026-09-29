@@ -1,5 +1,18 @@
 # Gumroad 上架物料（复制即用）
 
+> **2026-09-29 方案更新（验证优先）**：PayPal 大陆收款死路 → 提款管道后置。**现在不配置 payout 直接上架销售**，余额留在 Gumroad，先验证"有没有人肯付 $9"。
+> 三条红线：① 自然流量慢慢卖，绝不刷单/自买多单（新号+未验证状态是风控高危画像）；② 验证期 4 周/10 单为决策点，不无限拖；③ 余额当"可能沉没的验证成本"看，信号（转化率/买家地域）才是主要产出。
+> 验证成功 → 届时义乌个体户+贝宝商户配置提款（余额可取），或新销售迁 Paddle（官网已备）。
+
+## 上传清单（文件已就绪）
+
+| 产品 | 定价 | 上传文件 | 说明 |
+|---|---|---|---|
+| 全套 Kit | **$9**（划线 $14） | `products/dist/9to5-kit-en-bundle.zip` | PDF + markdown 源文件；产品图用官网首页截图或 PDF 首页 |
+| 免费样张 | **$0+**（自定义价格） | `products/dist/workflow-01-free-sample-en.pdf` | 收邮箱 + 收集"值不值"信号；样张最后一页已带全套引导 |
+
+⚠️ Gumroad 产品发布要过人工审核队列（1-2 天），趁早提交。
+
 ## 标题（A/B 二选一起号，跑 2 周看转化）
 
 - **A（推荐）**: The 9-to-5 AI Workflow Kit — 10 copy-paste workflows + the audit checklists that stop AI from making things up

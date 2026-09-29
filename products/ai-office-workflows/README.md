@@ -9,8 +9,11 @@
 | `workflow-01-weekly-report.md` | 旗舰工作流完整成稿（兼免费样张，即营销证明） | ✅ 成稿，**已实测**（源自小红书项目真实使用） |
 | `workflow-02~10-*.md` | 其余 9 条完整初稿（结构对齐 01，各有独有 Audit 角度） | ⚠️ **初稿，待 BOSS 逐条实测**（见下） |
 | `anti-bs-cheat-sheet.md` | 通用 Anti-BS 速查表（SKU 含金件，复购口碑来源） | ⚠️ 随 02-10 实测后定稿 |
+| `kit-cn-打工人AI提效工作流包.md` | **中文原生版**（10 条按国内职场文化重写，非翻译；单文件交付形态） | ⚠️ 初稿，同待实测 |
 | `workflows-outline.md` | 生产清单（来源选题 + Audit 角度 + SKU 结构） | ✅ 02-10 已按清单成稿 |
-| `listing-gumroad.md` | 上架物料：标题/描述/定价/BOSS 待办 | ✅ 可用 |
+| `listing-gumroad.md` | ~~Gumroad 上架物料~~（Gumroad+大陆收款死路，已弃） | 🗄️ 归档参考 |
+| `listing-mianbaoduo.md` | **面包多上架物料**（中文版：文案/定价¥19.9/冷启动分发/止损） | ✅ 可用 |
+| `../website/` | **产品官网**（Paddle 审核用：产品+定价+隐私+条款，零依赖静态站） | ✅ 待部署（见 website/README.md） |
 
 **上架前质检流程（不可跳过，约 2-3 小时）**：本产品卖的就是"实测过的防坑清单"，所以 02-10 每条必须 BOSS 拿真实工作场景跑一遍——prompt 是否好用、Audit 是否真的抓住了问题、Failure Modes 是否属实。**卖 Audit 的产品自己没 Audit 过 = 打脸**。实测中发现的修正直接改进对应文件。
 

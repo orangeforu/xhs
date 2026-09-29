@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The 9-to-5 AI Workflow Kit — 10 workflows + the audits that catch AI lying</title>
+<meta name="description" content="10 copy-paste AI workflows for office work — each with a 60-second audit checklist that catches what AI makes up. $9, instant download.">
+<style>
+  :root { --ink:#1a1a1a; --dim:#666; --line:#e5e5e5; --accent:#c0392b; --bg:#fffdf9; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; color:var(--ink); background:var(--bg); line-height:1.65; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 24px; }
+  nav { border-bottom:1px solid var(--line); padding:18px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; }
+  nav .wrap { display:flex; justify-content:space-between; align-items:center; }
+  nav a { color:var(--ink); text-decoration:none; margin-left:20px; }
+  .hero { padding:72px 0 48px; border-bottom:1px solid var(--line); }
+  .kicker { font-family:Helvetica,Arial,sans-serif; font-size:13px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+  h1 { font-size:44px; line-height:1.15; font-weight:normal; margin-bottom:20px; }
+  .tagline { font-size:22px; font-style:italic; color:var(--dim); margin-bottom:28px; }
+  .sub { font-size:17px; margin-bottom:36px; }
+  .btn { display:inline-block; background:var(--ink); color:#fff; font-family:Helvetica,Arial,sans-serif; font-size:16px; padding:14px 32px; text-decoration:none; border-radius:4px; }
+  .btn:hover { background:var(--accent); }
+  .price-note { font-family:Helvetica,Arial,sans-serif; font-size:13px; color:var(--dim); margin-top:12px; }
+  section { padding:56px 0; border-bottom:1px solid var(--line); }
+  h2 { font-size:28px; font-weight:normal; margin-bottom:24px; }
+  h3 { font-size:18px; font-weight:bold; margin:28px 0 8px; }
+  p { margin-bottom:16px; }
+  .pull { font-size:26px; font-style:italic; border-left:4px solid var(--accent); padding-left:20px; margin:32px 0; }
+  .wf { list-style:none; }
+  .wf li { padding:14px 0; border-bottom:1px dashed var(--line); }
+  .wf .num { font-family:Helvetica,Arial,sans-serif; color:var(--accent); font-weight:bold; margin-right:10px; }
+  .wf .audit { display:block; font-size:14px; color:var(--dim); font-style:italic; margin-top:4px; }
+  table { width:100%; border-collapse:collapse; font-size:15px; margin:20px 0; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-family:Helvetica,Arial,sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); }
+  .pricing-box { border:2px solid var(--ink); border-radius:8px; padding:36px; text-align:center; margin-top:24px; }
+  .price { font-size:52px; font-family:Helvetica,Arial,sans-serif; }
+  .price small { font-size:18px; color:var(--dim); text-decoration:line-through; }
+  .faq dt { font-weight:bold; margin-top:20px; }
+  .faq dd { margin-bottom:8px; color:#333; }
+  footer { padding:40px 0 60px; font-family:Helvetica,Arial,sans-serif; font-size:13px; color:var(--dim); }
+  footer a { color:var(--dim); }
+  .fine { font-size:13px; color:var(--dim); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <strong>9-to-5 AI Kit</strong>
+    <div>
+      <a href="#inside">What's inside</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero wrap">
+  <div class="kicker">For ops, PMs, admins, finance, coordinators</div>
+  <h1>The 9-to-5 AI Workflow Kit</h1>
+  <p class="tagline">Prompts are free. Knowing when the AI is lying to you isn't.</p>
+  <p class="sub">10 copy-paste workflows for the work that eats your week — weekly updates, meeting notes, status emails, document summaries, messy spreadsheets — each with the <strong>60-second audit</strong> that catches what AI quietly makes up.</p>
+  <!-- TODO(BOSS): 上线前把 href 换成 Paddle checkout 链接（过审后生成） -->
+  <a class="btn" href="#pricing">Get the kit — $9</a>
+  <p class="price-note">One-time payment · Instant download · 30-day refund · <a href="sample/workflow-01.md" style="color:var(--dim)">Read the free sample workflow</a></p>
+</div>
+
+<section id="why">
+  <div class="wrap">
+    <h2>The thing prompt packs never mention</h2>
+    <p class="pull">AI doesn't invent content. It invents <em>causality</em>.</p>
+    <p>You paste two separate facts — a client rework on Tuesday, a schedule slip on Friday — and the AI merges them into a clean sentence: <em>"the slip was caused by the rework."</em> Neither caused the other. Nobody said it did. But it reads well, so it ships — until your manager repeats it upward as fact.</p>
+    <p>That's the failure mode of every "500 ChatGPT prompts" mega pack: great prompts, zero defense against the ways each specific task gets quietly fabricated. This kit flips it — every workflow ships with three parts:</p>
+    <table>
+      <tr><th>Part</th><th>What it is</th></tr>
+      <tr><td><strong>The prompt</strong></td><td>Copy-paste, with [placeholders]. Works in any chat LLM.</td></tr>
+      <tr><td><strong>The audit</strong></td><td>A 60-second checklist for what <em>this workflow's</em> output gets wrong — so you catch it before your boss does.</td></tr>
+      <tr><td><strong>Failure modes</strong></td><td>The exact ways AI tries to ruin this task, and the one-line fix for each.</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <h2>What's inside</h2>
+    <ul class="wf">
+      <li><span class="num">01</span><strong>The weekly update</strong> — 40 min → 10 min, deliberately "ugly" format<span class="audit">Audit: AI wires unrelated facts into fake cause-and-effect</span></li>
+      <li><span class="num">02</span><strong>Meeting notes</strong> — decisions, owners, deadlines. Not a transcript<span class="audit">Audit: AI invents consensus nobody reached</span></li>
+      <li><span class="num">03</span><strong>The status email</strong> — four lines that stop "any updates?" pings<span class="audit">Audit: reassurance words with no number = cover-up language</span></li>
+      <li><span class="num">04</span><strong>100-page documents</strong> — plain words, implications, trapdoors, Monday actions<span class="audit">Audit: page citations are wrong 10–20% of the time — spot-check two</span></li>
+      <li><span class="num">05</span><strong>Messy spreadsheets</strong> — summary, anomalies, format issues<span class="audit">Audit: AI fills your missing values to "help" — zero gaps = it invented</span></li>
+      <li><span class="num">06</span><strong>The polite chase-up</strong> — three calibrated versions, zero passive aggression<span class="audit">Audit: read aloud — if you'd wince, it's FIRM in a costume</span></li>
+      <li><span class="num">07</span><strong>PPT outlines</strong> — every slide makes exactly one claim<span class="audit">Audit: the spine alone must tell the whole story</span></li>
+      <li><span class="num">08</span><strong>Resume bullets</strong> — responsibilities become consequences<span class="audit">Audit: impressive bullet with no number you gave = interview trap</span></li>
+      <li><span class="num">09</span><strong>Read your manager's mind</strong> — the 5 questions your own update invites<span class="audit">Audit: if all 5 feel easy, the AI softballed you — rerun meaner</span></li>
+      <li><span class="num">10</span><strong>Client message triage</strong> — answer now / escalate / later<span class="audit">Audit: any draft that commits money, dates, or promises goes to ESCALATE</span></li>
+    </ul>
+    <p style="margin-top:28px"><strong>Bonus: The Anti-BS Cheat Sheet</strong> — every audit rule condensed to one printable page. The universal five, one line per workflow, and a table of when AI is safe vs. when it isn't. Pin it next to your monitor.</p>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <h2>Pricing</h2>
+    <div class="pricing-box">
+      <div class="price">$9 <small>$14</small></div>
+      <p class="fine">one-time · launch price</p>
+      <p>10 workflows (PDF + raw markdown) · Anti-BS Cheat Sheet · lifetime updates — price rises as the kit grows, yours never does.</p>
+      <!-- TODO(BOSS): 替换为 Paddle checkout 链接 -->
+      <a class="btn" href="#">Buy now</a>
+      <p class="price-note">Secure checkout by Paddle · instant download · 30-day no-questions refund</p>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="faq">
+  <div class="wrap">
+    <h2>FAQ</h2>
+    <dl>
+      <dt>Which AI tools does this work with?</dt>
+      <dd>Any chat LLM — ChatGPT, Claude, Gemini, or a local model. The prompts are plain text with placeholders; the audits are about your judgment, not any vendor's features.</dd>
+      <dt>Do I need technical skills?</dt>
+      <dd>No. If you can paste text into a chat window, you're qualified. No subscriptions, no plugins, no API keys.</dd>
+      <dt>What exactly do I get?</dt>
+      <dd>A PDF (nicely formatted) and the raw markdown files (copy-paste friendly), plus the printable cheat sheet. Instant download after purchase.</dd>
+      <dt>What if it's not for me?</dt>
+      <dd>30-day refund, no questions — if the audits don't save you at least one embarrassment, it's free.</dd>
+      <dt>Can my team use one license?</dt>
+      <dd>The $9 license is personal. For team licenses, email us — we'll sort something fair.</dd>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <!-- TODO(BOSS): 替换为真实联系邮箱（Paddle 审核要求站上有联系方式） -->
+    <p>Questions? <a href="mailto:support@example.com">support@example.com</a></p>
+    <p style="margin-top:16px"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Service</a></p>
+    <p style="margin-top:16px">© 2026 9-to-5 AI Kit · Built by a fellow office worker who got burned so you don't have to.</p>
+  </div>
+</footer>
+
+</body>
+</html>

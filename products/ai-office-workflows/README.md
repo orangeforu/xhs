@@ -16,7 +16,7 @@
 | `launch-reddit.md` | **Reddit 首发帖**（版位/节奏/成稿文案/数据记录表） | ✅ 可用 |
 | `launch-xhs-note.md` | **小红书引流笔记**（带✍️槽位，合规无站外链接，置顶评论导私信/店铺） | ⚠️ 待替换✍️槽位后发布 |
 | `../build_pdfs.py` | PDF 构建脚本（markdown→pymupdf Story→子集化，中英同管线） | ✅ 产物在 dist/ |
-| `../dist/` | **可上传产物**：英文全套 PDF+bundle.zip（91/117KB）、免费样张（32KB）、中文全套（191KB），已肉眼验证渲染 | ✅ 可直接上传 |
+| `../dist/` | **可上传产物**：英文全套 PDF+bundle.zip（91/117KB）、免费样张（32KB）、中文全套（191KB），已肉眼验证渲染 | ✅ 本地就绪（gitignore 不入库，换机先跑 `python products/build_pdfs.py`） |
 | `../website/` | **产品官网**（Paddle 审核用：产品+定价+隐私+条款，零依赖静态站） | ✅ 待部署（验证成功后启用） |
 
 **上架前质检流程（不可跳过，约 2-3 小时）**：本产品卖的就是"实测过的防坑清单"，所以 02-10 每条必须 BOSS 拿真实工作场景跑一遍——prompt 是否好用、Audit 是否真的抓住了问题、Failure Modes 是否属实。**卖 Audit 的产品自己没 Audit 过 = 打脸**。实测中发现的修正直接改进对应文件。

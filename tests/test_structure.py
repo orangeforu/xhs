@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # 宪法允许的根目录条目（目录 + 文件白名单）
 ALLOWED_DIRS = {"cockpit", "capabilities", "ventures", "knowledge", "assets", "98-debt", "tests"}
+# gitignored 的本地依赖目录（物理存在但不入 git）
+IGNORED_LOCAL = {"node_modules", ".cache", "__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache", ".workbuddy", ".zcode"}
 ALLOWED_FILES = {
     "CLAUDE.md", "GLOSSARY.md", "README.md", "LICENSE",
     ".gitignore", "pyproject.toml", "requirements.txt", "requirements-dev.txt",
@@ -18,8 +20,8 @@ def test_root_is_architecture():
     entries = {p.name for p in ROOT.iterdir()}
     illegal = {
         e for e in entries
-        if e not in ALLOWED_DIRS | ALLOWED_FILES
-        and not e.startswith(".")  # node_modules/.cache 等由 gitignore 管
+        if e not in ALLOWED_DIRS | ALLOWED_FILES | IGNORED_LOCAL
+        and not e.startswith(".")
     }
     assert not illegal, f"根目录出现架构外条目: {sorted(illegal)}"
 

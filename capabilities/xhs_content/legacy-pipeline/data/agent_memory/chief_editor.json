@@ -1,0 +1,24 @@
+{
+  "success_patterns": [
+    {
+      "topic": "测试选题",
+      "grade": "A",
+      "rounds_used": 0
+    }
+  ],
+  "failure_patterns": [
+    {
+      "topic": "测试选题",
+      "grade": "C",
+      "rounds_used": 3
+    }
+  ],
+  "mediocre_patterns": [],
+  "style_preferences": {},
+  "collaboration_notes": {},
+  "formula_performance": {},
+  "pillar_performance": {},
+  "total_runs": 10,
+  "success_count": 8,
+  "version": 2
+}

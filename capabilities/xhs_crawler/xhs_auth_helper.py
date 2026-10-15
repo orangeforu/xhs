@@ -20,7 +20,6 @@
 """
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -62,7 +61,7 @@ def _load_cookie(cookie_file: Path) -> str | None:
     if not cookie_file.exists():
         return None
     try:
-        with open(cookie_file, "r", encoding="utf-8") as f:
+        with open(cookie_file, encoding="utf-8") as f:
             data = json.load(f)
         return data.get("cookies")
     except (json.JSONDecodeError, KeyError):

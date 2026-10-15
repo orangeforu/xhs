@@ -1,0 +1,27 @@
+{
+  "success_patterns": [
+    {
+      "topic": "测试选题",
+      "grade": "A"
+    }
+  ],
+  "failure_patterns": [
+    {
+      "topic": "测试选题",
+      "grade": "C"
+    }
+  ],
+  "mediocre_patterns": [],
+  "style_preferences": {},
+  "collaboration_notes": {
+    "cover_designer": [
+      "请求: 封面需要一个具体的视觉锚点（如一个物品、一个场景、一种光线），请在故事中自然地加入1-2个画面细节，不要改变故事主线。",
+      "请求: 封面需要一个具体的视觉锚点（如一个物品、一个场景、一种光线），请在故事中自然地加入1-2个画面细节，不要改变故事主线。"
+    ]
+  },
+  "formula_performance": {},
+  "pillar_performance": {},
+  "total_runs": 8,
+  "success_count": 6,
+  "version": 2
+}

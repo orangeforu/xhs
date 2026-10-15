@@ -1,0 +1,20 @@
+{
+  "success_patterns": [
+    {
+      "topic": "测试选题",
+      "grade": "A",
+      "style": "warm_grey"
+    }
+  ],
+  "failure_patterns": [],
+  "mediocre_patterns": [],
+  "style_preferences": {
+    "success_style_warm_grey": "测试选题"
+  },
+  "collaboration_notes": {},
+  "formula_performance": {},
+  "pillar_performance": {},
+  "total_runs": 8,
+  "success_count": 8,
+  "version": 2
+}

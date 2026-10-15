@@ -1,3 +1,4 @@
+> ⚠️ 历史文档（2026-10-15 架构改造前写成）：文中 scripts/ products/ docs/ 等路径为改造前位置，现行结构见根 CLAUDE.md。
 # 回本计划 — 自己挣下个月的 Coding Plan
 
 > 启动：2026-09-29。背景：BOSS 只买了本季度 GLM Coding Plan，要求项目自己产生

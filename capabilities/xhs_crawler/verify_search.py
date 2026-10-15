@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """小红书站内实测：验证「剪映模板/婚礼视频」供需与价格带（2026-10-15）。
 
 BOSS 观察待验证：① 剪映模板私卖供给密集；② 婚礼模板 20-200 元/份；
@@ -21,9 +20,9 @@ sys.path.insert(0, str(CAP_DIR))
 if str(PROJECT_ROOT / "capabilities") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "capabilities"))
 
-from spider_xhs import XHS_Apis                          # noqa: E402
-from xhs_auth_helper import get_pc_auth                  # noqa: E402
-from _shared.note_schema import NoteRecord               # noqa: E402
+from _shared.note_schema import NoteRecord  # noqa: E402
+from spider_xhs import XHS_Apis  # noqa: E402
+from xhs_auth_helper import get_pc_auth  # noqa: E402
 
 OUT = PROJECT_ROOT / "ventures" / "jianying_templates" / "data" / "xhs_jianying_verify.json"
 
@@ -71,8 +70,6 @@ def to_int(v):
 def main():
     # Windows GBK 终端打不出 ASCII 二维码：patch 成存 PNG 并自动打开（同 xhs_auth_helper 手法）
     import os
-
-    import spider_xhs.apis.xhs_pc_login_apis as pc_login_mod
 
     # 劫持 qrcode.QRCode：add_data 抓链接，print_ascii 时用 box_size=12 重绘大图
     # （登录代码自带 box_size=1，35px 小图手机扫不动），存 PNG 并自动打开

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """工作流实测脚本（上架前质检，README 要求的"逐条实测"自动化部分）。
 
 对 kit-cn 的 10 条工作流逐条做真实 API 实测：
@@ -10,7 +9,6 @@
 用法：python scripts/test_workflows.py
 """
 import json
-import os
 import re
 import sys
 import time

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """孵化台结构守卫（DoD 的机器化）：根目录即架构、五模块齐备、能力命名可 import、案例有档案。"""
 import re
 from pathlib import Path

@@ -97,11 +97,11 @@ def build_brief() -> tuple[str, str]:
         lines.append("")
 
     lines.append("## 速览")
-    lines.append(f"- 总账/状态：cockpit/ledger.md · cockpit/status.md")
-    lines.append(f"- 回执方式：做完的事直接体现在仓库（commit/上架/填表），周五统一对账")
+    lines.append("- 总账/状态：cockpit/ledger.md · cockpit/status.md")
+    lines.append("- 回执方式：做完的事直接体现在仓库（commit/上架/填表），周五统一对账")
 
     desp = "\n".join([
-        f"### 今日三件事",
+        "### 今日三件事",
         *[f"{i+1}. {t}" for i, t in enumerate(todo[:3])],
         "",
         *([f"⚠️ {w}" for w in warns] if warns else []),

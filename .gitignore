@@ -53,3 +53,8 @@ build/
 # spider_xhs vendored (Node.js 签名依赖)
 spider_xhs/node_modules/
 spider_xhs/.cache/
+# 2026-10-15 架构改造 Phase0 补充
+node_modules/
+.cache/
+*.log
+.claude/worktrees/

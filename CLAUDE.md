@@ -74,13 +74,14 @@ python capabilities/pulse/heartbeat.py           # 手动触发：晨报→journ
 5. **音乐版权**（剪映线）：只用 CC0/自购授权曲，绝不用流行歌
 6. 商单/推广必须平台报备；机密（.env/Cookie/.cache/账号凭证）禁入 git
 
-## 周五复盘流程（Cadence，~20 分钟）
+## 周五复盘流程（Cadence，~20 分钟，进化1.0：周五21:07自醒cron自动发起）
 
 1. 更新 `cockpit/ledger.md`（本周各案例收入）+ `time-budget.md`（计划 vs 实际）
 2. 逐活跃案例更新 `status.md` 状态灯；对照止损线
 3. 蒸馏检查：每个活跃案例 ≥1 条 knowledge 或记"无可蒸馏"
 4. `assets/registry.md` 健康检查（Cookie 到期/账号状态）
 5. 记录下周计划；月度加记 `report-card.md`（能力新增/知识更新/idea→selling 天数）
+6. **自续**：定时任务 7 天自动过期——复盘末尾重建下周自醒 cron（prompt 原样复制），这是分身自持的一部分
 
 ## 环境依赖
 

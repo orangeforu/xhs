@@ -28,10 +28,12 @@ v1 原则：**纯确定性规则，不调 LLM**（可靠 > 聪明）。v2 候选
 
 ## 注册每日心跳（计划任务）
 
-> 需 BOSS 亲自执行（持久化机制，AI 不代注册）：
+> 持久化机制需 BOSS 亲自授权，**双击即装**（推荐）：
 
-```
-schtasks /Create /TN "incubator_pulse" /TR "D:\SoftWare\User\Vs\xhs\capabilities\pulse\run_heartbeat.bat" /SC DAILY /ST 08:30 /F
-```
+| 方式 | 操作 |
+|---|---|
+| **双击安装**（推荐） | 资源管理器打开本目录 → 双击 `安装每日心跳.bat`（失败则右键管理员运行） |
+| 双击卸载 | 双击 `卸载每日心跳.bat` |
+| 登录即跳（免注册备选） | 把 `run_heartbeat.bat` 的快捷方式放进 `shell:startup`——开机登录时跳一次，不固定 08:30 |
 
-删除：`schtasks /Delete /TN "incubator_pulse" /F`。改时间：删了重建换 /ST。
+改时间：卸载后重装，改安装 bat 里的 /ST。命令行等价：`schtasks /Create /TN incubator_pulse /TR <run_heartbeat.bat路径> /SC DAILY /ST 08:30 /F`

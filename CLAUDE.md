@@ -37,8 +37,8 @@
 
 | 目录 | 是什么 | 详情 |
 |---|---|---|
-| `cockpit/` | 调度台：ledger(总账) / time-budget / status(状态灯) / report-card(成绩单) / authorization(授权台账) | 状态唯一汇总处 |
-| `capabilities/` | 能力货架：`xhs_crawler`(站内采集) `xhs_content`(内容生产,现役=Claude直写+规范库,含休眠 legacy-pipeline) `xianyu_ops`(闲鱼适配器) `market_research`(调研) `venture_toolkit`(上架+记账) | 索引见其 README.md |
+| `cockpit/` | 调度台：ledger(总账) / time-budget / status(状态灯) / report-card(成绩单) / authorization(授权台账) / journal(每日心跳简报) | 状态唯一汇总处 |
+| `capabilities/` | 能力货架：`xhs_crawler`(站内采集) `xhs_content`(内容生产,现役=Claude直写+规范库,含休眠 legacy-pipeline) `xianyu_ops`(闲鱼适配器) `market_research`(调研) `venture_toolkit`(上架+记账) `pulse`(每日心跳=执行模块) | 索引见其 README.md |
 | `ventures/` | 案例层：`ai_workflow_kit`(selling) `jianying_templates`(planning) `xhs_account_v1`(closed) + `_template/`(开案模板) | 一线一目录 |
 | `knowledge/` | memory 机制 + playbooks(打法) + grill_records(决策拷问) + design(设计文档) | 只收跨案例结论 |
 | `assets/` | 资产登记 registry.md（账号/Cookie/key/在售链接，值不进 git） | 周五查健康 |
@@ -57,6 +57,9 @@ python ventures/ai_workflow_kit/tools/fill_links.py <面包多链接>
 
 # 代码质量（只测活能力；legacy 管线测试随代码封存）
 pytest
+
+# 每日心跳（执行模块；计划任务 08:30，需 BOSS 注册见 pulse/README.md）
+python capabilities/pulse/heartbeat.py           # 手动触发：晨报→journal→微信
 
 # 休眠的内容流水线（账号线遗产，重启条件见其 README）
 # 见 capabilities/xhs_content/legacy-pipeline/README.md

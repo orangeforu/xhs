@@ -11,3 +11,4 @@
 | `xianyu_ops/` | 闲鱼能力适配器（实体在兄弟仓库 D:\SoftWare\User\Vs\xianyu） | 🟢 | `xianyu_ops/README.md` |
 | `market_research/` | 市场调研方法论（公网信源+站内实测双轮验证） | 🟢 | `market_research/README.md` |
 | `venture_toolkit/` | 案例工具箱：上架物料模式/记账复盘模式/intake 流程 | 🟢 | `venture_toolkit/README.md` |
+| `pulse/` | **执行模块**：每日心跳（晨报三件事+预警→journal→微信） | 🟢 v1 | `pulse/README.md` |

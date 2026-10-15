@@ -13,3 +13,5 @@
 | 7 | GLM 季付到期（约 2026-12）前项目收入须转正 | ¥118/月 自付目标 | cockpit/ledger 盯 |
 | 8 | pyproject ruff 配置为旧式顶层键（deprecation 警告，功能不受影响） | 无 | 下次动 pyproject 时顺手迁移到 [tool.ruff.lint] |
 | 9 | build_pdfs.py（并行会话产物）1 处 UP031 percent-format | 无 | 不动他人风格，留给其作者 |
+| 10 | pulse 计划任务待 BOSS 亲自注册（持久化机制 AI 不代办，命令在 pulse/README.md） | 未注册前心跳靠手动 | 周五前注册 |
+| 11 | Server酱 5 条/天与排队号共享，可能互相挤占 | 晨报偶发静默（journal 仍落盘） | 观察 1 周，挤占频繁则切 pushplus |

@@ -12,4 +12,5 @@
 | LLM API（DeepSeek） | API key(.env) | 🟢 | 余额自查 | 各案例质检/内容 | — |
 | GLM Coding Plan | 订阅 | 🟢 本季度有效 | **到期即项目自付目标** | 开发本身 | ¥118/月 固定成本 |
 | 思源黑体 | 素材 | 🟢 | — | 图片渲染 | capabilities/_shared/fonts |
+| Server酱微信通道 | 通道 | 🟢 复用 xianyu/push.json（不复制密钥） | **免费 5 条/天两仓共享** | pulse 晨报 1 条/天 | 升级候选 pushplus |
 | 兄弟仓库 xianyu（排队号） | 外部资产 | 🟢 webapp 8010 在线 | 有自己的 AGENTS 协议 | xianyu_ops 适配 | 永不合并（已定） |

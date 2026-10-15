@@ -25,6 +25,10 @@ assets/         资产登记：账号/Cookie/渠道（值不进 git）
 - **案例2 jianying_templates**（planning）：剪映视频模板，两周验证实验中
 - **案例3 xhs_account_v1**（closed）：小红书账号线，已归档（postmortem 在案例内）
 
+## 完整手册
+
+架构/运行机制/使用/维护/演化方向的唯一手册：[knowledge/design/孵化台手册.md](knowledge/design/孵化台手册.md)
+
 ## 快速上手（给未来的 Claude/协作者）
 
 1. 读 CLAUDE.md（宪法）→ GLOSSARY.md（术语）→ cockpit/status.md（战局）——这是开场注入协议

@@ -18,7 +18,7 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[3]  # 仓库根（.env 所在）
 KIT = ROOT / "products" / "ai-office-workflows" / "kit-cn-打工人AI提效工作流包.md"
 QA_DIR = ROOT / "products" / "ai-office-workflows" / "qa"
 

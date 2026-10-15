@@ -30,7 +30,7 @@ ignore = [
 convention = "google"
 
 [tool.ruff.isort]
-known-first-party = ["core"]
+known-first-party = ["core", "capabilities"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

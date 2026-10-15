@@ -25,15 +25,15 @@ Thumbs.db
 output_note_*.md
 
 # Runtime generated content
-# docs_agent/{pending,published,archived}/ holds notes in lifecycle order
-docs_agent/
-docs_agent_v1/
-data/agent_memory/
-data/*_backup_*.json
-data/*.lock
+# **/docs_agent/{pending,published,archived}/ holds notes in lifecycle order
+**/docs_agent/
+**/docs_agent_v1/
+ventures/xhs_account_v1/data/agent_memory/
+**/*_backup_*.json
+*.lock
 
 # Assets generated during runtime
-assets/cover_*.png
+**/cover_*.png
 
 # Pytest
 .pytest_cache/

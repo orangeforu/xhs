@@ -14,14 +14,18 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[2]      # 仓库根（.env/.cache 所在）
+CAP_DIR = Path(__file__).resolve().parent               # capabilities/xhs_crawler
+sys.path.insert(0, str(CAP_DIR / "vendor"))             # spider_xhs 所在
+sys.path.insert(0, str(CAP_DIR))
+if str(PROJECT_ROOT / "capabilities") not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT / "capabilities"))
 
-from spider_xhs import XHS_Apis
-from scripts.xhs_auth_helper import get_pc_auth
-from core.note_schema import NoteRecord
+from spider_xhs import XHS_Apis                          # noqa: E402
+from xhs_auth_helper import get_pc_auth                  # noqa: E402
+from _shared.note_schema import NoteRecord               # noqa: E402
 
-OUT = PROJECT_ROOT / "data" / "xhs_jianying_verify.json"
+OUT = PROJECT_ROOT / "ventures" / "jianying_templates" / "data" / "xhs_jianying_verify.json"
 
 # (query, sort_type_choice, note_type, require_num)
 # sort: 0综合 1最新 2最多点赞 | type: 0不限 1视频 2图文

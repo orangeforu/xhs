@@ -16,9 +16,9 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-DIST = ROOT / "products" / "ai-office-workflows" / "launch-cn-distribution.md"
-PLAN = ROOT / "docs" / "回本计划_codingplan.md"
+CASE = Path(__file__).resolve().parents[1]  # ventures/ai_workflow_kit
+DIST = CASE / "products" / "ai-office-workflows" / "launch-cn-distribution.md"
+PLAN = CASE / "docs" / "回本计划_codingplan.md"
 
 PLACEHOLDER = "【面包多链接】"
 # 面包多链接（含旧尾缀）的匹配：主机 + 路径 + 可选查询串。

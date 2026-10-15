@@ -33,7 +33,7 @@ if sys.platform.startswith("win"):
         pass
 
 # 将项目根目录加入路径
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  # 仓库根（.cache/ 所在）
 
 # Cookie 保存路径
 COOKIE_DIR = PROJECT_ROOT / ".cache"
@@ -85,7 +85,7 @@ def get_pc_auth():
     """
     import sys
 
-    sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "vendor"))  # spider_xhs 所在
     from spider_xhs import XHSPcAuth
 
     # 先尝试读取已保存的 Cookie
@@ -131,7 +131,7 @@ def get_creator_auth():
     """
     import sys
 
-    sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "vendor"))  # spider_xhs 所在
     from spider_xhs import XHSCreatorAuth
 
     # 先尝试读取已保存的 Cookie

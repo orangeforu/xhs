@@ -11,3 +11,5 @@
 | 5 | legacy 管线的 data/ 路径已随案例3 迁移，若重启需重指 | 只影响 legacy 重启 | 已写入 legacy README 重启注意 |
 | 6 | 剪映线"AI 样片生成"能力缺口（可灵/即梦调用） | 案例内临时工具先顶着 | Rule of Two 后评估上货架 |
 | 7 | GLM 季付到期（约 2026-12）前项目收入须转正 | ¥118/月 自付目标 | cockpit/ledger 盯 |
+| 8 | pyproject ruff 配置为旧式顶层键（deprecation 警告，功能不受影响） | 无 | 下次动 pyproject 时顺手迁移到 [tool.ruff.lint] |
+| 9 | build_pdfs.py（并行会话产物）1 处 UP031 percent-format | 无 | 不动他人风格，留给其作者 |

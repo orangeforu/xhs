@@ -12,7 +12,7 @@ extend-exclude = '''
 target-version = "py313"
 line-length = 120
 # vendored 第三方与休眠遗产不吃本项目 lint 标准；遗产只手动跑测试
-exclude = ["capabilities/xhs_crawler/vendor", "capabilities/xhs_content/legacy-pipeline"]
+exclude = ["capabilities/xhs_crawler/vendor", "capabilities/xhs_content/legacy-pipeline", "ventures/xhs_account_v1/scripts"]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings

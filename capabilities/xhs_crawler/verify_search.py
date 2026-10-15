@@ -6,6 +6,7 @@ BOSS 观察待验证：① 剪映模板私卖供给密集；② 婚礼模板 20-
 用法：python scripts/verify_xhs_jianying.py
 输出：data/xhs_jianying_verify.json + 终端摘要
 """
+import contextlib
 import json
 import re
 import sys
@@ -93,10 +94,8 @@ def main():
         big.make(fit=True)
         big.make_image(fill_color="black", back_color="white").save(str(p))
         print(f"[verify] 二维码已保存并打开: {p}（小红书APP扫码，5分钟内有效）")
-        try:
+        with contextlib.suppress(Exception):
             os.startfile(str(p))
-        except Exception:
-            pass
 
     _qrcode_mod.QRCode.print_ascii = _print_ascii_png
     print("[verify] print_ascii 劫持已安装（大图版）")

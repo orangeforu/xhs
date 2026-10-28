@@ -22,7 +22,7 @@ assets/         资产登记：账号/Cookie/渠道（值不进 git）
 ## 当前战局（详见 cockpit/status.md）
 
 - **案例1 ai_workflow_kit**（selling）：AI 提效工作流包，面包多在售
-- **案例2 jianying_templates**（planning）：剪映视频模板，两周验证实验中
+- **案例2 jianying_templates**（planning）：剪映周岁／生日／毕业照片模板，先验入场与首条，套装待合规
 - **案例3 xhs_account_v1**（closed）：小红书账号线，已归档（postmortem 在案例内）
 
 ## 完整手册

@@ -23,3 +23,4 @@
 - playbooks/03-知识库防死亡设计.md（knowledge_base 尸检结论）
 - grill_records/2026-10-15-账号线转向孵化台.md
 - grill_records/2026-10-15-开剪映线.md
+- grill_records/2026-10-28-剪映路线掉头.md（修正 #2 的“不做官方路径”结论）

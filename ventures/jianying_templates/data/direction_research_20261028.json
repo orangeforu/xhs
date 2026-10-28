@@ -1,0 +1,4868 @@
+{
+  "retrieved_at": "2026-10-28T04:06:14.790615+00:00",
+  "platform": "小红书PC搜索（不是剪映模板收益）",
+  "sample_design": "6方向×2关键词×综合/最新，每组合取前10条有效笔记；每方向最多2条详情；便利样本非随机样本",
+  "limitations": [
+    "搜索排序受关键词与账号等影响",
+    "互动不等于付费意愿或模板收入",
+    "跨方向关键词有污染，需人工判定内容类型",
+    "不推算销量、转化率、收益或模板年龄"
+  ],
+  "queries": [
+    {
+      "direction": "热点卡点",
+      "query": "剪映卡点模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:16.079994+00:00",
+      "items": [
+        {
+          "id": "6ad1a2b3000000001a02979e",
+          "title": "",
+          "author_id": "6a6c5916000000001400cc01",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 5945,
+          "collects": 3197,
+          "comments": 145,
+          "shares": 376,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad1a2b3000000001a02979e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-16"
+            }
+          ]
+        },
+        {
+          "id": "6abca8c4000000001301a2fd",
+          "title": "",
+          "author_id": "6a6c4b9f0000000013032801",
+          "author": "剪映Vlog素材库",
+          "type": "video",
+          "likes": 52737,
+          "collects": 16551,
+          "comments": 817,
+          "shares": 1848,
+          "source_url": "https://www.xiaohongshu.com/explore/6abca8c4000000001301a2fd",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "693d4646000000001e023741",
+          "title": "2025年度回忆录加长版模板来咯！",
+          "author_id": "5f9d652300000000010040ee",
+          "author": "爱剪辑的小毛",
+          "type": "video",
+          "likes": 1083,
+          "collects": 735,
+          "comments": 32,
+          "shares": 353,
+          "source_url": "https://www.xiaohongshu.com/explore/693d4646000000001e023741",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-12-13"
+            }
+          ]
+        },
+        {
+          "id": "6abd1493000000001803b178",
+          "title": "",
+          "author_id": "6a6c65360000000013002801",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 553,
+          "collects": 359,
+          "comments": 8,
+          "shares": 22,
+          "source_url": "https://www.xiaohongshu.com/explore/6abd1493000000001803b178",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "6abbe150000000001303fb4a",
+          "title": "41套企业宣传视频模板！剪映一键替换就出片",
+          "author_id": "69590dd0000000003201fd27",
+          "author": "芒街第一深情",
+          "type": "normal",
+          "likes": 7,
+          "collects": 2,
+          "comments": 37,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6abbe150000000001303fb4a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "6a28011f0000000035020ba2",
+          "title": "定格滑动卡点 模板分享～",
+          "author_id": "652f8812000000000200ce4f",
+          "author": "爱剪辑的小橘子",
+          "type": "video",
+          "likes": 309,
+          "collects": 256,
+          "comments": 7,
+          "shares": 29,
+          "source_url": "https://www.xiaohongshu.com/explore/6a28011f0000000035020ba2",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-09"
+            }
+          ]
+        },
+        {
+          "id": "6a0ec5dd00000000380375ac",
+          "title": "哒哒哒哒哒哒哒，高跟鞋卡点",
+          "author_id": "5e8d228500000000010001fe",
+          "author": "Morus动漫",
+          "type": "video",
+          "likes": 23,
+          "collects": 21,
+          "comments": 2,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6a0ec5dd00000000380375ac",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "05-21"
+            }
+          ]
+        },
+        {
+          "id": "6abe57e1000000001a031359",
+          "title": "短视频剪辑｜剪映17个万能剪辑技巧🔥",
+          "author_id": "62444f7a0000000021029843",
+          "author": "琴子说电商",
+          "type": "normal",
+          "likes": 211,
+          "collects": 329,
+          "comments": 9,
+          "shares": 122,
+          "source_url": "https://www.xiaohongshu.com/explore/6abe57e1000000001a031359",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-01"
+            }
+          ]
+        },
+        {
+          "id": "6acd992d000000000a0245e9",
+          "title": "",
+          "author_id": "59b7c8c05e87e76fa70a62e8",
+          "author": "云春",
+          "type": "video",
+          "likes": 3,
+          "collects": 2,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6acd992d000000000a0245e9",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-16"
+            }
+          ]
+        },
+        {
+          "id": "6a8bbf6e000000000902f5a4",
+          "title": "文字卡点开场",
+          "author_id": "68099a75000000000e01c5b8",
+          "author": "土豆教剪辑（收徒）",
+          "type": "video",
+          "likes": 98,
+          "collects": 170,
+          "comments": 1,
+          "shares": 11,
+          "source_url": "https://www.xiaohongshu.com/explore/6a8bbf6e000000000902f5a4",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-28"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "热点卡点",
+      "query": "剪映卡点模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:18.129931+00:00",
+      "items": [
+        {
+          "id": "6ae16b9e0000000035020967",
+          "title": "",
+          "author_id": "6a6c65360000000013002801",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 7,
+          "collects": 1,
+          "comments": 2,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae16b9e0000000035020967",
+          "corner_tag": [
+            {
+              "text": "38分钟前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ae16ab9000000002501f7c3",
+          "title": "",
+          "author_id": "6a73ebf50000000013022402",
+          "author": "剪映Vlog素材模板库",
+          "type": "video",
+          "likes": 9,
+          "collects": 3,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae16ab9000000002501f7c3",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "42分钟前"
+            }
+          ]
+        },
+        {
+          "id": "6ae0a7bd0000000036012ab9",
+          "title": "",
+          "author_id": "69131f76000000003702fa47",
+          "author": "墨笙.xl",
+          "type": "video",
+          "likes": 5,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae0a7bd0000000036012ab9",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 21:31"
+            }
+          ]
+        },
+        {
+          "id": "6ae0a2c300000000360119b1",
+          "title": "",
+          "author_id": "630861aa000000000f0075bd",
+          "author": "rain、",
+          "type": "video",
+          "likes": 49,
+          "collects": 9,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae0a2c300000000360119b1",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 21:10"
+            }
+          ]
+        },
+        {
+          "id": "6ae0a1550000000023031465",
+          "title": "",
+          "author_id": "6518d7a3000000000200d6e0",
+          "author": "黑莓剪辑",
+          "type": "video",
+          "likes": 19,
+          "collects": 1,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae0a1550000000023031465",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 21:04"
+            }
+          ]
+        },
+        {
+          "id": "6ae0988c0000000023007f5e",
+          "title": "",
+          "author_id": "63a2fd1e000000002601234d",
+          "author": "一份鱼粥.",
+          "type": "video",
+          "likes": 40,
+          "collects": 6,
+          "comments": 5,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae0988c0000000023007f5e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 20:26"
+            }
+          ]
+        },
+        {
+          "id": "6ae07be80000000022036c3b",
+          "title": "剪映模板700套 真的不用再找了🎬",
+          "author_id": "6a7bf8280000000013021000",
+          "author": "坚强的提莫",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae07be80000000022036c3b",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 18:24"
+            }
+          ]
+        },
+        {
+          "id": "6ae069b000000000340235c9",
+          "title": "",
+          "author_id": "697a32880000000021006cf4",
+          "author": "剪映vlog素材模板库",
+          "type": "video",
+          "likes": 38,
+          "collects": 20,
+          "comments": 3,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae069b000000000340235c9",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 17:06"
+            }
+          ]
+        },
+        {
+          "id": "6adf6bfa000000000e02417c",
+          "title": "注意，前方一大波美食来袭。",
+          "author_id": "66967b550000000003031897",
+          "author": "xiaozhu不睡觉",
+          "type": "video",
+          "likes": 12,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf6bfa000000000e02417c",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adf682f0000000018014b93",
+          "title": "纪念我的高中生活",
+          "author_id": "66967b550000000003031897",
+          "author": "xiaozhu不睡觉",
+          "type": "video",
+          "likes": 6,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf682f0000000018014b93",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "热点卡点",
+      "query": "剪映热门模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:20.028352+00:00",
+      "items": [
+        {
+          "id": "693d4646000000001e023741",
+          "title": "2025年度回忆录加长版模板来咯！",
+          "author_id": "5f9d652300000000010040ee",
+          "author": "爱剪辑的小毛",
+          "type": "video",
+          "likes": 1083,
+          "collects": 735,
+          "comments": 32,
+          "shares": 353,
+          "source_url": "https://www.xiaohongshu.com/explore/693d4646000000001e023741",
+          "corner_tag": [
+            {
+              "text": "2025-12-13",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ad1a2b3000000001a02979e",
+          "title": "",
+          "author_id": "6a6c5916000000001400cc01",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 5945,
+          "collects": 3197,
+          "comments": 145,
+          "shares": 376,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad1a2b3000000001a02979e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-16"
+            }
+          ]
+        },
+        {
+          "id": "6ac9b729000000001500e40d",
+          "title": "",
+          "author_id": "6a6c5916000000001400cc01",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 2468,
+          "collects": 1256,
+          "comments": 52,
+          "shares": 258,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac9b729000000001500e40d",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-13"
+            }
+          ]
+        },
+        {
+          "id": "6abbe150000000001303fb4a",
+          "title": "41套企业宣传视频模板！剪映一键替换就出片",
+          "author_id": "69590dd0000000003201fd27",
+          "author": "芒街第一深情",
+          "type": "normal",
+          "likes": 7,
+          "collects": 2,
+          "comments": 37,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6abbe150000000001303fb4a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "6831c7570000000012003207",
+          "title": "剪映脚本模板，短视频创作加速器",
+          "author_id": "5bcb4323e8ac2b2224a323b9",
+          "author": "苏陌染",
+          "type": "normal",
+          "likes": 1443,
+          "collects": 902,
+          "comments": 11,
+          "shares": 175,
+          "source_url": "https://www.xiaohongshu.com/explore/6831c7570000000012003207",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-05-30"
+            }
+          ]
+        },
+        {
+          "id": "6a5a3df4000000000100c04b",
+          "title": "婚礼-心有所动(剪映模板)",
+          "author_id": "64a1f388000000001f00669c",
+          "author": "剪映模板",
+          "type": "video",
+          "likes": 439,
+          "collects": 498,
+          "comments": 33,
+          "shares": 356,
+          "source_url": "https://www.xiaohongshu.com/explore/6a5a3df4000000000100c04b",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-19"
+            }
+          ]
+        },
+        {
+          "id": "6a60891c000000000f00ac40",
+          "title": "6个免费宝藏资源库，从此告别找素材秃头",
+          "author_id": "5d8bafb50000000001007f29",
+          "author": "张正森",
+          "type": "normal",
+          "likes": 10,
+          "collects": 22,
+          "comments": 0,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6a60891c000000000f00ac40",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-22"
+            }
+          ]
+        },
+        {
+          "id": "6aca3e7d000000001b0312fe",
+          "title": "第183期 l Vlog模版，绿幕素材，视频模板",
+          "author_id": "65269a08000000002a01a2b4",
+          "author": "剪映素材分享",
+          "type": "video",
+          "likes": 17025,
+          "collects": 6252,
+          "comments": 287,
+          "shares": 339,
+          "source_url": "https://www.xiaohongshu.com/explore/6aca3e7d000000001b0312fe",
+          "corner_tag": [
+            {
+              "text": "10-12",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6aca074b00000000150119bb",
+          "title": "剪辑爆款音色",
+          "author_id": "69eeca4a000000000103e404",
+          "author": "一颗土豆子",
+          "type": "normal",
+          "likes": 59,
+          "collects": 53,
+          "comments": 3,
+          "shares": 4,
+          "source_url": "https://www.xiaohongshu.com/explore/6aca074b00000000150119bb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-10"
+            }
+          ]
+        },
+        {
+          "id": "6ac9b42500000000140021a1",
+          "title": "学剪辑第一步就是找素材",
+          "author_id": "68d8f7f50000000021026d27",
+          "author": "Time时光",
+          "type": "normal",
+          "likes": 237,
+          "collects": 196,
+          "comments": 27,
+          "shares": 11,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac9b42500000000140021a1",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-10"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "热点卡点",
+      "query": "剪映热门模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:22.025394+00:00",
+      "items": [
+        {
+          "id": "6ae07be80000000022036c3b",
+          "title": "剪映模板700套 真的不用再找了🎬",
+          "author_id": "6a7bf8280000000013021000",
+          "author": "坚强的提莫",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae07be80000000022036c3b",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 18:24"
+            }
+          ]
+        },
+        {
+          "id": "6ae06cef0000000028006075",
+          "title": "140套口播剪映模板小lin说高级vlo",
+          "author_id": "6730a88d000000001c018b2b",
+          "author": "奔跑的兔子",
+          "type": "normal",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae06cef0000000028006075",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 17:20"
+            }
+          ]
+        },
+        {
+          "id": "6ae01a0b0000000003021929",
+          "title": "新闻字幕条剪映模板",
+          "author_id": "633e7f46000000001802ac58",
+          "author": "光影模板工坊",
+          "type": "video",
+          "likes": 8,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae01a0b0000000003021929",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adf1968000000001a032e70",
+          "title": "剪映高级感口播动态文字字幕排版预设模板",
+          "author_id": "6ab0e32a000000001400d801",
+          "author": "若其1",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf1968000000001a032e70",
+          "corner_tag": [
+            {
+              "text": "1天前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6adf0c590000000017035441",
+          "title": "短视频颜值密码✅上千款剪映高级字幕模板",
+          "author_id": "608b6eec0000000001006041",
+          "author": "糖糖剧场",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf0c590000000017035441",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adefb10000000001703ade2",
+          "title": "照片轮播别瞎做！剪映模板一键出大片",
+          "author_id": "5d5f4bed00000000010038d2",
+          "author": "酷酷创意",
+          "type": "video",
+          "likes": 1,
+          "collects": 0,
+          "comments": 7,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adefb10000000001703ade2",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6a659622000000001302dfab",
+          "title": "剪高级感人名条预设，文字预设动画",
+          "author_id": "5d298b20000000001603eaa2",
+          "author": "拾光序大华",
+          "type": "normal",
+          "likes": 1,
+          "collects": 3,
+          "comments": 2,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6a659622000000001302dfab",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adebe780000000014028860",
+          "title": "剪映商业活动快剪工程模板平板通用",
+          "author_id": "679db54b000000000e01c85a",
+          "author": "开心的蜻蜓",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adebe780000000014028860",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade183d000000002c01b422",
+          "title": "剪映高端婚礼MV模板动态标题",
+          "author_id": "61f2b1f7000000001000dfc3",
+          "author": "落日xsn",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade183d000000002c01b422",
+          "corner_tag": [
+            {
+              "text": "2天前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6add88e00000000024034e14",
+          "title": "剪映高级字幕预设动态文字排版入场动画模板",
+          "author_id": "679db54b000000000e01c85a",
+          "author": "开心的蜻蜓",
+          "type": "normal",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6add88e00000000024034e14",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "宠物一图",
+      "query": "剪映宠物模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:23.978972+00:00",
+      "items": [
+        {
+          "id": "6aa916140000000026014160",
+          "title": "人，咪要去闯荡江湖了🆒（附提示词）",
+          "author_id": "66230cef0000000003031753",
+          "author": "小梦的Ai工具库",
+          "type": "video",
+          "likes": 418,
+          "collects": 259,
+          "comments": 38,
+          "shares": 50,
+          "source_url": "https://www.xiaohongshu.com/explore/6aa916140000000026014160",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-15"
+            }
+          ]
+        },
+        {
+          "id": "6a919738000000001f004202",
+          "title": "萌宠骑行跟唱",
+          "author_id": "641ea6190000000012013eb4",
+          "author": "执伞者丶",
+          "type": "video",
+          "likes": 5,
+          "collects": 7,
+          "comments": 13,
+          "shares": 6,
+          "source_url": "https://www.xiaohongshu.com/explore/6a919738000000001f004202",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-28"
+            }
+          ]
+        },
+        {
+          "id": "69e9f70f0000000020007001",
+          "title": "教你制作宠物视频片头",
+          "author_id": "684d1a6e000000001b0182b0",
+          "author": "山泉爱剪辑",
+          "type": "video",
+          "likes": 298,
+          "collects": 318,
+          "comments": 18,
+          "shares": 55,
+          "source_url": "https://www.xiaohongshu.com/explore/69e9f70f0000000020007001",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "04-23"
+            }
+          ]
+        },
+        {
+          "id": "6815af99000000002202420c",
+          "title": "1分钟带猫猫环游世界，有手就会！AI➕剪映生成",
+          "author_id": "66aaa282000000001d03150a",
+          "author": "徐浅浅Kara",
+          "type": "video",
+          "likes": 1054,
+          "collects": 823,
+          "comments": 47,
+          "shares": 283,
+          "source_url": "https://www.xiaohongshu.com/explore/6815af99000000002202420c",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-05-03"
+            }
+          ]
+        },
+        {
+          "id": "6a6ed52e0000000025000bbb",
+          "title": "是谁还不会制作AI爆款萌宠视频？快来看看吧",
+          "author_id": "650d6a1a000000001603aafc",
+          "author": "一半剪辑",
+          "type": "video",
+          "likes": 26,
+          "collects": 38,
+          "comments": 1,
+          "shares": 5,
+          "source_url": "https://www.xiaohongshu.com/explore/6a6ed52e0000000025000bbb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-02"
+            }
+          ]
+        },
+        {
+          "id": "6a276b40000000002201495d",
+          "title": "新手跟练学剪辑Day85《喵蹦蹦萌宠卡点》",
+          "author_id": "617f34d5000000000201d880",
+          "author": "🌸",
+          "type": "video",
+          "likes": 65,
+          "collects": 33,
+          "comments": 0,
+          "shares": 8,
+          "source_url": "https://www.xiaohongshu.com/explore/6a276b40000000002201495d",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-09"
+            }
+          ]
+        },
+        {
+          "id": "6848f303000000001101eaf9",
+          "title": "宠物账号15天就能做起来，巨变态！但真的很好",
+          "author_id": "6800bab6000000000e01f456",
+          "author": "哆哆是只小b熊",
+          "type": "normal",
+          "likes": 1089,
+          "collects": 1047,
+          "comments": 145,
+          "shares": 177,
+          "source_url": "https://www.xiaohongshu.com/explore/6848f303000000001101eaf9",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-06-11"
+            }
+          ]
+        },
+        {
+          "id": "6746fb970000000007028dec",
+          "title": "“宠物填空定格玩法”",
+          "author_id": "649fb5dd00000000100363a9",
+          "author": "小智AIGC",
+          "type": "video",
+          "likes": 20809,
+          "collects": 19230,
+          "comments": 157,
+          "shares": 1187,
+          "source_url": "https://www.xiaohongshu.com/explore/6746fb970000000007028dec",
+          "corner_tag": [
+            {
+              "text": "2024-11-27",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ad82c9d000000002b00f836",
+          "title": "A2O LITE《NEON》猫咪版🐱（附提示词）",
+          "author_id": "66230cef0000000003031753",
+          "author": "小梦的Ai工具库",
+          "type": "video",
+          "likes": 267,
+          "collects": 245,
+          "comments": 51,
+          "shares": 99,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad82c9d000000002b00f836",
+          "corner_tag": [
+            {
+              "text": "6天前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a831d7f000000002202eac2",
+          "title": "宠物赛道，新人如何起号？",
+          "author_id": "692d6378000000003202b5e9",
+          "author": "一只小元宝",
+          "type": "normal",
+          "likes": 335,
+          "collects": 289,
+          "comments": 65,
+          "shares": 49,
+          "source_url": "https://www.xiaohongshu.com/explore/6a831d7f000000002202eac2",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-17"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "宠物一图",
+      "query": "剪映宠物模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:26.009970+00:00",
+      "items": [
+        {
+          "id": "6ae074a40000000027016204",
+          "title": "宠物剪映",
+          "author_id": "6816f9aa000000000d0093c7",
+          "author": "卡日楚村张东奎",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae074a40000000027016204",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 17:53"
+            }
+          ]
+        },
+        {
+          "id": "6adf3810000000001803b3d3",
+          "title": "我也不知道标题是啥，反正被我吃了",
+          "author_id": "65acb7a8000000001302d8c5",
+          "author": "雪宁不吃桃🍑",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf3810000000001803b3d3",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade2516000000002c01b419",
+          "title": "🤍晚安玛卡巴卡",
+          "author_id": "5e3fa4fa000000000100b338",
+          "author": "小猫的树洞",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade2516000000002c01b419",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6adc6ab5000000002c010c8a",
+          "title": "- 客栈武打连招，猫猫一挑一群🥋",
+          "author_id": "5fc922440000000001001cbf",
+          "author": "未来与喵",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adc6ab5000000002c010c8a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "3天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad9fa0b000000002403db09",
+          "title": "- 竹林猫侠大闪避，轻功满分🐱",
+          "author_id": "5fc922440000000001001cbf",
+          "author": "未来与喵",
+          "type": "video",
+          "likes": 6,
+          "collects": 1,
+          "comments": 0,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad9fa0b000000002403db09",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "5天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad89e2d000000002c010f25",
+          "title": "咪的一年半照片",
+          "author_id": "6329b85e000000002303b074",
+          "author": "是多米呀",
+          "type": "video",
+          "likes": 10,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad89e2d000000002c010f25",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "6天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad73308000000000c008acd",
+          "title": "- 小猫骑士举光剑，燃到犯规⚔️",
+          "author_id": "5fc922440000000001001cbf",
+          "author": "未来与喵",
+          "type": "video",
+          "likes": 2,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad73308000000000c008acd",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-20"
+            }
+          ]
+        },
+        {
+          "id": "6ad615e9000000003100b630",
+          "title": "萌宠骑士对恶龙",
+          "author_id": "5cb36bec0000000011022a51",
+          "author": "平行时空的瓦力",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad615e9000000003100b630",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-19"
+            }
+          ]
+        },
+        {
+          "id": "6ad0968d000000001303f7f4",
+          "title": "- 小猫拔剑放大招，咖喱棒实锤⚔️",
+          "author_id": "5fc922440000000001001cbf",
+          "author": "未来与喵",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad0968d000000001303f7f4",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-15"
+            }
+          ]
+        },
+        {
+          "id": "6acb5278000000001c00ece3",
+          "title": "猫咪舞者C位出道，铲屎官看呆🐱",
+          "author_id": "5fc922440000000001001cbf",
+          "author": "未来与喵",
+          "type": "video",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6acb5278000000001c00ece3",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-11"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "宠物一图",
+      "query": "宠物一图模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:27.920750+00:00",
+      "items": [
+        {
+          "id": "69170d0700000000070322d5",
+          "title": "兜兜也有证件照啦（附教程）",
+          "author_id": "680755d2000000000e0105b9",
+          "author": "兜里有只猫",
+          "type": "normal",
+          "likes": 18,
+          "collects": 0,
+          "comments": 7,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/69170d0700000000070322d5",
+          "corner_tag": [
+            {
+              "text": "2025-11-14",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "68db5a640000000005039707",
+          "title": "黄色宠物轮播图团单图海报设计",
+          "author_id": "68c680d2000000001903c894",
+          "author": "干饭人干饭魂k42",
+          "type": "normal",
+          "likes": 190,
+          "collects": 85,
+          "comments": 19,
+          "shares": 23,
+          "source_url": "https://www.xiaohongshu.com/explore/68db5a640000000005039707",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-09-30"
+            }
+          ]
+        },
+        {
+          "id": "6a573dc90000000015027c46",
+          "title": "用codex制作个桌宠吧！",
+          "author_id": "69f4e429000000000103e000",
+          "author": "Sycee",
+          "type": "normal",
+          "likes": 224,
+          "collects": 226,
+          "comments": 2,
+          "shares": 91,
+          "source_url": "https://www.xiaohongshu.com/explore/6a573dc90000000015027c46",
+          "corner_tag": [
+            {
+              "text": "07-15",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "695bbbfa000000002202e649",
+          "title": "下一个风口就是用Ai做宠物博主！",
+          "author_id": "66a5dd6f000000001d032f98",
+          "author": "琪琪宠物运营日记",
+          "type": "normal",
+          "likes": 1591,
+          "collects": 1283,
+          "comments": 25,
+          "shares": 203,
+          "source_url": "https://www.xiaohongshu.com/explore/695bbbfa000000002202e649",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "01-05"
+            }
+          ]
+        },
+        {
+          "id": "6acb48a70000000015011b80",
+          "title": "猫咪三视图 ai 生成用",
+          "author_id": "608352d9000000000101c17e",
+          "author": "陆星渺",
+          "type": "normal",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 4,
+          "source_url": "https://www.xiaohongshu.com/explore/6acb48a70000000015011b80",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-11"
+            }
+          ]
+        },
+        {
+          "id": "6ad7aa10000000002802112d",
+          "title": "",
+          "author_id": "639ca49300000000270289ff",
+          "author": "erbai",
+          "type": "normal",
+          "likes": 9,
+          "collects": 1,
+          "comments": 6,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad7aa10000000002802112d",
+          "corner_tag": [
+            {
+              "text": "10-21",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a387ea7000000000f01fcaf",
+          "title": "6️⃣张可爱动物主题手账底图",
+          "author_id": "6663de650000000007005e25",
+          "author": "穗小穗爱设计",
+          "type": "normal",
+          "likes": 50,
+          "collects": 33,
+          "comments": 5,
+          "shares": 11,
+          "source_url": "https://www.xiaohongshu.com/explore/6a387ea7000000000f01fcaf",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-08"
+            }
+          ]
+        },
+        {
+          "id": "68eb5ee80000000007017adb",
+          "title": "码住ai指令:下雪天的猫咪🐱",
+          "author_id": "56cb134a84edcd5b0d191764",
+          "author": "momo",
+          "type": "normal",
+          "likes": 208,
+          "collects": 106,
+          "comments": 25,
+          "shares": 75,
+          "source_url": "https://www.xiaohongshu.com/explore/68eb5ee80000000007017adb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-10-12"
+            }
+          ]
+        },
+        {
+          "id": "6aa8ac62000000000d024d92",
+          "title": "1分钟，把我家猫做成电影的主角",
+          "author_id": "5d1d57ac000000001003b123",
+          "author": "琪思妙想cickey",
+          "type": "normal",
+          "likes": 152,
+          "collects": 123,
+          "comments": 18,
+          "shares": 33,
+          "source_url": "https://www.xiaohongshu.com/explore/6aa8ac62000000000d024d92",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-24"
+            }
+          ]
+        },
+        {
+          "id": "692ff7c5000000001e035c20",
+          "title": "帮大家准备了一份网购宠物合同",
+          "author_id": "625e54b300000000210225be",
+          "author": "耶耶张律师",
+          "type": "normal",
+          "likes": 72,
+          "collects": 48,
+          "comments": 37,
+          "shares": 13,
+          "source_url": "https://www.xiaohongshu.com/explore/692ff7c5000000001e035c20",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-12-03"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "宠物一图",
+      "query": "宠物一图模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:29.976108+00:00",
+      "items": [
+        {
+          "id": "6ae00311000000001802f1c5",
+          "title": "",
+          "author_id": "54b38a57b4c4d67b2294e764",
+          "author": "coral",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae00311000000001802f1c5",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adef691000000001201b5d2",
+          "title": "简约卡通可爱描边风猫咪宠物店海报模板PS",
+          "author_id": "611b673b00000000010015a2",
+          "author": "煎饼加双蛋",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adef691000000001201b5d2",
+          "corner_tag": [
+            {
+              "text": "1天前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ade32b00000000031025c5d",
+          "title": "",
+          "author_id": "5fe899d80000000001000f41",
+          "author": "开心每一天2ry",
+          "type": "video",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade32b00000000031025c5d",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad87070000000002c0148c5",
+          "title": "右滑分享一组很多人蹲的",
+          "author_id": "62de8b73000000001f007d98",
+          "author": "嗯嗯",
+          "type": "normal",
+          "likes": 11,
+          "collects": 2,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad87070000000002c0148c5",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "6天前"
+            }
+          ]
+        },
+        {
+          "id": "6acf4856000000001a022b66",
+          "title": "动物壁纸｜通用制作分享",
+          "author_id": "655e83c9000000000202b85e",
+          "author": "芜胡吧啦嘣",
+          "type": "normal",
+          "likes": 131,
+          "collects": 92,
+          "comments": 13,
+          "shares": 37,
+          "source_url": "https://www.xiaohongshu.com/explore/6acf4856000000001a022b66",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-14"
+            }
+          ]
+        },
+        {
+          "id": "6ac88da400000000150040f5",
+          "title": "",
+          "author_id": "6943b2aa000000003702bebf",
+          "author": "圆圆芘芘🌸PetRich万宠女王",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac88da400000000150040f5",
+          "corner_tag": [
+            {
+              "text": "10-09",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ab780c00000000002028ad8",
+          "title": "这期更新的好萌呀",
+          "author_id": "62ea6405000000001f017ce4",
+          "author": "菜菜（收永冠 鸽子拉黑",
+          "type": "normal",
+          "likes": 17,
+          "collects": 3,
+          "comments": 8,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab780c00000000002028ad8",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "6ab8ac9d0000000014031cc7",
+          "title": "这只布偶叫小雪球～超可爱：）",
+          "author_id": "62ccdb660000000002003067",
+          "author": "桑云昭",
+          "type": "normal",
+          "likes": 13,
+          "collects": 7,
+          "comments": 0,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab8ac9d0000000014031cc7",
+          "corner_tag": [
+            {
+              "text": "09-27",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ab6441a0000000015001b61",
+          "title": "泡芙也有属于自己的证件照啦✌️",
+          "author_id": "5c7be4b2000000001101f3a2",
+          "author": "PàoFú泡芙",
+          "type": "normal",
+          "likes": 2,
+          "collects": 2,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab6441a0000000015001b61",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-25"
+            }
+          ]
+        },
+        {
+          "id": "6a9d1edb000000000b002188",
+          "title": "我的宠物英文电子模板手抄报",
+          "author_id": "5bdb27cec2974b0001f8d13b",
+          "author": "一顿插画",
+          "type": "normal",
+          "likes": 15,
+          "collects": 6,
+          "comments": 2,
+          "shares": 5,
+          "source_url": "https://www.xiaohongshu.com/explore/6a9d1edb000000000b002188",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-10"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "生日纪念",
+      "query": "剪映生日模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:31.905154+00:00",
+      "items": [
+        {
+          "id": "6a0971950000000035021a71",
+          "title": "生日",
+          "author_id": "66ebf008000000001d0210fe",
+          "author": "好运姜汁",
+          "type": "video",
+          "likes": 126,
+          "collects": 108,
+          "comments": 103,
+          "shares": 63,
+          "source_url": "https://www.xiaohongshu.com/explore/6a0971950000000035021a71",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "05-17"
+            }
+          ]
+        },
+        {
+          "id": "6aa7a564000000002a0258bb",
+          "title": "",
+          "author_id": "62f53440000000001e01e723",
+          "author": "往事剪辑",
+          "type": "video",
+          "likes": 47,
+          "collects": 41,
+          "comments": 24,
+          "shares": 9,
+          "source_url": "https://www.xiaohongshu.com/explore/6aa7a564000000002a0258bb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-14"
+            }
+          ]
+        },
+        {
+          "id": "6a776b64000000003301c494",
+          "title": "剪辑生日快乐的教程来了",
+          "author_id": "6a4bb3c8000000000f038c00",
+          "author": "红薯包子",
+          "type": "video",
+          "likes": 324,
+          "collects": 232,
+          "comments": 8,
+          "shares": 25,
+          "source_url": "https://www.xiaohongshu.com/explore/6a776b64000000003301c494",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-09"
+            }
+          ]
+        },
+        {
+          "id": "6a756903000000003301c494",
+          "title": "",
+          "author_id": "67d1585c000000000e01f72d",
+          "author": "生日，舞台背景，歌曲背景视频制作",
+          "type": "video",
+          "likes": 3,
+          "collects": 1,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6a756903000000003301c494",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-07"
+            }
+          ]
+        },
+        {
+          "id": "68fee9d0000000000302c4c8",
+          "title": "",
+          "author_id": "652d2545000000002a02972d",
+          "author": "图图爱制作",
+          "type": "video",
+          "likes": 53,
+          "collects": 42,
+          "comments": 9,
+          "shares": 18,
+          "source_url": "https://www.xiaohongshu.com/explore/68fee9d0000000000302c4c8",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-10-27"
+            }
+          ]
+        },
+        {
+          "id": "67e7c9f3000000000900d9b3",
+          "title": "来啦来啦，生日视频教程终于好啦",
+          "author_id": "6013897000000000010078c3",
+          "author": "安安&康康",
+          "type": "video",
+          "likes": 3429,
+          "collects": 2696,
+          "comments": 290,
+          "shares": 261,
+          "source_url": "https://www.xiaohongshu.com/explore/67e7c9f3000000000900d9b3",
+          "corner_tag": [
+            {
+              "text": "2025-03-29",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a913fed0000000029034baf",
+          "title": "吹蜡烛剪辑视频",
+          "author_id": "66dc263a000000001d033fa9",
+          "author": "不想早起",
+          "type": "video",
+          "likes": 29,
+          "collects": 24,
+          "comments": 5,
+          "shares": 34,
+          "source_url": "https://www.xiaohongshu.com/explore/6a913fed0000000029034baf",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-11"
+            }
+          ]
+        },
+        {
+          "id": "6ad8d761000000003300d196",
+          "title": "需要生日10秒倒计时的姐妹可以自取🎉",
+          "author_id": "5a0d26d54eacab10360093eb",
+          "author": "谭谭谭🎶",
+          "type": "video",
+          "likes": 324,
+          "collects": 320,
+          "comments": 221,
+          "shares": 72,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad8d761000000003300d196",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "6天前"
+            }
+          ]
+        },
+        {
+          "id": "6a9f67a4000000002b010eae",
+          "title": "生日 10 秒倒计时视频，免费分享哦！",
+          "author_id": "660d2cf7000000000b031943",
+          "author": "好孕锦鲤日记",
+          "type": "video",
+          "likes": 2283,
+          "collects": 2101,
+          "comments": 814,
+          "shares": 1273,
+          "source_url": "https://www.xiaohongshu.com/explore/6a9f67a4000000002b010eae",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-18"
+            }
+          ]
+        },
+        {
+          "id": "6a91410f0000000020035f25",
+          "title": "生日吹蜡烛视频剪辑",
+          "author_id": "66dc263a000000001d033fa9",
+          "author": "不想早起",
+          "type": "video",
+          "likes": 14,
+          "collects": 13,
+          "comments": 6,
+          "shares": 25,
+          "source_url": "https://www.xiaohongshu.com/explore/6a91410f0000000020035f25",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-11"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "生日纪念",
+      "query": "剪映生日模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:33.940088+00:00",
+      "items": [
+        {
+          "id": "6ae0814e000000002b01eaef",
+          "title": "祝番茄生日快乐！",
+          "author_id": "653628fc000000000301fb5f",
+          "author": "喜乐皆美",
+          "type": "video",
+          "likes": 2,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae0814e000000002b01eaef",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 18:47"
+            }
+          ]
+        },
+        {
+          "id": "6ae06c1a00000000270165e8",
+          "title": "给小墨的生日专场呀",
+          "author_id": "60deda660000000001007218",
+          "author": "天使尾羽的溫度",
+          "type": "video",
+          "likes": 80,
+          "collects": 12,
+          "comments": 28,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae06c1a00000000270165e8",
+          "corner_tag": [
+            {
+              "text": "昨天 17:17",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ae0207a000000001a0250f7",
+          "title": "望月穂波🥞🍎10.27生日快乐",
+          "author_id": "5c41a24a00000000060235bf",
+          "author": "不朽信-",
+          "type": "video",
+          "likes": 126,
+          "collects": 8,
+          "comments": 5,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae0207a000000001a0250f7",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adfe2b00000000025010654",
+          "title": "施然生日快乐",
+          "author_id": "66e442f9000000001d032aac",
+          "author": "星落",
+          "type": "video",
+          "likes": 18,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adfe2b00000000025010654",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adf462b000000001503ac40",
+          "title": "祝我生日快乐",
+          "author_id": "66cc2bc0000000001d021d41",
+          "author": "台湾爱国青年应志宏-中国万岁",
+          "type": "video",
+          "likes": 144,
+          "collects": 5,
+          "comments": 26,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf462b000000001503ac40",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade484f000000002c02762f",
+          "title": "全屏字幕",
+          "author_id": "5912fc066a6a6958392b4200",
+          "author": "小兔咪",
+          "type": "video",
+          "likes": 9,
+          "collects": 8,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade484f000000002c02762f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade476a0000000033033375",
+          "title": "全屏字幕",
+          "author_id": "5912fc066a6a6958392b4200",
+          "author": "小兔咪",
+          "type": "video",
+          "likes": 6,
+          "collects": 2,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade476a0000000033033375",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade22310000000024037ad5",
+          "title": "",
+          "author_id": "5574568258944625051edd96",
+          "author": "红se高跟xie",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade22310000000024037ad5",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade17a3000000002c0129d9",
+          "title": "刚剪辑好的祝福满屏字幕",
+          "author_id": "67dd54fa000000000e01d269",
+          "author": "大小姐的成长日志",
+          "type": "video",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade17a3000000002c0129d9",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6addff8c000000002b02949a",
+          "title": "学习100种剪辑手法之—生日转场（70/100）",
+          "author_id": "5ceb7c7f000000001601b308",
+          "author": "Bibo学长",
+          "type": "video",
+          "likes": 83,
+          "collects": 73,
+          "comments": 12,
+          "shares": 7,
+          "source_url": "https://www.xiaohongshu.com/explore/6addff8c000000002b02949a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "生日纪念",
+      "query": "生日相册模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:35.806778+00:00",
+      "items": [
+        {
+          "id": "6aa4a0d8000000002603be80",
+          "title": "这套生日相册模板，我真的会存！27",
+          "author_id": "64e6e8f3000000000100f971",
+          "author": "摄影素材专供",
+          "type": "normal",
+          "likes": 36,
+          "collects": 34,
+          "comments": 0,
+          "shares": 5,
+          "source_url": "https://www.xiaohongshu.com/explore/6aa4a0d8000000002603be80",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-12"
+            }
+          ]
+        },
+        {
+          "id": "6766baf2000000000b014ddf",
+          "title": "🎊金色生日主题模板6款psd格式",
+          "author_id": "670d01bc000000001d020313",
+          "author": "设计师小孟",
+          "type": "normal",
+          "likes": 636,
+          "collects": 343,
+          "comments": 47,
+          "shares": 88,
+          "source_url": "https://www.xiaohongshu.com/explore/6766baf2000000000b014ddf",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2024-12-21"
+            }
+          ]
+        },
+        {
+          "id": "6aafc5f40000000026015340",
+          "title": "生日写真做成相册，简直夯爆了！！",
+          "author_id": "69e97a3b0000000002002003",
+          "author": "拾光猫相册",
+          "type": "normal",
+          "likes": 6,
+          "collects": 8,
+          "comments": 0,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6aafc5f40000000026015340",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-20"
+            }
+          ]
+        },
+        {
+          "id": "68957bc90000000025015e8f",
+          "title": "宝宝1周岁相册 | 影楼排版和我排版的区别",
+          "author_id": "5d2035f3000000001201c1d8",
+          "author": "设计师Nicole",
+          "type": "normal",
+          "likes": 227,
+          "collects": 154,
+          "comments": 59,
+          "shares": 62,
+          "source_url": "https://www.xiaohongshu.com/explore/68957bc90000000025015e8f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-08-08"
+            }
+          ]
+        },
+        {
+          "id": "6911333a0000000005001aad",
+          "title": "十二岁生日大屏",
+          "author_id": "647f1529000000001f005000",
+          "author": "轩晋",
+          "type": "video",
+          "likes": 10,
+          "collects": 13,
+          "comments": 17,
+          "shares": 9,
+          "source_url": "https://www.xiaohongshu.com/explore/6911333a0000000005001aad",
+          "corner_tag": [
+            {
+              "text": "2025-11-10",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "696f363c000000000d00ad32",
+          "title": "给老公准备的30岁生日礼物",
+          "author_id": "6441f6c40000000012034d6a",
+          "author": "菠萝不吃菠萝",
+          "type": "normal",
+          "likes": 59,
+          "collects": 78,
+          "comments": 3,
+          "shares": 4,
+          "source_url": "https://www.xiaohongshu.com/explore/696f363c000000000d00ad32",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "01-20"
+            }
+          ]
+        },
+        {
+          "id": "683bd044000000000303bf26",
+          "title": "给孩子生日的仪式感超赞！慢慢的成长回忆",
+          "author_id": "5eddb8ff000000000101d721",
+          "author": "电子邀请函",
+          "type": "video",
+          "likes": 14,
+          "collects": 14,
+          "comments": 2,
+          "shares": 15,
+          "source_url": "https://www.xiaohongshu.com/explore/683bd044000000000303bf26",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-06-01"
+            }
+          ]
+        },
+        {
+          "id": "68f25efe000000000700a4a3",
+          "title": "十周岁电子相册",
+          "author_id": "61a1217b00000000100073ac",
+          "author": "相册喵喵喵",
+          "type": "video",
+          "likes": 19,
+          "collects": 15,
+          "comments": 8,
+          "shares": 23,
+          "source_url": "https://www.xiaohongshu.com/explore/68f25efe000000000700a4a3",
+          "corner_tag": [
+            {
+              "text": "2025-10-18",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "68327c74000000002301fbc2",
+          "title": "宝宝成长电子相册",
+          "author_id": "5f1845510000000001007d3b",
+          "author": "阿航",
+          "type": "video",
+          "likes": 2,
+          "collects": 4,
+          "comments": 0,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/68327c74000000002301fbc2",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-05-25"
+            }
+          ]
+        },
+        {
+          "id": "6ab4c93b000000000b0067c6",
+          "title": "AI生成｜生日快乐背景图",
+          "author_id": "6663de650000000007005e25",
+          "author": "穗小穗爱设计",
+          "type": "normal",
+          "likes": 47,
+          "collects": 18,
+          "comments": 2,
+          "shares": 4,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab4c93b000000000b0067c6",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-27"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "生日纪念",
+      "query": "生日相册模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:37.818142+00:00",
+      "items": [
+        {
+          "id": "6ae1572d00000000220389f7",
+          "title": "12岁生日视频，孩子成长相册视频",
+          "author_id": "6a9589610000000013031402",
+          "author": "西瓜剪辑",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae1572d00000000220389f7",
+          "corner_tag": [
+            {
+              "text": "2小时前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ae086aa000000002c00a588",
+          "title": "生日快乐库存模板已加满🍰",
+          "author_id": "5a9e294be8ac2b1d8e9e2f46",
+          "author": "对对对👀",
+          "type": "normal",
+          "likes": 26,
+          "collects": 14,
+          "comments": 2,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae086aa000000002c00a588",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 19:10"
+            }
+          ]
+        },
+        {
+          "id": "6ae06b0d00000000230138c6",
+          "title": "十周岁生日PPT模板卡通动态成长相册",
+          "author_id": "6158abfa0000000002023b0c",
+          "author": "花园老师",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae06b0d00000000230138c6",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 17:12"
+            }
+          ]
+        },
+        {
+          "id": "6adf470d0000000012009096",
+          "title": "存一些生日模板🎂｜醒图Plog模板分享",
+          "author_id": "6668747c00000000070079c5",
+          "author": "白咪饭27",
+          "type": "normal",
+          "likes": 46,
+          "collects": 39,
+          "comments": 18,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6adf470d0000000012009096",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adaf412000000002b0035eb",
+          "title": "百日宴快闪成长相册",
+          "author_id": "69feeb180000000002001001",
+          "author": "小红薯69FFE3EF",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adaf412000000002b0035eb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "4天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad831f80000000031037104",
+          "title": "",
+          "author_id": "65859e1d000000001c02ad14",
+          "author": "AI 副业实测局",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad831f80000000031037104",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-21"
+            }
+          ]
+        },
+        {
+          "id": "6ad5adca0000000029009205",
+          "title": "同事生日会ppt动态模板电子相册",
+          "author_id": "6964cdbf0000000037030da7",
+          "author": "冬月老师",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad5adca0000000029009205",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-19"
+            }
+          ]
+        },
+        {
+          "id": "6ad59e5f000000001e0269d3",
+          "title": "蛋糕生日风十岁成长礼 PPT 电子相册",
+          "author_id": "63f5d331000000000e021264",
+          "author": "JD汪素材",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad59e5f000000001e0269d3",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "3天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad1985c000000001a03020f",
+          "title": "万人看过的diy相册内页教程来了！",
+          "author_id": "619c6296000000001000bfae",
+          "author": "The Moment",
+          "type": "normal",
+          "likes": 35,
+          "collects": 10,
+          "comments": 1,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad1985c000000001a03020f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-16"
+            }
+          ]
+        },
+        {
+          "id": "6ad18dbd000000001c01f999",
+          "title": "低成本制作生日背景板",
+          "author_id": "6543113f000000000301fed7",
+          "author": "墨雨",
+          "type": "normal",
+          "likes": 1,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad18dbd000000001c01f999",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-16"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "商家商品",
+      "query": "剪映商家模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:39.675761+00:00",
+      "items": [
+        {
+          "id": "6abbe150000000001303fb4a",
+          "title": "41套企业宣传视频模板！剪映一键替换就出片",
+          "author_id": "69590dd0000000003201fd27",
+          "author": "芒街第一深情",
+          "type": "normal",
+          "likes": 7,
+          "collects": 2,
+          "comments": 37,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6abbe150000000001303fb4a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "6746d280000000000202df6f",
+          "title": "震惊🤯制作爆款带货视频原来这么简单",
+          "author_id": "663db1920000000003031067",
+          "author": "迷你世界^阡绾*",
+          "type": "video",
+          "likes": 349,
+          "collects": 187,
+          "comments": 2,
+          "shares": 45,
+          "source_url": "https://www.xiaohongshu.com/explore/6746d280000000000202df6f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2024-11-27"
+            }
+          ]
+        },
+        {
+          "id": "6ad59b0d0000000026031400",
+          "title": "1500+jian 映模板合集！剪辑党永久素材库",
+          "author_id": "6517875c0000000024016af0",
+          "author": "野生攻城狮",
+          "type": "normal",
+          "likes": 1,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad59b0d0000000026031400",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-19"
+            }
+          ]
+        },
+        {
+          "id": "6a99998b000000000b037bf7",
+          "title": "蓝色科技感数字滚动预设｜剪映文字预设",
+          "author_id": "5d298b20000000001603eaa2",
+          "author": "拾光序大华",
+          "type": "video",
+          "likes": 22,
+          "collects": 31,
+          "comments": 1,
+          "shares": 6,
+          "source_url": "https://www.xiaohongshu.com/explore/6a99998b000000000b037bf7",
+          "corner_tag": [
+            {
+              "text": "09-04",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6aa931b8000000000d0242d6",
+          "title": "你与爆款只差一个封面|新人博主必备",
+          "author_id": "5dbd21f20000000001002f93",
+          "author": "方块江",
+          "type": "normal",
+          "likes": 34,
+          "collects": 25,
+          "comments": 4,
+          "shares": 5,
+          "source_url": "https://www.xiaohongshu.com/explore/6aa931b8000000000d0242d6",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-15"
+            }
+          ]
+        },
+        {
+          "id": "691ae3c300000000040149fd",
+          "title": "这样的视频模板买家你有没有？我有很多！",
+          "author_id": "63160186000000000f0043b4",
+          "author": "视频剪辑夜歌",
+          "type": "normal",
+          "likes": 2,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/691ae3c300000000040149fd",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-11-17"
+            }
+          ]
+        },
+        {
+          "id": "6aaf50350000000028029de5",
+          "title": "剪映模板代做，短视频模板定制",
+          "author_id": "690005760000000037030e58",
+          "author": "特创数字科技",
+          "type": "normal",
+          "likes": 2,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6aaf50350000000028029de5",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-20"
+            }
+          ]
+        },
+        {
+          "id": "69733c09000000000b013151",
+          "title": "剪映模板大赛，一次投稿，亿级传播！",
+          "author_id": "5c7e1cf70000000016006a0e",
+          "author": "方案王子",
+          "type": "normal",
+          "likes": 2,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/69733c09000000000b013151",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "01-24"
+            }
+          ]
+        },
+        {
+          "id": "6ade047a000000002c023ebb",
+          "title": "剪映工程模板130款商业活动快剪通用8.0以上",
+          "author_id": "67d1569c000000000d00b348",
+          "author": "优集资料库",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade047a000000002c023ebb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6a7c4058000000003300db95",
+          "title": "第四套包装预设完整预览",
+          "author_id": "65465f3800000000020105e0",
+          "author": "邪修字幕君",
+          "type": "video",
+          "likes": 87,
+          "collects": 132,
+          "comments": 11,
+          "shares": 23,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7c4058000000003300db95",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-21"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "商家商品",
+      "query": "剪映商家模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:41.737828+00:00",
+      "items": [
+        {
+          "id": "6ade047a000000002c023ebb",
+          "title": "剪映工程模板130款商业活动快剪通用8.0以上",
+          "author_id": "67d1569c000000000d00b348",
+          "author": "优集资料库",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade047a000000002c023ebb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6adb0fef00000000320206e0",
+          "title": "",
+          "author_id": "618d3155000000002102346f",
+          "author": "蕉蕉",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adb0fef00000000320206e0",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "4天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad9703b000000002c01175f",
+          "title": "剪映模板做企业宣传视频直接套",
+          "author_id": "6903357f000000003702f5f4",
+          "author": "Y耀眼光芒",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad9703b000000002c01175f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "6天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad44468000000000c00f16d",
+          "title": "",
+          "author_id": "5cbf0d6b0000000011018fd2",
+          "author": "栗粟在学习",
+          "type": "normal",
+          "likes": 1,
+          "collects": 1,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad44468000000000c00f16d",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-18"
+            }
+          ]
+        },
+        {
+          "id": "6ace30c700000000020298ff",
+          "title": "剪映工程模板130款商业活动快剪电脑通用",
+          "author_id": "5f7471280000000001000297",
+          "author": "素月老师",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ace30c700000000020298ff",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-13"
+            }
+          ]
+        },
+        {
+          "id": "6aca190300000000150067f4",
+          "title": "剪映活动快剪模板第三季20套",
+          "author_id": "5cae9d80000000001603c30f",
+          "author": "剪辑师用即梦",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6aca190300000000150067f4",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-11"
+            }
+          ]
+        },
+        {
+          "id": "6ac9905100000000140023fa",
+          "title": "设计｜10种高级感文字排版价格标签",
+          "author_id": "60d83d6100000000200283ef",
+          "author": "Ami剪辑没烦恼",
+          "type": "video",
+          "likes": 7,
+          "collects": 6,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac9905100000000140023fa",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-10"
+            }
+          ]
+        },
+        {
+          "id": "6ac87fe1000000001a027fc4",
+          "title": "130款剪映工程模板商业活动快剪电脑通用",
+          "author_id": "67d1569c000000000d00b348",
+          "author": "优集资料库",
+          "type": "normal",
+          "likes": 0,
+          "collects": 2,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac87fe1000000001a027fc4",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-09"
+            }
+          ]
+        },
+        {
+          "id": "6abbe150000000001303fb4a",
+          "title": "41套企业宣传视频模板！剪映一键替换就出片",
+          "author_id": "69590dd0000000003201fd27",
+          "author": "芒街第一深情",
+          "type": "normal",
+          "likes": 7,
+          "collects": 2,
+          "comments": 37,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6abbe150000000001303fb4a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "6ab7c95f000000001b0238ce",
+          "title": "剪映工程模板130款商业活动快剪电脑通用",
+          "author_id": "67d1569c000000000d00b348",
+          "author": "优集资料库",
+          "type": "normal",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab7c95f000000001b0238ce",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-26"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "商家商品",
+      "query": "剪映商品展示模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:43.604521+00:00",
+      "items": [
+        {
+          "id": "6a3b490b000000001101bf58",
+          "title": "1分钟学会炫酷产品展示",
+          "author_id": "64acb011000000001001cbfb",
+          "author": "剪辑师袁大宝（剪辑收徒）",
+          "type": "video",
+          "likes": 280,
+          "collects": 354,
+          "comments": 11,
+          "shares": 47,
+          "source_url": "https://www.xiaohongshu.com/explore/6a3b490b000000001101bf58",
+          "corner_tag": [
+            {
+              "text": "06-24",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6911b8910000000004012e26",
+          "title": "“真是太不小心了”",
+          "author_id": "5d3593df0000000010014ef4",
+          "author": "一只会剪辑的兔子",
+          "type": "video",
+          "likes": 857,
+          "collects": 712,
+          "comments": 11,
+          "shares": 97,
+          "source_url": "https://www.xiaohongshu.com/explore/6911b8910000000004012e26",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-11-10"
+            }
+          ]
+        },
+        {
+          "id": "66a0e15b0000000005006c80",
+          "title": "科技感产品展示视频模板，视频剪辑模板！",
+          "author_id": "63160186000000000f0043b4",
+          "author": "视频剪辑夜歌",
+          "type": "video",
+          "likes": 146,
+          "collects": 130,
+          "comments": 153,
+          "shares": 73,
+          "source_url": "https://www.xiaohongshu.com/explore/66a0e15b0000000005006c80",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2024-07-24"
+            }
+          ]
+        },
+        {
+          "id": "6746d280000000000202df6f",
+          "title": "震惊🤯制作爆款带货视频原来这么简单",
+          "author_id": "663db1920000000003031067",
+          "author": "迷你世界^阡绾*",
+          "type": "video",
+          "likes": 349,
+          "collects": 187,
+          "comments": 2,
+          "shares": 45,
+          "source_url": "https://www.xiaohongshu.com/explore/6746d280000000000202df6f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2024-11-27"
+            }
+          ]
+        },
+        {
+          "id": "6abbe150000000001303fb4a",
+          "title": "41套企业宣传视频模板！剪映一键替换就出片",
+          "author_id": "69590dd0000000003201fd27",
+          "author": "芒街第一深情",
+          "type": "normal",
+          "likes": 7,
+          "collects": 2,
+          "comments": 37,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6abbe150000000001303fb4a",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-30"
+            }
+          ]
+        },
+        {
+          "id": "682c4e3000000000220372d6",
+          "title": "用剪映智能制作商品图、图片设计1分钟生成",
+          "author_id": "627dcd660000000021028218",
+          "author": "画骨自媒体剪辑",
+          "type": "video",
+          "likes": 56,
+          "collects": 59,
+          "comments": 9,
+          "shares": 15,
+          "source_url": "https://www.xiaohongshu.com/explore/682c4e3000000000220372d6",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-05-20"
+            }
+          ]
+        },
+        {
+          "id": "6a7b2b1d000000003400cfe1",
+          "title": "剪映模板｜新手剪辑直接抄作业✨",
+          "author_id": "5c85921000000000120235aa",
+          "author": "花辞树354",
+          "type": "normal",
+          "likes": 0,
+          "collects": 1,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7b2b1d000000003400cfe1",
+          "corner_tag": [
+            {
+              "text": "08-11",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a7c4058000000003300db95",
+          "title": "第四套包装预设完整预览",
+          "author_id": "65465f3800000000020105e0",
+          "author": "邪修字幕君",
+          "type": "video",
+          "likes": 87,
+          "collects": 132,
+          "comments": 11,
+          "shares": 23,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7c4058000000003300db95",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-21"
+            }
+          ]
+        },
+        {
+          "id": "6a6afdba000000000402a5d0",
+          "title": "服装切片完整剪辑教程(剪映，手机电脑通用)",
+          "author_id": "6135e9e1000000000202126b",
+          "author": "听赵奶奶谈情感",
+          "type": "normal",
+          "likes": 7,
+          "collects": 3,
+          "comments": 2,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6a6afdba000000000402a5d0",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-30"
+            }
+          ]
+        },
+        {
+          "id": "6a60891c000000000f00ac40",
+          "title": "6个免费宝藏资源库，从此告别找素材秃头",
+          "author_id": "5d8bafb50000000001007f29",
+          "author": "张正森",
+          "type": "normal",
+          "likes": 10,
+          "collects": 22,
+          "comments": 0,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6a60891c000000000f00ac40",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-22"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "商家商品",
+      "query": "剪映商品展示模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:45.630691+00:00",
+      "items": [
+        {
+          "id": "6adb21b9000000002b00eaec",
+          "title": "「片头拆解｜四组高审美好物分享开头」",
+          "author_id": "60f376440000000001009c0a",
+          "author": "米米羔（剪辑版）",
+          "type": "video",
+          "likes": 110,
+          "collects": 95,
+          "comments": 1,
+          "shares": 12,
+          "source_url": "https://www.xiaohongshu.com/explore/6adb21b9000000002b00eaec",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "3天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad5880700000000270355d4",
+          "title": "剪映电脑版模板做企业宣传片",
+          "author_id": "68c3cef20000000019011d8a",
+          "author": "垚垚",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad5880700000000270355d4",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-19"
+            }
+          ]
+        },
+        {
+          "id": "6a913420000000002902949d",
+          "title": "好物剪辑万能结构｜新手照着剪就行",
+          "author_id": "688879b0000000001d00a90f",
+          "author": "华年°",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6a913420000000002902949d",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-28"
+            }
+          ]
+        },
+        {
+          "id": "6a71f3360000000033035457",
+          "title": "企业介绍滚动照片墙视频是怎么做出来的？",
+          "author_id": "63160186000000000f0043b4",
+          "author": "视频剪辑夜歌",
+          "type": "video",
+          "likes": 6,
+          "collects": 7,
+          "comments": 2,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6a71f3360000000033035457",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-04"
+            }
+          ]
+        },
+        {
+          "id": "6a6afdba000000000402a5d0",
+          "title": "服装切片完整剪辑教程(剪映，手机电脑通用)",
+          "author_id": "6135e9e1000000000202126b",
+          "author": "听赵奶奶谈情感",
+          "type": "normal",
+          "likes": 7,
+          "collects": 3,
+          "comments": 2,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6a6afdba000000000402a5d0",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-30"
+            }
+          ]
+        },
+        {
+          "id": "6a67f217000000001400572f",
+          "title": "企业宣传剪映模板🔥 活动/产品/团建视频用",
+          "author_id": "5cc9451d0000000017010a39",
+          "author": "小家",
+          "type": "normal",
+          "likes": 15,
+          "collects": 12,
+          "comments": 0,
+          "shares": 11,
+          "source_url": "https://www.xiaohongshu.com/explore/6a67f217000000001400572f",
+          "corner_tag": [
+            {
+              "text": "07-28",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a3b490b000000001101bf58",
+          "title": "1分钟学会炫酷产品展示",
+          "author_id": "64acb011000000001001cbfb",
+          "author": "剪辑师袁大宝（剪辑收徒）",
+          "type": "video",
+          "likes": 280,
+          "collects": 354,
+          "comments": 11,
+          "shares": 47,
+          "source_url": "https://www.xiaohongshu.com/explore/6a3b490b000000001101bf58",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-24"
+            }
+          ]
+        },
+        {
+          "id": "69d1105e000000001a0220b8",
+          "title": "",
+          "author_id": "64d0b533000000000e026a1e",
+          "author": "大同小牛家具",
+          "type": "video",
+          "likes": 4,
+          "collects": 2,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/69d1105e000000001a0220b8",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "04-04"
+            }
+          ]
+        },
+        {
+          "id": "6911b8910000000004012e26",
+          "title": "“真是太不小心了”",
+          "author_id": "5d3593df0000000010014ef4",
+          "author": "一只会剪辑的兔子",
+          "type": "video",
+          "likes": 857,
+          "collects": 712,
+          "comments": 11,
+          "shares": 97,
+          "source_url": "https://www.xiaohongshu.com/explore/6911b8910000000004012e26",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-11-10"
+            }
+          ]
+        },
+        {
+          "id": "68b0e3de000000001d02ddf3",
+          "title": "小红书产品种草视频没流量？一秒钟解决",
+          "author_id": "613d6ffa000000000201a867",
+          "author": "素达会员",
+          "type": "normal",
+          "likes": 1,
+          "collects": 1,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/68b0e3de000000001d02ddf3",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-08-29"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "知识数据",
+      "query": "剪映数据图表",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:47.604993+00:00",
+      "items": [
+        {
+          "id": "68ff6caa00000000070151a6",
+          "title": "剪映新功能炸了！数据图表3 个坑千万别踩！",
+          "author_id": "6114e32d000000000100980d",
+          "author": "聚族映像",
+          "type": "video",
+          "likes": 89,
+          "collects": 74,
+          "comments": 5,
+          "shares": 44,
+          "source_url": "https://www.xiaohongshu.com/explore/68ff6caa00000000070151a6",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-10-27"
+            }
+          ]
+        },
+        {
+          "id": "6ac61c8d000000001c00c608",
+          "title": "这个功能，做动态数据表格真的太省事了📊",
+          "author_id": "63b901280000000026006154",
+          "author": "lightning（剪辑）",
+          "type": "video",
+          "likes": 1,
+          "collects": 1,
+          "comments": 1,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac61c8d000000001c00c608",
+          "corner_tag": [
+            {
+              "text": "10-07",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a7712c800000000320231cc",
+          "title": "今日学习-模仿小lin解说动态图表",
+          "author_id": "661946f8000000000b031625",
+          "author": "迷茫的三德子",
+          "type": "video",
+          "likes": 21,
+          "collects": 15,
+          "comments": 0,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7712c800000000320231cc",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-08"
+            }
+          ]
+        },
+        {
+          "id": "6ac897c0000000001800570b",
+          "title": "企业数据汇报柱状增长视频这样剪高级感拉满",
+          "author_id": "64ec158a0000000001006457",
+          "author": "设计师阿樱-",
+          "type": "video",
+          "likes": 5,
+          "collects": 1,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac897c0000000001800570b",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-10"
+            }
+          ]
+        },
+        {
+          "id": "69b69de8000000001e00ce38",
+          "title": "一键制作「小Lin说」数据图表动画，Ai+剪映",
+          "author_id": "607a4d8900000000010026b0",
+          "author": "虚空光影",
+          "type": "video",
+          "likes": 900,
+          "collects": 1164,
+          "comments": 19,
+          "shares": 224,
+          "source_url": "https://www.xiaohongshu.com/explore/69b69de8000000001e00ce38",
+          "corner_tag": [
+            {
+              "text": "03-15",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "67b02102000000001701ec0e",
+          "title": "用剪映一款生产数据可视化！",
+          "author_id": "610ab7e50000000001003de1",
+          "author": "掉帧了",
+          "type": "video",
+          "likes": 625,
+          "collects": 708,
+          "comments": 21,
+          "shares": 279,
+          "source_url": "https://www.xiaohongshu.com/explore/67b02102000000001701ec0e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-02-15"
+            }
+          ]
+        },
+        {
+          "id": "69c53a21000000001b021f9b",
+          "title": "剪映1分钟做爆款动态透视图表",
+          "author_id": "662321b9000000000303177c",
+          "author": "石匠教剪辑",
+          "type": "video",
+          "likes": 267,
+          "collects": 400,
+          "comments": 16,
+          "shares": 44,
+          "source_url": "https://www.xiaohongshu.com/explore/69c53a21000000001b021f9b",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "03-26"
+            }
+          ]
+        },
+        {
+          "id": "68c7ad3a000000001d028806",
+          "title": "",
+          "author_id": "5c73cea70000000011002549",
+          "author": "小何爱剪辑",
+          "type": "video",
+          "likes": 611,
+          "collects": 733,
+          "comments": 18,
+          "shares": 82,
+          "source_url": "https://www.xiaohongshu.com/explore/68c7ad3a000000001d028806",
+          "corner_tag": [
+            {
+              "text": "2025-09-15",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "68a9a94d000000001d025885",
+          "title": "剪映可以制作数据图表了！",
+          "author_id": "5f8570080000000001000424",
+          "author": "剪个世界观",
+          "type": "video",
+          "likes": 69,
+          "collects": 68,
+          "comments": 10,
+          "shares": 17,
+          "source_url": "https://www.xiaohongshu.com/explore/68a9a94d000000001d025885",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-08-23"
+            }
+          ]
+        },
+        {
+          "id": "6ad06ecd000000001a02b3ae",
+          "title": "柱状图数据剪映模板",
+          "author_id": "633e7f46000000001802ac58",
+          "author": "光影模板工坊",
+          "type": "video",
+          "likes": 4,
+          "collects": 3,
+          "comments": 4,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad06ecd000000001a02b3ae",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-15"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "知识数据",
+      "query": "剪映数据图表",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:50.321997+00:00",
+      "items": [
+        {
+          "id": "6ad43d70000000001d02edc6",
+          "title": "表格数据图表剪映模板",
+          "author_id": "633e7f46000000001802ac58",
+          "author": "光影模板工坊",
+          "type": "video",
+          "likes": 4,
+          "collects": 2,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad43d70000000001d02edc6",
+          "corner_tag": [
+            {
+              "text": "10-18",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6acae581000000001b01e688",
+          "title": "数据展示剪映模板",
+          "author_id": "633e7f46000000001802ac58",
+          "author": "光影模板工坊",
+          "type": "video",
+          "likes": 6,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6acae581000000001b01e688",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-11"
+            }
+          ]
+        },
+        {
+          "id": "6ac897c0000000001800570b",
+          "title": "企业数据汇报柱状增长视频这样剪高级感拉满",
+          "author_id": "64ec158a0000000001006457",
+          "author": "设计师阿樱-",
+          "type": "video",
+          "likes": 5,
+          "collects": 1,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac897c0000000001800570b",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-10"
+            }
+          ]
+        },
+        {
+          "id": "6ac61c8d000000001c00c608",
+          "title": "这个功能，做动态数据表格真的太省事了📊",
+          "author_id": "63b901280000000026006154",
+          "author": "lightning（剪辑）",
+          "type": "video",
+          "likes": 1,
+          "collects": 1,
+          "comments": 1,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac61c8d000000001c00c608",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-07"
+            }
+          ]
+        },
+        {
+          "id": "6ac1a216000000000202b7aa",
+          "title": "柱状图数据剪映模板",
+          "author_id": "633e7f46000000001802ac58",
+          "author": "光影模板工坊",
+          "type": "video",
+          "likes": 1,
+          "collects": 2,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac1a216000000000202b7aa",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-04"
+            }
+          ]
+        },
+        {
+          "id": "6ac069f500000000150050d1",
+          "title": "数据展示剪映模板",
+          "author_id": "633e7f46000000001802ac58",
+          "author": "光影模板工坊",
+          "type": "video",
+          "likes": 9,
+          "collects": 8,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac069f500000000150050d1",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-03"
+            }
+          ]
+        },
+        {
+          "id": "6ab90e78000000001c01e06f",
+          "title": "2分钟学财经数据动画❗️新手小白自学进阶",
+          "author_id": "5e9c1f3f0000000001006b41",
+          "author": "大格爱自由",
+          "type": "video",
+          "likes": 43,
+          "collects": 38,
+          "comments": 0,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab90e78000000001c01e06f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-27"
+            }
+          ]
+        },
+        {
+          "id": "6a7712c800000000320231cc",
+          "title": "今日学习-模仿小lin解说动态图表",
+          "author_id": "661946f8000000000b031625",
+          "author": "迷茫的三德子",
+          "type": "video",
+          "likes": 21,
+          "collects": 15,
+          "comments": 0,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7712c800000000320231cc",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-08"
+            }
+          ]
+        },
+        {
+          "id": "6a3168bb0000000011016550",
+          "title": "柱状图财经剪辑自学跟练教程✂️小lin说",
+          "author_id": "5e9c1f3f0000000001006b41",
+          "author": "大格爱自由",
+          "type": "video",
+          "likes": 178,
+          "collects": 178,
+          "comments": 8,
+          "shares": 26,
+          "source_url": "https://www.xiaohongshu.com/explore/6a3168bb0000000011016550",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-16"
+            }
+          ]
+        },
+        {
+          "id": "6a2babb7000000003503bb7f",
+          "title": "新手自学进阶剪辑✂️小lin说数据饼状图",
+          "author_id": "5e9c1f3f0000000001006b41",
+          "author": "大格爱自由",
+          "type": "video",
+          "likes": 442,
+          "collects": 516,
+          "comments": 11,
+          "shares": 47,
+          "source_url": "https://www.xiaohongshu.com/explore/6a2babb7000000003503bb7f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-12"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "知识数据",
+      "query": "剪映知识科普模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:52.339845+00:00",
+      "items": [
+        {
+          "id": "691457730000000004010660",
+          "title": "电脑剪映小白必入！全流程课件直接抄作业📝",
+          "author_id": "6323ee41000000001501e65e",
+          "author": "小苏要努力",
+          "type": "normal",
+          "likes": 134,
+          "collects": 103,
+          "comments": 9,
+          "shares": 23,
+          "source_url": "https://www.xiaohongshu.com/explore/691457730000000004010660",
+          "corner_tag": [
+            {
+              "text": "05-17",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "69a792eb000000001a02765e",
+          "title": "吃透这7页，你的剪映就很牛了",
+          "author_id": "67e924df000000000e02d782",
+          "author": "剪辑师寒林",
+          "type": "normal",
+          "likes": 7199,
+          "collects": 10871,
+          "comments": 273,
+          "shares": 918,
+          "source_url": "https://www.xiaohongshu.com/explore/69a792eb000000001a02765e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "03-04"
+            }
+          ]
+        },
+        {
+          "id": "690ec51a0000000003023c80",
+          "title": "",
+          "author_id": "64846f9700000000120357e1",
+          "author": "凉城予梦",
+          "type": "normal",
+          "likes": 5996,
+          "collects": 5475,
+          "comments": 23,
+          "shares": 532,
+          "source_url": "https://www.xiaohongshu.com/explore/690ec51a0000000003023c80",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-11-08"
+            }
+          ]
+        },
+        {
+          "id": "6abe57e1000000001a031359",
+          "title": "短视频剪辑｜剪映17个万能剪辑技巧🔥",
+          "author_id": "62444f7a0000000021029843",
+          "author": "琴子说电商",
+          "type": "normal",
+          "likes": 211,
+          "collects": 329,
+          "comments": 9,
+          "shares": 122,
+          "source_url": "https://www.xiaohongshu.com/explore/6abe57e1000000001a031359",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-01"
+            }
+          ]
+        },
+        {
+          "id": "6a7018db00000000330187ab",
+          "title": "剪映全套保姆教程｜新手直接抄作业",
+          "author_id": "5d2b2f5900000000160028ff",
+          "author": "奶油数码生活馆",
+          "type": "normal",
+          "likes": 3774,
+          "collects": 5764,
+          "comments": 18,
+          "shares": 451,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7018db00000000330187ab",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-03"
+            }
+          ]
+        },
+        {
+          "id": "6aca49b80000000002011f05",
+          "title": "剪辑小白收藏|12个剪映功能对照合辑",
+          "author_id": "5b8b48d91858210001544b1c",
+          "author": "希源不折腾",
+          "type": "normal",
+          "likes": 292,
+          "collects": 453,
+          "comments": 1,
+          "shares": 62,
+          "source_url": "https://www.xiaohongshu.com/explore/6aca49b80000000002011f05",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-10"
+            }
+          ]
+        },
+        {
+          "id": "695f3ee3000000001a01c285",
+          "title": "超简单的知识科普类内容剪辑🤓2分钟学会",
+          "author_id": "5e9c1f3f0000000001006b41",
+          "author": "大格爱自由",
+          "type": "video",
+          "likes": 1387,
+          "collects": 1384,
+          "comments": 19,
+          "shares": 183,
+          "source_url": "https://www.xiaohongshu.com/explore/695f3ee3000000001a01c285",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "01-08"
+            }
+          ]
+        },
+        {
+          "id": "69b69de8000000001e00ce38",
+          "title": "一键制作「小Lin说」数据图表动画，Ai+剪映",
+          "author_id": "607a4d8900000000010026b0",
+          "author": "虚空光影",
+          "type": "video",
+          "likes": 900,
+          "collects": 1164,
+          "comments": 19,
+          "shares": 224,
+          "source_url": "https://www.xiaohongshu.com/explore/69b69de8000000001e00ce38",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "03-15"
+            }
+          ]
+        },
+        {
+          "id": "67b6d6a7000000002803716c",
+          "title": "爆火的DeepSeek！还能做科普视频！",
+          "author_id": "656088af000000000802ec0d",
+          "author": "南丁格尔锦囊",
+          "type": "normal",
+          "likes": 830,
+          "collects": 802,
+          "comments": 111,
+          "shares": 224,
+          "source_url": "https://www.xiaohongshu.com/explore/67b6d6a7000000002803716c",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-02-20"
+            }
+          ]
+        },
+        {
+          "id": "6aaa5bcc00000000290195dc",
+          "title": "剪映关键帧保姆教程✨视频丝滑高级全靠它",
+          "author_id": "5ce6988b000000001103f8e9",
+          "author": "Sunny Q",
+          "type": "normal",
+          "likes": 7,
+          "collects": 12,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6aaa5bcc00000000290195dc",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-16"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "知识数据",
+      "query": "剪映知识科普模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:06:55.252034+00:00",
+      "items": [
+        {
+          "id": "6ae06448000000001b02a466",
+          "title": "剪映字幕高级感排版",
+          "author_id": "5daf022200000000010085bc",
+          "author": "Jane-简｜剪映素材",
+          "type": "video",
+          "likes": 16,
+          "collects": 23,
+          "comments": 0,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae06448000000001b02a466",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 16:43"
+            }
+          ]
+        },
+        {
+          "id": "6adb50f0000000002b00f3c8",
+          "title": "水为什么那么重要科普之",
+          "author_id": "5aec784be8ac2b50c59a9e40",
+          "author": "TING汁",
+          "type": "video",
+          "likes": 16,
+          "collects": 2,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6adb50f0000000002b00f3c8",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "4天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad5cba0000000000c0089ab",
+          "title": "【科普类】微课虚拟演播厅背景模板007",
+          "author_id": "62ac0f52000000001501ec20",
+          "author": "夜郎俊后生（微课模板）",
+          "type": "video",
+          "likes": 14,
+          "collects": 12,
+          "comments": 5,
+          "shares": 3,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad5cba0000000000c0089ab",
+          "corner_tag": [
+            {
+              "text": "10-20",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ad5f4270000000029009160",
+          "title": "教师、学生自己也能做微课啦！",
+          "author_id": "62ac0f52000000001501ec20",
+          "author": "夜郎俊后生（微课模板）",
+          "type": "video",
+          "likes": 13,
+          "collects": 17,
+          "comments": 1,
+          "shares": 4,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad5f4270000000029009160",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-19"
+            }
+          ]
+        },
+        {
+          "id": "6ad5ba3a0000000026017f4c",
+          "title": "剪映新手直接抄作业",
+          "author_id": "663b32260000000007006abc",
+          "author": ".剪辑日常笔记",
+          "type": "normal",
+          "likes": 14,
+          "collects": 32,
+          "comments": 1,
+          "shares": 9,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad5ba3a0000000026017f4c",
+          "corner_tag": [
+            {
+              "text": "10-19",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ad0cfca000000001802ae08",
+          "title": "剪映零基础入门",
+          "author_id": "5a91f028e8ac2b4e5590a8ba",
+          "author": "叶子",
+          "type": "normal",
+          "likes": 1,
+          "collects": 9,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad0cfca000000001802ae08",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-15"
+            }
+          ]
+        },
+        {
+          "id": "6ad098dd000000001a0252cb",
+          "title": "医护科普参赛脚本-动画版直接抄",
+          "author_id": "6a6895690000000013002c00",
+          "author": "医护科普比赛通",
+          "type": "normal",
+          "likes": 2,
+          "collects": 1,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad098dd000000001a0252cb",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-15"
+            }
+          ]
+        },
+        {
+          "id": "6ac851e40000000014002257",
+          "title": "想致富，先修路。",
+          "author_id": "6ac5c2b80000000013003803",
+          "author": "爱吃柿子的柿子老师",
+          "type": "normal",
+          "likes": 146,
+          "collects": 169,
+          "comments": 2,
+          "shares": 22,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac851e40000000014002257",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-09"
+            }
+          ]
+        },
+        {
+          "id": "6aba1e4b000000001c01decd",
+          "title": "知识点文案的视频包装效果",
+          "author_id": "65465f3800000000020105e0",
+          "author": "邪修字幕君",
+          "type": "video",
+          "likes": 141,
+          "collects": 232,
+          "comments": 2,
+          "shares": 13,
+          "source_url": "https://www.xiaohongshu.com/explore/6aba1e4b000000001c01decd",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-08"
+            }
+          ]
+        },
+        {
+          "id": "6abe57e1000000001a031359",
+          "title": "短视频剪辑｜剪映17个万能剪辑技巧🔥",
+          "author_id": "62444f7a0000000021029843",
+          "author": "琴子说电商",
+          "type": "normal",
+          "likes": 211,
+          "collects": 329,
+          "comments": 9,
+          "shares": 122,
+          "source_url": "https://www.xiaohongshu.com/explore/6abe57e1000000001a031359",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-01"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "旅行日常",
+      "query": "剪映旅行模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:06:57.631397+00:00",
+      "items": [
+        {
+          "id": "688deab10000000004002249",
+          "title": "",
+          "author_id": "66bd61df000000000b030476",
+          "author": "旅记",
+          "type": "video",
+          "likes": 160,
+          "collects": 180,
+          "comments": 15,
+          "shares": 27,
+          "source_url": "https://www.xiaohongshu.com/explore/688deab10000000004002249",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-08-02"
+            }
+          ]
+        },
+        {
+          "id": "6ab8cc31000000001a02263f",
+          "title": "",
+          "author_id": "6a6c5916000000001400cc01",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 112,
+          "collects": 55,
+          "comments": 7,
+          "shares": 6,
+          "source_url": "https://www.xiaohongshu.com/explore/6ab8cc31000000001a02263f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "09-27"
+            }
+          ]
+        },
+        {
+          "id": "6a87f999000000003b014990",
+          "title": "旅行",
+          "author_id": "68158665000000000e01cde5",
+          "author": "牛牛剪辑",
+          "type": "video",
+          "likes": 1013,
+          "collects": 946,
+          "comments": 11,
+          "shares": 97,
+          "source_url": "https://www.xiaohongshu.com/explore/6a87f999000000003b014990",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-21"
+            }
+          ]
+        },
+        {
+          "id": "6aba4051000000001802d437",
+          "title": "高级感旅行卡点效果",
+          "author_id": "5d30e84a000000001602574b",
+          "author": "黑猫学剪辑",
+          "type": "video",
+          "likes": 168,
+          "collects": 139,
+          "comments": 2,
+          "shares": 13,
+          "source_url": "https://www.xiaohongshu.com/explore/6aba4051000000001802d437",
+          "corner_tag": [
+            {
+              "text": "09-28",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a1dd46b0000000037037fae",
+          "title": "旅行碎片卡点 模板",
+          "author_id": "69fe0b2b0000000002001800",
+          "author": "月茶",
+          "type": "video",
+          "likes": 81,
+          "collects": 72,
+          "comments": 4,
+          "shares": 9,
+          "source_url": "https://www.xiaohongshu.com/explore/6a1dd46b0000000037037fae",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-02"
+            }
+          ]
+        },
+        {
+          "id": "69e8714b000000001a03537f",
+          "title": "",
+          "author_id": "657c60870000000019010eb8",
+          "author": "小胖纸婷儿",
+          "type": "video",
+          "likes": 55,
+          "collects": 75,
+          "comments": 2,
+          "shares": 21,
+          "source_url": "https://www.xiaohongshu.com/explore/69e8714b000000001a03537f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "04-22"
+            }
+          ]
+        },
+        {
+          "id": "6a0c3acd00000000350320ce",
+          "title": "",
+          "author_id": "69422717000000003700b4c0",
+          "author": "樱子🍒爱剪辑",
+          "type": "video",
+          "likes": 1910,
+          "collects": 2392,
+          "comments": 19,
+          "shares": 251,
+          "source_url": "https://www.xiaohongshu.com/explore/6a0c3acd00000000350320ce",
+          "corner_tag": [
+            {
+              "text": "05-19",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6831c7570000000012003207",
+          "title": "剪映脚本模板，短视频创作加速器",
+          "author_id": "5bcb4323e8ac2b2224a323b9",
+          "author": "苏陌染",
+          "type": "normal",
+          "likes": 1443,
+          "collects": 902,
+          "comments": 11,
+          "shares": 175,
+          "source_url": "https://www.xiaohongshu.com/explore/6831c7570000000012003207",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-05-30"
+            }
+          ]
+        },
+        {
+          "id": "6857f48e000000002400a88f",
+          "title": "vlog｜好喜欢这个模板",
+          "author_id": "65ab9dbc000000001a01ab62",
+          "author": "咖啡木木子",
+          "type": "video",
+          "likes": 1807,
+          "collects": 1785,
+          "comments": 45,
+          "shares": 654,
+          "source_url": "https://www.xiaohongshu.com/explore/6857f48e000000002400a88f",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-06-22"
+            }
+          ]
+        },
+        {
+          "id": "6a3f3401000000001101b35e",
+          "title": "1分钟学会高级感旅拍片头",
+          "author_id": "64acb011000000001001cbfb",
+          "author": "剪辑师袁大宝（剪辑收徒）",
+          "type": "video",
+          "likes": 178,
+          "collects": 256,
+          "comments": 7,
+          "shares": 28,
+          "source_url": "https://www.xiaohongshu.com/explore/6a3f3401000000001101b35e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-27"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "旅行日常",
+      "query": "剪映旅行模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:07:00.125809+00:00",
+      "items": [
+        {
+          "id": "6ae07be80000000022036c3b",
+          "title": "剪映模板700套 真的不用再找了🎬",
+          "author_id": "6a7bf8280000000013021000",
+          "author": "坚强的提莫",
+          "type": "normal",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae07be80000000022036c3b",
+          "corner_tag": [
+            {
+              "text": "昨天 18:24",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6adeff50000000000901884e",
+          "title": "用aju nice记录下这个充实的10月 ๑⃙⃘´༥`๑⃙⃘",
+          "author_id": "605883ff0000000001009e45",
+          "author": "鸽味桂",
+          "type": "video",
+          "likes": 45,
+          "collects": 1,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adeff50000000000901884e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "1天前"
+            }
+          ]
+        },
+        {
+          "id": "6adec19c0000000014019446",
+          "title": "",
+          "author_id": "5f41131a000000000101c1d4",
+          "author": "宏",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6adec19c0000000014019446",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6ade5031000000002c032911",
+          "title": "党岭徒步预告片-",
+          "author_id": "6abb517c0000000013002801",
+          "author": "图皑曲",
+          "type": "video",
+          "likes": 1,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ade5031000000002c032911",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2天前"
+            }
+          ]
+        },
+        {
+          "id": "6add6e91000000002a01dee5",
+          "title": "",
+          "author_id": "65d73ff50000000005031d73",
+          "author": "水写的誓言",
+          "type": "video",
+          "likes": 0,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6add6e91000000002a01dee5",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "3天前"
+            }
+          ]
+        },
+        {
+          "id": "6adca6310000000031036187",
+          "title": "旅行宣传卡点分屏蒙版视频这样剪更有质感",
+          "author_id": "68132aca000000000a03c525",
+          "author": "设计师阿樱1号（免费出小样）",
+          "type": "video",
+          "likes": 8,
+          "collects": 9,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6adca6310000000031036187",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "3天前"
+            }
+          ]
+        },
+        {
+          "id": "6adb7088000000002403d483",
+          "title": "旅行宣传蒙版卡点转场视频这样剪更高级",
+          "author_id": "64ec158a0000000001006457",
+          "author": "设计师阿樱-",
+          "type": "video",
+          "likes": 111,
+          "collects": 82,
+          "comments": 0,
+          "shares": 5,
+          "source_url": "https://www.xiaohongshu.com/explore/6adb7088000000002403d483",
+          "corner_tag": [
+            {
+              "text": "4天前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ad9b3f90000000031024da9",
+          "title": "带你轻松学会综艺感旅行视频开场的小技巧！",
+          "author_id": "671f4e19000000001d020096",
+          "author": "木可SaveShot",
+          "type": "video",
+          "likes": 19,
+          "collects": 22,
+          "comments": 0,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad9b3f90000000031024da9",
+          "corner_tag": [
+            {
+              "text": "1天前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ad8c7a6000000002b01e70e",
+          "title": "🇹🇷旅行回忆",
+          "author_id": "5e569d700000000001009927",
+          "author": "Lanugo",
+          "type": "video",
+          "likes": 10,
+          "collects": 0,
+          "comments": 2,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad8c7a6000000002b01e70e",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "6天前"
+            }
+          ]
+        },
+        {
+          "id": "6ad88807000000002a038159",
+          "title": "闺蜜出行👭这个转场真的值得所有姐妹照着拍",
+          "author_id": "5a59c6344eacab55b668dfce",
+          "author": "Sara戴",
+          "type": "video",
+          "likes": 2,
+          "collects": 0,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ad88807000000002a038159",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "6天前"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "旅行日常",
+      "query": "剪映日常vlog模板",
+      "sort": "综合",
+      "captured_at": "2026-10-28T04:07:02.403095+00:00",
+      "items": [
+        {
+          "id": "6a7018db00000000330187ab",
+          "title": "剪映全套保姆教程｜新手直接抄作业",
+          "author_id": "5d2b2f5900000000160028ff",
+          "author": "奶油数码生活馆",
+          "type": "normal",
+          "likes": 3774,
+          "collects": 5764,
+          "comments": 18,
+          "shares": 451,
+          "source_url": "https://www.xiaohongshu.com/explore/6a7018db00000000330187ab",
+          "corner_tag": [
+            {
+              "text": "08-03",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "69c251f100000000200383c1",
+          "title": "120个不露脸的vlog主题❗今年够拍啦",
+          "author_id": "62d6d72500000000020012ba",
+          "author": "Casey卡西拍摄剪辑",
+          "type": "normal",
+          "likes": 77,
+          "collects": 62,
+          "comments": 1,
+          "shares": 5,
+          "source_url": "https://www.xiaohongshu.com/explore/69c251f100000000200383c1",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "04-02"
+            }
+          ]
+        },
+        {
+          "id": "6ac9b729000000001500e40d",
+          "title": "",
+          "author_id": "6a6c5916000000001400cc01",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 2468,
+          "collects": 1256,
+          "comments": 52,
+          "shares": 258,
+          "source_url": "https://www.xiaohongshu.com/explore/6ac9b729000000001500e40d",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-13"
+            }
+          ]
+        },
+        {
+          "id": "6800e578000000000900ee43",
+          "title": "一键Get❗Plog转Vlog",
+          "author_id": "6561b9dc00000000020379b3",
+          "author": "江江爱剪辑",
+          "type": "video",
+          "likes": 636,
+          "collects": 378,
+          "comments": 4,
+          "shares": 52,
+          "source_url": "https://www.xiaohongshu.com/explore/6800e578000000000900ee43",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "2025-04-17"
+            }
+          ]
+        },
+        {
+          "id": "6a326fba00000000160273a6",
+          "title": "VLOG短视频脚本怎么写",
+          "author_id": "67ad8eff0000000007000d0e",
+          "author": "媒介投放官",
+          "type": "normal",
+          "likes": 758,
+          "collects": 635,
+          "comments": 2,
+          "shares": 104,
+          "source_url": "https://www.xiaohongshu.com/explore/6a326fba00000000160273a6",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "06-17"
+            }
+          ]
+        },
+        {
+          "id": "6a70653c0000000025017880",
+          "title": "视频剪辑，大家有空可以死磕这几位博主",
+          "author_id": "64dee8fe00000000010061fe",
+          "author": "香菜笨笨",
+          "type": "normal",
+          "likes": 17,
+          "collects": 27,
+          "comments": 0,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6a70653c0000000025017880",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "08-03"
+            }
+          ]
+        },
+        {
+          "id": "6aca3e7d000000001b0312fe",
+          "title": "第183期 l Vlog模版，绿幕素材，视频模板",
+          "author_id": "65269a08000000002a01a2b4",
+          "author": "剪映素材分享",
+          "type": "video",
+          "likes": 17025,
+          "collects": 6252,
+          "comments": 287,
+          "shares": 339,
+          "source_url": "https://www.xiaohongshu.com/explore/6aca3e7d000000001b0312fe",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "10-12"
+            }
+          ]
+        },
+        {
+          "id": "6abe57e1000000001a031359",
+          "title": "短视频剪辑｜剪映17个万能剪辑技巧🔥",
+          "author_id": "62444f7a0000000021029843",
+          "author": "琴子说电商",
+          "type": "normal",
+          "likes": 211,
+          "collects": 329,
+          "comments": 9,
+          "shares": 122,
+          "source_url": "https://www.xiaohongshu.com/explore/6abe57e1000000001a031359",
+          "corner_tag": [
+            {
+              "text": "10-01",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6a4e4ceb000000001503d30c",
+          "title": "剪映免费的vip，还有谁没拿到",
+          "author_id": "654f167800000000040390e5",
+          "author": "🐾萌萌",
+          "type": "normal",
+          "likes": 36,
+          "collects": 19,
+          "comments": 159,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6a4e4ceb000000001503d30c",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "07-08"
+            }
+          ]
+        },
+        {
+          "id": "69affa460000000026033f12",
+          "title": "vlog剪辑步骤：",
+          "author_id": "620a0f9b000000001000a89b",
+          "author": "小赖一米五",
+          "type": "normal",
+          "likes": 2307,
+          "collects": 1631,
+          "comments": 32,
+          "shares": 123,
+          "source_url": "https://www.xiaohongshu.com/explore/69affa460000000026033f12",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "03-10"
+            }
+          ]
+        }
+      ],
+      "success": true
+    },
+    {
+      "direction": "旅行日常",
+      "query": "剪映日常vlog模板",
+      "sort": "最新",
+      "captured_at": "2026-10-28T04:07:04.869628+00:00",
+      "items": [
+        {
+          "id": "6ae16ccd000000002b035470",
+          "title": "日常 Vlog 这样开场才有片子感",
+          "author_id": "5d42a4070000000016007864",
+          "author": "毛蛋小馍王",
+          "type": "video",
+          "likes": 8,
+          "collects": 6,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae16ccd000000002b035470",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "34分钟前"
+            }
+          ]
+        },
+        {
+          "id": "6ae16b9e0000000035020967",
+          "title": "",
+          "author_id": "6a6c65360000000013002801",
+          "author": "剪映Vlog模板素材库",
+          "type": "video",
+          "likes": 7,
+          "collects": 1,
+          "comments": 2,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae16b9e0000000035020967",
+          "corner_tag": [
+            {
+              "text": "39分钟前",
+              "type": "publish_time"
+            }
+          ]
+        },
+        {
+          "id": "6ae16a44000000001e016a90",
+          "title": "",
+          "author_id": "6aaa49400000000013030800",
+          "author": "剪映vlog素材模板库",
+          "type": "video",
+          "likes": 8,
+          "collects": 4,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae16a44000000001e016a90",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "45分钟前"
+            }
+          ]
+        },
+        {
+          "id": "6ae16940000000002b01c6cf",
+          "title": "",
+          "author_id": "697a32880000000021006cf4",
+          "author": "剪映vlog素材模板库",
+          "type": "video",
+          "likes": 11,
+          "collects": 7,
+          "comments": 1,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae16940000000002b01c6cf",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "49分钟前"
+            }
+          ]
+        },
+        {
+          "id": "6ae168ca000000000502e115",
+          "title": "",
+          "author_id": "6ad9bc58000000000f03a401",
+          "author": "剪映vlog模板分享",
+          "type": "video",
+          "likes": 12,
+          "collects": 4,
+          "comments": 0,
+          "shares": 1,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae168ca000000000502e115",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "51分钟前"
+            }
+          ]
+        },
+        {
+          "id": "6ae134c40000000023032f77",
+          "title": "第71期 l vlog绿幕素材",
+          "author_id": "6a295fb10000000002003007",
+          "author": "剪映Vlog模板库",
+          "type": "video",
+          "likes": 7,
+          "collects": 3,
+          "comments": 1,
+          "shares": 2,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae134c40000000023032f77",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "4小时前"
+            }
+          ]
+        },
+        {
+          "id": "6ae09fb10000000024006f05",
+          "title": "第70期 l vlog绿幕素材",
+          "author_id": "6a295fb10000000002003007",
+          "author": "剪映Vlog模板库",
+          "type": "video",
+          "likes": 3,
+          "collects": 1,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae09fb10000000024006f05",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "4小时前"
+            }
+          ]
+        },
+        {
+          "id": "6ae09cda000000003501cb91",
+          "title": "第101期｜vlog 素材模板",
+          "author_id": "6a85a87b0000000013031401",
+          "author": "剪映研究所",
+          "type": "video",
+          "likes": 10,
+          "collects": 3,
+          "comments": 1,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae09cda000000003501cb91",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 20:45"
+            }
+          ]
+        },
+        {
+          "id": "6ae096ac0000000022035806",
+          "title": "我要去山坡摘下红花奖励我",
+          "author_id": "5e6c7b9500000000010013f3",
+          "author": "浠宝和玥玥的搞笑日常",
+          "type": "video",
+          "likes": 8,
+          "collects": 6,
+          "comments": 0,
+          "shares": 0,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae096ac0000000022035806",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 20:18"
+            }
+          ]
+        },
+        {
+          "id": "6ae085bd000000002b0025da",
+          "title": "所有养猫人都去用这个模板！",
+          "author_id": "65fc6eea000000000b032da8",
+          "author": "玉米番茄饭",
+          "type": "video",
+          "likes": 26,
+          "collects": 2,
+          "comments": 1,
+          "shares": 4,
+          "source_url": "https://www.xiaohongshu.com/explore/6ae085bd000000002b0025da",
+          "corner_tag": [
+            {
+              "type": "publish_time",
+              "text": "昨天 19:06"
+            }
+          ]
+        }
+      ],
+      "success": true
+    }
+  ],
+  "details": [
+    {
+      "direction": "热点卡点",
+      "id": "6a28011f0000000035020ba2",
+      "source_url": "https://www.xiaohongshu.com/explore/6a28011f0000000035020ba2",
+      "success": true,
+      "title": "定格滑动卡点 模板分享～",
+      "desc": "爱世界，但是更要爱自己#模板分享[话题]# #剪同款[话题]# #卡点[话题]# #模板[话题]# #手机剪辑[话题]# #自学剪辑[话题]# #视频制作[话题]# #视频模板[话题]# #新手小白学剪辑[话题]#",
+      "published_timestamp": 1781006623000,
+      "last_update_timestamp": 1781006624000,
+      "interact_info": {
+        "nice_count": null,
+        "comment_count": 7,
+        "liked_count": 309,
+        "collected_count": 256,
+        "share_count": 29
+      },
+      "tags": [
+        "模板分享",
+        "剪同款",
+        "卡点",
+        "模板",
+        "手机剪辑",
+        "自学剪辑",
+        "视频制作",
+        "视频模板",
+        "新手小白学剪辑"
+      ]
+    },
+    {
+      "direction": "热点卡点",
+      "id": "6abca8c4000000001301a2fd",
+      "source_url": "https://www.xiaohongshu.com/explore/6abca8c4000000001301a2fd",
+      "success": true,
+      "title": "",
+      "desc": "第97期｜vlog绿幕素材【情感卡点】模版分享，一键替换素材即可\n#vlog[话题]# #剪映[话题]# #剪辑[话题]# #绿幕素材[话题]# #素材分享[话题]# #视频制作[话题]# #视频模板[话题]# #绿幕[话题]# #模版分享[话题]# #素材[话题]#",
+      "published_timestamp": 1790748868000,
+      "last_update_timestamp": 1790748868000,
+      "interact_info": {
+        "collected_count": 17000,
+        "nice_count": null,
+        "liked_count": 53000,
+        "comment_count": 817,
+        "share_count": 1848
+      },
+      "tags": [
+        "vlog",
+        "剪映",
+        "剪辑",
+        "绿幕素材",
+        "素材分享",
+        "视频制作",
+        "视频模板",
+        "绿幕",
+        "模版分享",
+        "素材"
+      ]
+    },
+    {
+      "direction": "宠物一图",
+      "id": "68eb5ee80000000007017adb",
+      "source_url": "https://www.xiaohongshu.com/explore/68eb5ee80000000007017adb",
+      "success": true,
+      "title": "码住ai指令:下雪天的猫咪🐱",
+      "desc": "帮我生成一张图片，画面中，将宠物主体抠出，视角拉近只露出宠物上半身，宠物神态惬意又满足，头顶还稳稳顶着一个小雪球，脖子上围着一条蓝色的针织围巾，围巾被风吹起，可爱又治愈。背景是冬日的海边雪景，海面平静，岸边的岩石与地面都覆盖着皑皑白雪，在柔和的光线映照下，整个场景像童话般宁静美好，仿佛宠物正享受着这独一份的冬日浪漫，让人感受到满满的温暖与治愈。整体叠加一层富士滤镜。#ai绘画[话题]#",
+      "published_timestamp": 1760255720000,
+      "last_update_timestamp": 1760256076000,
+      "interact_info": {
+        "liked_count": 208,
+        "collected_count": 106,
+        "comment_count": 25,
+        "share_count": 75,
+        "nice_count": null
+      },
+      "tags": [
+        "ai绘画"
+      ]
+    },
+    {
+      "direction": "宠物一图",
+      "id": "6746fb970000000007028dec",
+      "source_url": "https://www.xiaohongshu.com/explore/6746fb970000000007028dec",
+      "success": true,
+      "title": "“宠物填空定格玩法”",
+      "desc": "教你制作，宠物填空定格玩法#剪辑教程[话题]# #手机剪辑教学[话题]# #宠物完形填空[话题]##完形填空[话题]##宠物[话题]#",
+      "published_timestamp": 1732705175000,
+      "last_update_timestamp": 1732705176000,
+      "interact_info": {
+        "liked_count": 21000,
+        "share_count": 1187,
+        "nice_count": null,
+        "collected_count": 19000,
+        "comment_count": 157
+      },
+      "tags": [
+        "剪辑教程",
+        "手机剪辑教学",
+        "宠物完形填空",
+        "完形填空",
+        "宠物"
+      ]
+    },
+    {
+      "direction": "生日纪念",
+      "id": "6ab4c93b000000000b0067c6",
+      "source_url": "https://www.xiaohongshu.com/explore/6ab4c93b000000000b0067c6",
+      "success": true,
+      "title": "AI生成｜生日快乐背景图",
+      "desc": "宝子们🎂今天分享一组生日背景图，插画卡通色系✨\n真的太适合家里小孩生日邀请函啦～\n做成蛋糕店生日贺卡也超好看🎈\n软萌又喜庆，氛围感直接拉满！\n家里有娃要过生日的，赶紧码住！\n自己DIY邀请函、贺卡、伴手礼卡都OK\n手残党也能轻松搞定👌\n以上图片都是用AI生成的\n可以自行添加文字和图片\n#笔格设计[话题]# #底图素材[话题]# #生日投屏[话题]# #海报素材[话题]# #生日朋友圈[话题]# #生日贺图[话题]# ##电子手账[话题]# #海报背景[话题]# #笔格设计海报[话题]# #自制背景图[话题]#",
+      "published_timestamp": 1790467235000,
+      "last_update_timestamp": 1790232891000,
+      "interact_info": {
+        "collected_count": 18,
+        "share_count": 4,
+        "nice_count": null,
+        "comment_count": 2,
+        "liked_count": 47
+      },
+      "tags": [
+        "笔格设计",
+        "底图素材",
+        "生日投屏",
+        "海报素材",
+        "生日朋友圈",
+        "生日贺图",
+        "电子手账",
+        "海报背景",
+        "笔格设计海报",
+        "自制背景图"
+      ]
+    },
+    {
+      "direction": "生日纪念",
+      "id": "67e7c9f3000000000900d9b3",
+      "source_url": "https://www.xiaohongshu.com/explore/67e7c9f3000000000900d9b3",
+      "success": true,
+      "title": "来啦来啦，生日视频教程终于好啦",
+      "desc": "姐妹们多担待，第一次做教程，不熟练，弄了整整一下午，真的是努力了，大家喜欢的话请点个关注哦 哈哈哈\n#生日祝福视频[话题]# #生日快乐[话题]# #视频剪辑[话题]# #教程[话题]# #剪辑教程[话题]#",
+      "published_timestamp": 1743243763000,
+      "last_update_timestamp": 1743243763000,
+      "interact_info": {
+        "collected_count": 2696,
+        "share_count": 261,
+        "liked_count": 3429,
+        "comment_count": 290,
+        "nice_count": null
+      },
+      "tags": [
+        "生日祝福视频",
+        "生日快乐",
+        "视频剪辑",
+        "教程",
+        "剪辑教程"
+      ]
+    },
+    {
+      "direction": "商家商品",
+      "id": "6a60891c000000000f00ac40",
+      "source_url": "https://www.xiaohongshu.com/explore/6a60891c000000000f00ac40",
+      "success": true,
+      "title": "6个免费宝藏资源库，从此告别找素材秃头",
+      "desc": "做视频最崩溃的不是剪，是找！素！材！\n今天把我压箱底的免费资源包全抖出来，覆盖素材/音效/字体/调色/灵感，全程无广，放心食用～\n\t\n---\n\t\n🎥 视频素材 & 模板\n👉 Mixkit\n免费！无需注册直接下！视频、音乐、音效全都有，还有PR/剪映工程模板，新手直接套用超省事\n\t\n🎨 调色滤镜\n👉 Fresh LUTs\n首个免费LUTs社区，胶片感、赛博朋克、小清新…一键预览，免费下载，导入PR/剪映秒变大片\n\t\n📽️ 审美灵感\n👉 Filmgrab\n电影级剧照库，构图、色调、光影随便搜，做视频前刷一刷，审美瞬间拉满\n\t\n🔤 免费商用字体\n👉 100font\n再也不用怕律师函！全网免费可商用字体合集，输入文字就能预览效果，放心下载\n\t\n🎞️ 影视混剪神器\n👉 33台词\n输入关键词或台词，精准找到对应电影片段，混剪党福音，告别挨个扒片\n\t\n🎧 真实感音效\n👉 BBC Sound Effects\nBBC官方开源16,000种音效，自然声、城市环境音真实到炸，直接免费下载用\n\t\n---\n\t\n💡 进阶补充（评论区大佬推荐）\n追求高质量可看 Motion Array 和 Artlist（付费但素材超顶）\n\t\n📌 快收藏这波，下次找素材直接翻！\n你们还有啥私藏好站？评论区互相投喂呀～\n\t\n#剪辑素材[话题]# #视频剪辑[话题]# #免费资源[话题]#\n#剪辑必备[话题]#  #干货分享[话题]# #自媒体工具[话题]#",
+      "published_timestamp": 1784718607000,
+      "last_update_timestamp": 1784711496000,
+      "interact_info": {
+        "comment_count": null,
+        "share_count": 3,
+        "nice_count": null,
+        "liked_count": 10,
+        "collected_count": 22
+      },
+      "tags": [
+        "剪辑素材",
+        "视频剪辑",
+        "免费资源",
+        "剪辑必备",
+        "干货分享",
+        "自媒体工具"
+      ]
+    },
+    {
+      "direction": "商家商品",
+      "id": "6911b8910000000004012e26",
+      "source_url": "https://www.xiaohongshu.com/explore/6911b8910000000004012e26",
+      "success": true,
+      "title": "“真是太不小心了”",
+      "desc": "教你制作物品轮播效果~#剪辑教程[话题]# #手机剪辑[话题]# #新手小白学剪辑[话题]# #零基础学剪辑[话题]# #视频剪辑[话题]# #事情开始变得有趣了[话题]# #排版[话题]# #动画[话题]# #电商设计[话题]# #AI一键搞定电商设计[话题]#",
+      "published_timestamp": 1762769041000,
+      "last_update_timestamp": 1762769042000,
+      "interact_info": {
+        "liked_count": 857,
+        "collected_count": 712,
+        "share_count": 97,
+        "comment_count": 11,
+        "nice_count": null
+      },
+      "tags": [
+        "剪辑教程",
+        "手机剪辑",
+        "新手小白学剪辑",
+        "零基础学剪辑",
+        "视频剪辑",
+        "事情开始变得有趣了",
+        "排版",
+        "动画",
+        "电商设计",
+        "AI一键搞定电商设计",
+        "宝宝学会了嘛 "
+      ]
+    },
+    {
+      "direction": "知识数据",
+      "id": "69c53a21000000001b021f9b",
+      "source_url": "https://www.xiaohongshu.com/explore/69c53a21000000001b021f9b",
+      "success": true,
+      "title": "剪映1分钟做爆款动态透视图表",
+      "desc": "用剪映图形库和变形功能，可以轻松做出各种动态透视图表#剪映基础入门教程[话题]# #手机剪辑教程[话题]# #剪映专业版[话题]#",
+      "published_timestamp": 1774533153000,
+      "last_update_timestamp": 1774533154000,
+      "interact_info": {
+        "liked_count": 267,
+        "collected_count": 400,
+        "comment_count": 16,
+        "share_count": 44,
+        "nice_count": null
+      },
+      "tags": [
+        "剪映基础入门教程",
+        "手机剪辑教程",
+        "剪映专业版"
+      ]
+    },
+    {
+      "direction": "知识数据",
+      "id": "69a792eb000000001a02765e",
+      "source_url": "https://www.xiaohongshu.com/explore/69a792eb000000001a02765e",
+      "success": true,
+      "title": "吃透这7页，你的剪映就很牛了",
+      "desc": "#剪辑师[话题]# #剪映教程[话题]# #干货分享[话题]# #剪辑[话题]# #剪映[话题]# #剪辑教程[话题]# #视频剪辑学习[话题]#",
+      "published_timestamp": 1772589803000,
+      "last_update_timestamp": 1772589804000,
+      "interact_info": {
+        "nice_count": null,
+        "collected_count": 11000,
+        "liked_count": 7199,
+        "comment_count": 273,
+        "share_count": 918
+      },
+      "tags": [
+        "剪辑师",
+        "剪映教程",
+        "干货分享",
+        "剪辑",
+        "剪映",
+        "剪辑教程",
+        "视频剪辑学习"
+      ]
+    },
+    {
+      "direction": "旅行日常",
+      "id": "6800e578000000000900ee43",
+      "source_url": "https://www.xiaohongshu.com/explore/6800e578000000000900ee43",
+      "success": true,
+      "title": "一键Get❗Plog转Vlog",
+      "desc": "📢📢\n日常碎片一大堆但是不知道怎么剪辑的宝们看过来，一键即可Get日常碎片Vlog啦❗\n\t\n#剪映[话题]# #vlog[话题]# #plog[话题]# #剪映科代表[话题]# #剪映一键成片[话题]# #vlog日常[话题]# #plog转vlog[话题]# #剪辑教程[话题]# #剪辑[话题]# #教程[话题]# #模板[话题]#",
+      "published_timestamp": 1744889208000,
+      "last_update_timestamp": 1744889312000,
+      "interact_info": {
+        "liked_count": 636,
+        "collected_count": 378,
+        "comment_count": 4,
+        "share_count": 52,
+        "nice_count": null
+      },
+      "tags": [
+        "剪映",
+        "vlog",
+        "plog",
+        "剪映科代表",
+        "剪映一键成片",
+        "vlog日常",
+        "plog转vlog",
+        "剪辑教程",
+        "剪辑",
+        "教程",
+        "模板"
+      ]
+    },
+    {
+      "direction": "旅行日常",
+      "id": "6aca3e7d000000001b0312fe",
+      "source_url": "https://www.xiaohongshu.com/explore/6aca3e7d000000001b0312fe",
+      "success": true,
+      "title": "第183期 l Vlog模版，绿幕素材，视频模板",
+      "desc": "#vlog[话题]# #视频素材[话题]# #剪映[话题]# #绿幕素材[话题]# #视频模板[话题]# #视频制作[话题]# #素材[话题]# #剪辑[话题]# #爆款素材[话题]# #片头[话题]#",
+      "published_timestamp": 1791639165000,
+      "last_update_timestamp": 1791764598000,
+      "interact_info": {
+        "collected_count": 6252,
+        "share_count": 339,
+        "nice_count": null,
+        "liked_count": 17000,
+        "comment_count": 287
+      },
+      "tags": [
+        "vlog",
+        "视频素材",
+        "剪映",
+        "绿幕素材",
+        "视频模板",
+        "视频制作",
+        "素材",
+        "剪辑",
+        "爆款素材",
+        "片头"
+      ]
+    }
+  ],
+  "stopped_early": false
+}

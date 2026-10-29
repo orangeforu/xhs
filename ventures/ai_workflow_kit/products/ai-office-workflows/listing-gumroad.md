@@ -1,86 +1,80 @@
-# Gumroad 上架物料（复制即用）
+# Gumroad 上架物料草稿（2026-10-29 证据纠错）
 
-> **2026-09-29 方案更新（验证优先）**：PayPal 大陆收款死路 → 提款管道后置。**现在不配置 payout 直接上架销售**，余额留在 Gumroad，先验证"有没有人肯付 $9"。
-> 三条红线：① 自然流量慢慢卖，绝不刷单/自买多单（新号+未验证状态是风控高危画像）；② 验证期 4 周/10 单为决策点，不无限拖；③ 余额当"可能沉没的验证成本"看，信号（转化率/买家地域）才是主要产出。
-> 验证成功 → 届时义乌个体户+贝宝商户配置提款（余额可取），或新销售迁 Paddle（官网已备）。
+> 未发布，需 BOSS 本人审核。本次没有验证平台支付、提现、审核时长、产品文件或交付链路。旧方案“不配置payout先卖、以后余额可取”不能当作已验证路径；由本人先确认账户资格与履约能力，不依据本草稿直接销售。
 
-## 上传清单（文件已就绪）
+## 上传清单（原计划，产物待本人核验）
 
-| 产品 | 定价 | 上传文件 | 说明 |
+| 产品 | 现有定价（不改） | 原计划文件 | 待核验 |
 |---|---|---|---|
-| 全套 Kit | **$9**（划线 $14） | `products/dist/9to5-kit-en-bundle.zip` | PDF + markdown 源文件；产品图用官网首页截图或 PDF 首页 |
-| 免费样张 | **$0+**（自定义价格） | `products/dist/workflow-01-free-sample-en.pdf` | 收邮箱 + 收集"值不值"信号；样张最后一页已带全套引导 |
+| 全套 Kit | **$9**（划线 $14） | `products/dist/9to5-kit-en-bundle.zip` | 实际路径、PDF与Markdown内容、版本和可下载性 |
+| 免费样张 | **$0+**（自定义价格） | `products/dist/workflow-01-free-sample-en.pdf` | 文件内容、免费选项、下载流程和隐私披露 |
 
-⚠️ Gumroad 产品发布要过人工审核队列（1-2 天），趁早提交。
+以上是旧产物路径记录，不表示当前文件存在或已验收。划线价展示条件需本人核实；本次不更改定价数字。原“审核1–2天”“个人PayPal可提现”等平台断言无本次验证，不作为保证。
 
-## 标题（A/B 二选一起号，跑 2 周看转化）
+## 标题（待审）
 
-- **A（推荐）**: The 9-to-5 AI Workflow Kit — 10 copy-paste workflows + the audit checklists that stop AI from making things up
-- **B（更短）**: Stop Doing Busywork — 10 AI Workflows for Office Jobs (with anti-BS checklists)
+- **A**: The 9-to-5 AI Workflow Kit — 10 workflows with output-review checklists
+- **B**: 10 AI Workflows for Office Jobs — Prompts, Audits and Failure Modes
 
 ## 一句话副标题
 
-> Prompts are free. Knowing when the AI is lying to you isn't.
+> A structured draft still needs a fact check.
 
-## 产品描述
+## 产品描述草稿
 
 ```
 You don't need another 500-prompt mega pack.
 
-You need 10 workflows for the actual work that eats your week — weekly
-updates, meeting notes, status emails, document summaries, messy
-spreadsheets, chase-ups, PPT outlines — each one built around a simple
-truth the prompt sellers never mention:
+This kit organizes 10 office tasks into workflows: weekly updates,
+meeting notes, status emails, document summaries, messy spreadsheets,
+chase-ups, PPT outlines, resume bullets, management Q&A preparation,
+and client-message triage.
 
-AI doesn't invent content. It invents CAUSALITY.
+Each workflow pairs a prompt with a review checklist and failure-mode
+guidance. Check facts, dates, ownership, calculations and causal claims
+against your source material, including sentences without warning labels.
 
-It will merge two unrelated events into a cause-and-effect chain that
-never happened, because chains read better than lists. It will write
-"on track" over a slipping deadline. It will turn "responsible for"
-into "achieved." And your manager will notice before you do.
+Existing Chinese-language test records show both useful behavior and
+errors. The spreadsheet example preserved a missing payment value;
+the chase-up example introduced a deadline not supplied in the input.
+In the weekly-report comparison, both outputs correctly attributed the
+schedule slip to the supplier, not to an unrelated client rework.
+These are observations from those examples, not customer outcomes or
+proof that the workflow always outperforms an unstructured prompt.
 
-Every workflow in this kit has three parts:
+The prompts are text templates for use in a chat interface. Model output,
+access requirements and any service fees depend on the service you use.
+The existing Chinese samples do not validate the English templates or
+establish compatibility or effectiveness across all models.
 
-  1. THE PROMPT — copy-paste, with [PLACEHOLDERS], works in any chat
-     LLM (ChatGPT, Claude, Gemini — no subscriptions or plugins needed)
-  2. THE 60-SECOND AUDIT — a specific checklist for what THIS workflow's
-     output gets wrong, so you catch it before your boss does
-  3. FAILURE MODES — the exact ways the AI will try to ruin this task,
-     and the one-line fix for each
+The planned package contains:
+- 10 workflows in PDF and Markdown
+- A printable Anti-BS Cheat Sheet
 
-Plus: the Anti-BS Cheat Sheet — all 10 audit checklists condensed to
-one printable page. Pin it next to your monitor.
+“60-second audit” names a quick review checklist; it is not a measured
+time-saving claim or a guarantee that a full review takes 60 seconds.
+You remain responsible for checking the output before sharing or using it.
 
-WHAT'S INSIDE
-  ✓ 10 workflows (PDF + raw markdown, copy-paste friendly)
-  ✓ 1 printable Anti-BS Cheat Sheet
-  ✓ Lifetime updates (new workflows added free — price goes up as the
-    kit grows, yours never does)
-
-WHO IT'S FOR
-Ops, PMs, admins, finance analysts, marketing coordinators — anyone
-whose week dies in a thousand small documents. No technical skills
-needed. If you can paste text, you're qualified.
-
-WHO IT'S NOT FOR
-Prompt engineers. You already know this stuff.
-
-REFUND
-30 days, no questions. If the audits don't save you at least one
-embarrassment, it's free.
+For ops, PM, admin, finance and marketing roles looking for a structured
+way to draft and review everyday documents. This is a set of materials,
+not an automated service or a promise of error-free work.
 ```
 
-## 定价与发布节奏
+证据：[QA报告](qa/QA-REPORT.md)、[run-01](qa/run-01-周报.md)、[run-05](qa/run-05-脏表格.md)、[run-06](qa/run-06-催办.md)。正式上架前须确认实际英文交付内容与描述一致。
+
+## 定价与验证节奏（内部计划）
 
 | 项 | 值 | 说明 |
 |---|---|---|
-| 定价 | **$9**（划线价 $14） | 竞品 $3-7 但无 QA 层；$9 是"认真但不高冷"锚点 |
-| Free sample | workflow-01 单独 $0+ 页 | Gumroad 支持付费意愿定价（$0 / 自定义），做邮件列表钩子 |
-| 首发渠道 | Gumroad → Payhip / Etsy 二铺 | 同一文件零边际成本 |
+| 全套 | **$9**（划线价 $14） | 沿用原数字，不以未经核实的竞品价格证明价值 |
+| Free sample | workflow-01，**$0+** | 免费/自定义价格与下载设置待确认 |
+| 验证点 | 实际上架后4周/10单 | 决策阈值，不是已成交数据 |
+| 后续渠道 | Payhip / Etsy候选 | 准入与交付能力未经本次验证，不自动铺货 |
 
-## 上架前 BOSS 待办（必须本人操作）
+## BOSS 待确认（不得当现行承诺粘贴发布）
 
-1. Gumroad 开号 + 绑 PayPal（中国个人开发者可提现路径）
-2. PDF 排版：workflow-01 + 02-10 成稿后用统一模板导出（`.md` → PDF，模板待做，一次性工作）
-3. 封面图 1280×720：大字 "9-to-5 AI Workflow Kit" + 副标 "with anti-BS checklists"，风格延续大字报封面（`core/image` 模板可改造复用）
-4. 上线第 1 周：把 workflow-01 投到 r/productivity、r/artificial、HackerNews Show HN 试水（注意各社区自我推广规则，先评论互动再发）
+1. **退款**：旧稿“30 days, no questions；没避免尴尬就免费”尚无条款与履约证据，不在当前商品描述作保证。核对既有对外承诺/订单后确认正式条款；已承诺的按原条款履行，不因本次修改追溯取消。
+2. **更新**：旧稿“Lifetime updates / 新增免费、已购不补差价”需确认范围、期限及服务能力。现有价格数字不改，此处也不新立替代政策。
+3. **交付与素材**：核对PDF/Markdown/速查卡、版本及封面；不能把历史中文输出或旧“已导出”描述当英文成品质检。免费样张和数据收集方式也需审核。
+4. **平台**：本人确认销售资格、收款/提现及审核要求。不采用自买刷单；不承诺特定审核或到账时长，不以余额必可提现为前提。
+5. **分发**：`launch-reddit.md`仍为未发布草稿；按目标社区当时规则决定是否介绍产品，真人沟通，不伪造用户评价或互动。

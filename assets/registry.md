@@ -1,11 +1,13 @@
 # 资产登记表（registry · 周五复盘查健康 · 值不进 git）
 
+> 本表登记资产及历史观察，不作为实时健康面板。旧记录中的在线/有效只对应当时，当前核验结果看[cockpit/status.md](../cockpit/status.md)，动作回执看[actions.csv](../cockpit/actions.csv)。本轮未重验Cookie或外仓服务。
+
 | 资产 | 类型 | 状态 | 到期/风险 | 使用方 | 备注 |
 |---|---|---|---|---|---|
 | 小红书 PC 端 Cookie | 凭证(.cache/xhs_pc_cookie.json) | 🟢 2026-10-15 扫码 | 通常数周，失效自动重扫 | xhs_crawler | 账号：橘子味悠米 |
 | 小红书创作者端 Cookie | 凭证(.cache/xhs_creator_cookie.json) | ❓ 待验证 | — | 案例3 遗产脚本 | 长期未用，用前先跑 xhs_auth_helper --creator |
 | 小红书账号（867粉，橘子味悠米） | 账号 | ⚪ 封存（不注销） | 复活需 L3 | 案例3（封存） | BOSS 实名 |
-| 剪映创作者账号 | 账号 | 🔲 待核验（能否发布模板／设付费） | 未注册新号；先走平台内分发 | 案例2 | 5 项准入结果回填此处；注册即登记 |
+| 剪映创作者账号 | 账号 | 待核验；见[cockpit状态](../cockpit/status.md) | 不默认具备发布或付费权限 | 案例2 | 七项准入及工单回执只维护[actions](../cockpit/actions.csv)；账号身份变更仍需L3 |
 | 面包多店铺 | 渠道 | 🟡 已上架（购买链接未回填） | — | 案例1 | BOSS 实名；链接拿到跑 fill_links |
 | 闲鱼（淘宝账号） | 渠道 | 🟢 共享排队号生意账号 | 平台风控敏感 | 案例1/2 + 兄弟仓库 | publisher/机器人已打通 |
 | Gumroad | 渠道 | 🔲 未提审 | — | 案例1 EN 线 | 需 BOSS 注册操作 |

@@ -19,11 +19,13 @@ assets/         资产登记：账号/Cookie/渠道（值不进 git）
 98-debt/        技术债
 ```
 
-## 当前战局（详见 cockpit/status.md）
+## 当前战局
 
-- **案例1 ai_workflow_kit**（selling）：AI 提效工作流包，面包多在售
-- **案例2 jianying_templates**（planning）：剪映周岁／生日／毕业照片模板，先验入场与首条，套装待合规
-- **案例3 xhs_account_v1**（closed）：小红书账号线，已归档（postmortem 在案例内）
+状态与最新核验结果只看 [cockpit/status.md](cockpit/status.md)，动作与回执只维护 [cockpit/actions.csv](cockpit/actions.csv)。
+
+- [资料包案例](ventures/ai_workflow_kit/venture.md)：产品规格与阶段规则。
+- [剪映案例](ventures/jianying_templates/venture.md)：准入、母版与经营验证。
+- [账号线归档](ventures/xhs_account_v1/venture.md)：历史资产及复盘摘要。
 
 ## 完整手册
 

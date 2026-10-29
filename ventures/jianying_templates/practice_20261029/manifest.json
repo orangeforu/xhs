@@ -1,0 +1,63 @@
+{
+  "purpose": "Offline first-project practice only; not a native template or paid product",
+  "source": "Original geometric drawing by the included Python script; no third-party photo, music or font",
+  "script": "tools/prepare_first_template_practice.py",
+  "assets": [
+    {
+      "file": "00_background.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "fixed_background",
+      "sha256": "22ccc7a0864461dfdb1c77b933bae15c7498fd212bf21492d0544701dbb3b96c"
+    },
+    {
+      "file": "01_practice.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "numbered_placeholder_not_real_photo",
+      "sha256": "4cbbf818138abea62ed3b4f098b7392e6ba5b9b613584d4a0f5f6cd64ec1cf38"
+    },
+    {
+      "file": "02_practice.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "numbered_placeholder_not_real_photo",
+      "sha256": "9ae6429512adc6cb239583661cdad55f660272fafb1117be3967cc932180f51c"
+    },
+    {
+      "file": "03_practice.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "numbered_placeholder_not_real_photo",
+      "sha256": "f9c4109d31f0ac3a3a3c3abe6eb275e66d297a7858eec467f6c3d50b49deaf42"
+    },
+    {
+      "file": "04_practice.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "numbered_placeholder_not_real_photo",
+      "sha256": "7b2a3be2bdf54852317fb3f3db42f023b9b96983c780259588489179b80888de"
+    },
+    {
+      "file": "05_practice.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "numbered_placeholder_not_real_photo",
+      "sha256": "f62f85c1cf8c86be1acbb45ac18ab5222d607dec21de404337c264dcec9d0860"
+    },
+    {
+      "file": "06_practice.png",
+      "width": 1080,
+      "height": 1920,
+      "kind": "numbered_placeholder_not_real_photo",
+      "sha256": "2995fd732a13b5ab4be92b737cc4c41f8c6be5ef0e579804b597ccbe214f4aa1"
+    },
+    {
+      "file": "07_replace_wide.png",
+      "width": 1600,
+      "height": 900,
+      "kind": "landscape_replacement_test",
+      "sha256": "245b8e57a2b442a718f7cbd8e2355266fd31deb2819e91bb7ec1c29382bcc42f"
+    }
+  ]
+}

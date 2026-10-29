@@ -215,10 +215,10 @@ if __name__ == "__main__":
     if args.clear:
         clear_all_cookies()
     elif args.pc:
-        auth = get_pc_auth()
-        print(f"PC Cookie: {auth.cookies[:100]}...")
+        get_pc_auth()
+        print("PC 端认证成功（不输出 Cookie）")
     elif args.creator:
-        auth = get_creator_auth()
-        print(f"Creator Cookie: {auth.cookies[:100]}...")
+        get_creator_auth()
+        print("创作者端认证成功（不输出 Cookie）")
     else:
         print("用法: python scripts/xhs_auth_helper.py --pc|--creator|--clear")

@@ -1,72 +1,78 @@
-# Reddit 首发帖（英文免费样张引流 → Gumroad）
+# Reddit 首发帖草稿（2026-10-29 证据纠错）
 
-> 目标：免费样张获得真实下载 + 邮箱，给 $9 全套带首批转化。
-> 社区自我推广规则是第一死因——**先按版规来，宁可软不可硬**。
+> 未发布，需 BOSS 本人审核。目标仍是介绍免费样张与$9资料包，不代表已产生下载、邮箱或订单。删除无原始支持的亲历故事、节省时长、引用错误率及保证。本次未联网检查社区规则，也未验证英文工作流或下载链路。
 
-## 目标版位（按通过率排序）
+## 候选社区与节奏（待核验）
 
-| 版位 | 发什么 | 注意 |
+| 社区 | 候选内容 | 前置条件 |
 |---|---|---|
-| r/productivity | 文字帖（下面文案）| 版规允许 text post 带价值；链接放正文底部，不放标题 |
-| r/ChatGPT | 文字帖 | 欢迎实际用法分享，反感纯推广；强调"audit"角度是新鲜的 |
-| r/artificial | 同上酌情 | 慢版，发一次即可 |
-| r/sysadmin / r/office 等 | 不发 | 人群不对或版规更严，先别碰 |
+| r/productivity | 工作流核查教学 | 本人核实自我推广、链接与AI内容规则 |
+| r/ChatGPT | 具体输入/输出观察 | 不冒充该模型实测；现记录是中文测试样本 |
+| r/artificial | 同主题酌情考虑 | 符合当时版规才发布 |
+| r/sysadmin / r/office 等 | 暂不投放 | 没有本次受众或版规验证 |
 
-## 发帖节奏（防删防限流）
+不按未经证实的“通过率”排序。真人参与真实讨论，不制造预设评论；被删除先查原因，不为规避版规换版重发。没有算法收益或一小时内必回的承诺。
 
-1. 发帖前 2-3 天：账号先在目标版正常评论互动（新号直接发链接 = 删除+限流）
-2. 发帖后 1 小时内守着评论区，每条必回（Reddit 算法看早期互动）
-3. 被删不要重发同版，换版再试
-
-## 帖子文案（直接可用）
+## 帖子文案（待审，非即贴即发）
 
 **标题：**
 
-> The 60-second audit I run on every AI output before my manager sees it — AI doesn't invent facts, it invents *causality*
+> Reviewing an AI weekly update: an unmarked sentence can still add a fact
 
 **正文：**
 
 ```
-Something I learned the hard way after my AI-written weekly update nearly
-got me in trouble:
+A useful detail from an existing Chinese-language office-workflow test:
 
-AI doesn't invent content. It invents causality.
+The input said a client requested rework and a separate project slipped
+because a supplier released a version late. Both the workflow output and
+the baseline preserved the supplier cause. Neither blamed the client
+rework for that delay, so this is not evidence of a fabricated causal link.
 
-Real example: that week I had (a) a client rework on Tuesday and (b) an
-unrelated schedule slip on Friday. Two separate facts. The AI merged them
-into: "the slip was caused by the client rework." Neither caused the other.
-Nobody said it did. But it read well — so it almost shipped.
+But the workflow output did add “delivered” to a note that only said
+“I helped edit two PPT pages.” That delivery status was not in the input.
+It also marked an uncertain wiki update for confirmation, yet placed it
+under completed work.
 
-Since then I run a 60-second audit on every AI output before anyone sees
-it. The core checks:
+This is a test example, not a story about getting in trouble at work.
+It illustrates why I would review more than the warning labels:
 
-1. Every sentence with "because / due to / caused by / as a result" is a
-   fabricated connection until verified
-2. Reassurance words ("on track", "smoothly") need a number in the same
-   sentence or they get cut
-3. Real data always has gaps. A summary with zero gaps means the AI
-   "helpfully" filled them in
-4. Spot-check two citations/numbers — AI gets ~10-20% of them wrong
-5. Anything involving money, dates, or promises escalates to a human. Always.
+1. Check causal claims and completion status against the source.
+2. Verify names, dates and numbers, including unmarked sentences.
+3. Preserve missing values; do not treat missing as zero.
+4. Verify consequential citations individually. Two correct spot checks
+   do not establish that the rest are correct.
+5. Have a human confirm authority before sending prices, deadlines or
+   other commitments.
 
-I put the full methodology into a free sample workflow (weekly updates,
-40 min → 10 min, including the exact prompt and the audit checklist):
+A checklist can structure the review; it does not make output error-free.
+The “60-second audit” label is not a measured review-time or time-saving
+guarantee. These limited Chinese samples also do not validate English
+outputs or establish effectiveness across models.
 
-[your Gumroad free-sample link]
+I am preparing a workflow kit with prompts, review checklists and
+failure-mode guidance for 10 office tasks. This is my own product.
+A weekly-update sample is planned so readers can inspect the format
+before considering the full kit.
 
-No email wall beyond Gumroad's download, $0. If it's useful I wrote 9 more
-covering meeting notes, status emails, document summaries, messy
-spreadsheets, chase-ups, PPT outlines, resume bullets, skip-level prep,
-and client triage — same structure: prompt + audit + failure modes.
+[Optional sample link: include only after the file, download terms and
+community permission for self-promotion have been verified. Otherwise
+omit this placeholder and keep the post educational.]
 
-Happy to answer questions about any specific workflow in the comments.
+Questions about the review method are welcome.
 ```
 
-## 数据记录（发帖后填）
+内部原文：[run-01](qa/run-01-周报.md) 13–18、46–52行；输入 `D:/SoftWare/User/Vs/xhs/ventures/ai_workflow_kit/tools/test_workflows.py` 的 `SCENARIOS[1]["input"]`；总评见 [QA报告](qa/QA-REPORT.md)。英文正文是该中文样本的说明，不是英文模型运行记录。
 
-| 版位 | 日期 | 赞/踩 | 评论 | 样张下载 | 转化购买 | 备注 |
+## 发布前与数据记录
+
+- 本人核查原文、脱敏材料、社区规则及推广披露；不声称“差点出事”“40分钟降到10分钟”或“引用10–20%出错”。
+- 确认免费样张是否实际可下载、是否收集邮箱及相应隐私条款；未验证前不承诺“无邮箱门槛”。退款、永久更新及交付能力按 `listing-gumroad.md` 的待确认事项处理，不新立承诺。
+- 数据仅在实际发布后填写，不补造历史结果。
+
+| 社区 | 日期 | 赞/踩 | 评论 | 样张下载 | 转化购买 | 备注 |
 |---|---|---|---|---|---|---|
 | r/productivity | | | | | | |
 | r/ChatGPT | | | | | | |
 
-4 周对账时把此表和 Gumroad 后台数据一起看。
+实际获批准上架后4周再对账；本次没有发布或复跑。

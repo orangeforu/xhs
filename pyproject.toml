@@ -13,6 +13,8 @@ target-version = "py313"
 line-length = 120
 # vendored 第三方与休眠遗产不吃本项目 lint 标准；遗产只手动跑测试
 exclude = ["capabilities/xhs_crawler/vendor", "capabilities/xhs_content/legacy-pipeline", "ventures/xhs_account_v1/scripts"]
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -28,10 +30,10 @@ ignore = [
     "E501",  # line too long, handled by black
 ]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["core", "capabilities"]
 
 [tool.pytest.ini_options]

@@ -1,79 +1,93 @@
-"""微信推送客户端（连接器 v1.1）——三通道：serverchan / pushplus / wecom。
+"""Offline on import; push errors and receipts expose only allowlisted codes."""
 
-设计：
-- 默认复用兄弟仓库 xianyu/push.json 的既有通道（同一 BOSS，密钥不复制，单一信息源）
-- 孵化台可配**专属通道**：`.cache/pulse_push.json`（{"provider": "...", "key": "..."}）
-  存在则优先——解决 Server酱免费 5 条/天与排队号生意共享挤占的问题，且不动共享配置
-- 系统代理死掉时自动绕过（本项目已知坑）；推送失败不抛出，返回 (ok, 原因)
-"""
 import json
-import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-XIANYU_PUSH_JSON = Path(r"D:\SoftWare\User\Vs\xianyu\push.json")
-DEDICATED_PUSH_JSON = REPO_ROOT / ".cache" / "pulse_push.json"  # 专属通道（可选）
+XIANYU_PUSH_JSON = REPO_ROOT.parent / "xianyu" / "push.json"
+DEDICATED_PUSH_JSON = REPO_ROOT / ".cache" / "pulse_push.json"
+
+# Only these failures positively mean that no delivery was accepted.
+KNOWN_FAILURES = frozenset({"CONFIG_MISSING", "CONFIG_INVALID", "UNSUPPORTED_PROVIDER", "REQUEST_INVALID", "REJECTED"})
+
+
+class ChannelError(ValueError):
+    """Never attach configuration contents or underlying exception messages."""
 
 
 def _opener():
-    # 系统代理常指向已死的本地端口（127.0.0.1:33210 事故），直连更稳
     return urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
-def load_channel() -> tuple[str, str]:
-    """读通道配置：专属通道优先，否则复用 xianyu 的。返回 (provider, key)。"""
-    for p in (DEDICATED_PUSH_JSON, XIANYU_PUSH_JSON):
+def load_channel(config_paths=None) -> tuple[str, str]:
+    """Dedicated config wins; only absence permits falling back to shared config."""
+    paths = (DEDICATED_PUSH_JSON, XIANYU_PUSH_JSON) if config_paths is None else config_paths
+    for path in paths:
         try:
-            cfg = json.loads(p.read_text(encoding="utf-8"))
-            provider, key = cfg.get("provider", ""), cfg.get("key", "")
-            if provider and key:
-                return provider, key
+            cfg = json.loads(Path(path).read_text(encoding="utf-8-sig"))
         except FileNotFoundError:
             continue
         except Exception:
-            continue
+            raise ChannelError("CONFIG_INVALID") from None
+        if not isinstance(cfg, dict):
+            raise ChannelError("CONFIG_INVALID")
+        provider, key = cfg.get("provider"), cfg.get("key")
+        if not isinstance(provider, str) or not isinstance(key, str) or not provider.strip() or not key.strip():
+            raise ChannelError("CONFIG_INVALID")
+        return provider.strip(), key.strip()
     return "", ""
 
 
-def push_wechat(title: str, desp: str) -> tuple[bool, str]:
-    """推送到 BOSS 微信。返回 (ok, msg)。
+def push_wechat(title: str, desp: str, *, config_paths=None, opener_factory=None) -> tuple[bool, str]:
+    """Return (True, OK), a known failure, or DELIVERY_UNKNOWN; never retry HTTP.
 
-    已知约束：serverchan 免费额度 5 条/天（与排队号共享时可能被挤占）——
-    挤占时推送失败但心跳 journal 照常落盘；要专属额度就配 .cache/pulse_push.json。
+    An exception after entering open() may follow a successful remote delivery.
+    Neither HTTP error bodies nor provider messages are read into diagnostics.
+    Injectable paths and transport keep unit tests entirely offline.
     """
-    provider, key = load_channel()
+    try:
+        provider, key = load_channel(config_paths)
+    except Exception:
+        return False, "CONFIG_INVALID"
     if not provider:
-        return False, "无通道配置（xianyu/push.json 与 .cache/pulse_push.json 均缺）"
+        return False, "CONFIG_MISSING"
+    if provider not in {"serverchan", "pushplus", "wecom"}:
+        return False, "UNSUPPORTED_PROVIDER"
+
     try:
         if provider == "serverchan":
-            qs = urllib.parse.urlencode({"title": title, "desp": desp})
-            resp = json.loads(_opener().open(f"https://sctapi.ftqq.com/{key}.send?{qs}", timeout=15).read())
-            return resp.get("code") == 0, resp.get("message", "?")
-        if provider == "pushplus":
-            qs = urllib.parse.urlencode({"token": key, "title": title, "content": desp})
-            resp = json.loads(_opener().open(f"https://www.pushplus.plus/send?{qs}", timeout=15).read())
-            return resp.get("code") == 200, resp.get("msg", "?")
-        if provider == "wecom":
-            req = urllib.request.Request(
-                f"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={key}",
-                data=json.dumps({"msgtype": "text", "text": {"content": f"{title}\n{desp}"}}, ensure_ascii=False).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
+            url = f"https://sctapi.ftqq.com/{urllib.parse.quote(key, safe='')}.send"
+            data = urllib.parse.urlencode({"title": title, "desp": desp}).encode("utf-8")
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            field, success = "code", 0
+        elif provider == "pushplus":
+            url = "https://www.pushplus.plus/send"
+            data = json.dumps({"token": key, "title": title, "content": desp}, ensure_ascii=False).encode("utf-8")
+            headers = {"Content-Type": "application/json"}
+            field, success = "code", 200
+        else:
+            url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?" + urllib.parse.urlencode({"key": key})
+            data = json.dumps({"msgtype": "text", "text": {"content": f"{title}\n{desp}"}}, ensure_ascii=False).encode(
+                "utf-8"
             )
-            resp = json.loads(_opener().open(req, timeout=15).read())
-            return resp.get("errcode") == 0, resp.get("errmsg", "?")
-        return False, f"未适配的 provider: {provider}"
-    except urllib.error.HTTPError as e:
-        try:
-            detail = json.loads(e.read()).get("message", "")
-        except Exception:
-            detail = ""
-        return False, f"HTTP {e.code}: {detail}"
-    except Exception as e:  # 推送失败不致命：返回原因供日志
-        return False, f"{type(e).__name__}: {e}"
+            headers = {"Content-Type": "application/json"}
+            field, success = "errcode", 0
+        request = urllib.request.Request(url, data=data, headers=headers, method="POST")
+        opener = (opener_factory or _opener)()
+    except Exception:
+        return False, "REQUEST_INVALID"
 
-
-if __name__ == "__main__":
-    ok, msg = push_wechat("孵化台连接器测试", "如果你看到这条，说明执行模块的心跳已接通你的微信 ✅")
-    print("OK" if ok else f"FAIL {msg}")
+    try:
+        with opener.open(request, timeout=15) as response:
+            receipt = json.loads(response.read())
+        # Missing, string, boolean or otherwise malformed codes cannot confirm delivery.
+        if not isinstance(receipt, dict) or type(receipt.get(field)) is not int:
+            return False, "DELIVERY_UNKNOWN"
+        if receipt[field] == success:
+            return True, "OK"
+        return False, "REJECTED"
+    except Exception:
+        # Even HTTP errors can be generated after the downstream accepted the message.
+        return False, "DELIVERY_UNKNOWN"

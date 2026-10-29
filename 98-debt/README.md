@@ -11,7 +11,7 @@
 | 5 | legacy 管线的 data/ 路径已随案例3 迁移，若重启需重指 | 只影响 legacy 重启 | 已写入 legacy README 重启注意 |
 | 6 | 剪映线"AI 样片生成"能力缺口（可灵/即梦调用） | 案例内临时工具先顶着 | Rule of Two 后评估上货架 |
 | 7 | GLM 季付到期（约 2026-12）前项目收入须转正 | ¥118/月 自付目标 | cockpit/ledger 盯 |
-| 8 | pyproject ruff 配置为旧式顶层键（deprecation 警告，功能不受影响） | 无 | 下次动 pyproject 时顺手迁移到 [tool.ruff.lint] |
-| 9 | build_pdfs.py（并行会话产物）1 处 UP031 percent-format | 无 | 不动他人风格，留给其作者 |
-| 10 | pulse 计划任务待 BOSS 亲自注册（持久化机制 AI 不代办，命令在 pulse/README.md） | 未注册前心跳靠手动 | 周五前注册 |
+| 8 | 旧式ruff配置 | 2026-10-29已迁移并通过检查 | 已解决，不再重复排期 |
+| 9 | PDF格式与失效字体路径 | 2026-10-29已修，路径预检通过；未覆盖交付文件 | 真实渲染验收仍另记，不与路径检查混淆 |
+| 10 | pulse真实部署/送达待验 | 代码及离线回执测试不等于已运行 | 唯一动作源[cockpit/actions.csv](../cockpit/actions.csv) PULSE-ENABLE；需本人确认执行位置和启用 |
 | 11 | Server酱 5 条/天与排队号共享，可能互相挤占 | 晨报偶发静默（journal 仍落盘） | 观察 1 周，挤占频繁则切 pushplus |

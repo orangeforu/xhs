@@ -3,27 +3,36 @@
 对 kit-cn 的 10 条工作流逐条做真实 API 实测：
 - 从 kit-cn md 中按顺序提取 10 个提示词代码块
 - 每条配一个带"埋雷"的真实场景输入（编因果诱饵 / 编共识诱饵 / 藏截止日 / 无数据看它编不编）
-- 01/02 额外跑一次"裸模型"对照组（证明核查层的价值）
-- 输出保存到 products/ai-office-workflows/qa/，供人工复核
+- 01/02 额外跑一次"裸模型"对照组，提供待人工判断的对照证据
+- 输出独占保存到 CASE/products/ai-office-workflows/qa/<run_id>/，不覆盖历史实测
+- API 调用完成不代表质检通过，所有工作流均待人工判定
 
-用法：python scripts/test_workflows.py
+用法：python ventures/ai_workflow_kit/tools/test_workflows.py（显式运行才读取凭证并调用 API）
 """
+import hashlib
 import json
 import re
 import sys
 import time
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 import requests
 
-ROOT = Path(__file__).resolve().parents[3]  # 仓库根（.env 所在）
-KIT = ROOT / "products" / "ai-office-workflows" / "kit-cn-打工人AI提效工作流包.md"
-QA_DIR = ROOT / "products" / "ai-office-workflows" / "qa"
+CASE = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[3]
+KIT = CASE / "products" / "ai-office-workflows" / "kit-cn-打工人AI提效工作流包.md"
+QA_DIR = KIT.parent / "qa"
+MAX_ATTEMPTS = 3  # 包含首次请求，所有失败类型共用此预算
+TOKEN_HARD_LIMIT = 32000
+DEFAULT_MODEL = "deepseek-v4-flash"
 
-# ---------- .env ----------
+
+# ---------- 仅运行入口读取 .env，导入不访问凭证 ----------
 def load_env():
     env = {}
-    env_path = ROOT / ".env"
+    env_path = REPO / ".env"
     for line in env_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line and not line.startswith("#") and "=" in line:
@@ -31,55 +40,89 @@ def load_env():
             env[k.strip()] = v.strip()
     return env
 
-ENV = load_env()
-API_KEY = ENV["LLM_API_KEY"]
-BASE_URL = ENV.get("LLM_BASE_URL", "https://api.deepseek.com/v1")
-MODEL = ENV.get("LLM_MODEL", "deepseek-v4-flash")
+
+def utc_now():
+    return datetime.now(UTC).isoformat()
 
 
-def call_llm(messages, max_tokens=8000):
-    """调 OpenAI 兼容 API，带 3 次退避重试。
+def sha256(data):
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
 
-    deepseek-v4-flash 是思考型模型：reasoning 与正文共享 max_tokens，
-    预算小了正文会是空的（finish_reason=length）。预算给足；正文为空时
-    回退取 reasoning_content 并打标记，便于发现"没答完"的情况。
+
+def call_llm(messages, max_tokens=8000, *, env):
+    """有限总尝试数 + 单请求 token 硬上限；返回调用证据，不做质量判定。
+
+    只有非空正文且 finish_reason=stop 才算调用完成。截断正文仍保留在
+    attempts 中作为失败证据，reasoning_content 永不作为答案或回退输出。
     """
-    for attempt in range(3):
+    if isinstance(max_tokens, bool) or not isinstance(max_tokens, int) or max_tokens < 1:
+        raise ValueError("max_tokens must be a positive integer")
+    tokens = min(max_tokens, TOKEN_HARD_LIMIT)
+    attempts = []
+    for attempt in range(MAX_ATTEMPTS):
+        record = {"attempt": attempt + 1, "started_at_utc": utc_now(), "max_tokens": tokens,
+                  "output": None, "finish_reason": None}
+        retry = True
         try:
-            r = requests.post(
-                f"{BASE_URL}/chat/completions",
-                headers={"Authorization": f"Bearer {API_KEY}"},
-                json={"model": MODEL, "messages": messages, "temperature": 0.3, "max_tokens": max_tokens},
+            response = requests.post(
+                f"{env.get('LLM_BASE_URL', 'https://api.deepseek.com/v1').rstrip('/')}/chat/completions",
+                headers={"Authorization": f"Bearer {env['LLM_API_KEY']}"},
+                json={"model": env.get("LLM_MODEL", DEFAULT_MODEL), "messages": messages,
+                      "temperature": 0.3, "max_tokens": tokens},
                 timeout=180,
             )
-            if r.status_code in (429, 500, 502, 503):
-                time.sleep(5 * (attempt + 1))
-                continue
-            r.raise_for_status()
-            data = r.json()
-            choice = data["choices"][0]
-            msg = choice["message"]
-            content = msg.get("content") or ""
-            if content.strip():
-                return content
-            # 正文为空：思考没跑完（length）或全在思考里
-            reasoning = msg.get("reasoning_content") or ""
-            if choice.get("finish_reason") == "length" or not reasoning:
-                # 预算不够，翻倍重试一次
-                return call_llm(messages, max_tokens=max_tokens * 2)
-            return f"[仅思考未成文 | finish={choice.get('finish_reason')}]\n{reasoning}"
-        except (requests.RequestException, KeyError, IndexError) as e:
-            if attempt == 2:
-                return f"[API ERROR] {e}"
+            record["http_status"] = response.status_code
+            if not 200 <= response.status_code < 300:
+                record["error"] = f"http_{response.status_code}"
+                retry = response.status_code in (429, 500, 502, 503, 504)
+            else:
+                data = response.json()
+                if data.get("error") is not None:
+                    record["error"] = "api_error"
+                else:
+                    choice = data["choices"][0]
+                    content = choice["message"].get("content")
+                    finish = choice.get("finish_reason")
+                    record["output"] = content if isinstance(content, str) else None
+                    record["finish_reason"] = finish
+                    if finish == "length":
+                        record["error"] = "length_limit"
+                        tokens = min(tokens * 2, TOKEN_HARD_LIMIT)
+                    elif not isinstance(content, str) or not content.strip():
+                        record["error"] = "empty_content"
+                    elif finish != "stop":
+                        record["error"] = "incomplete_response"
+                        retry = False
+                    elif content.lstrip().startswith("[API ERROR]"):
+                        record["error"] = "api_error_content"
+                        retry = False
+                    else:
+                        record["completed_at_utc"] = utc_now()
+                        attempts.append(record)
+                        return {"status": "completed", "output": content, "error": None, "attempts": attempts}
+        except requests.RequestException as exc:
+            # 不存异常原文/响应头，避免其中携带凭证；保留安全错误类别。
+            record["error"] = type(exc).__name__
+        except (ValueError, KeyError, IndexError, TypeError, AttributeError):
+            record["error"] = "invalid_response"
+        record["completed_at_utc"] = utc_now()
+        attempts.append(record)
+        if not retry:
+            break
+        if attempt + 1 < MAX_ATTEMPTS:
             time.sleep(5 * (attempt + 1))
-    return "[API ERROR] retries exhausted"
+    return {"status": "failed", "output": None, "error": attempts[-1]["error"], "attempts": attempts}
 
 
 # ---------- 提取 kit-cn 的 10 个提示词块 ----------
-def extract_prompts():
-    text = KIT.read_text(encoding="utf-8")
+def extract_prompts(text=None):
+    if text is None:
+        text = KIT.read_text(encoding="utf-8")
     blocks = re.findall(r"```\n(.*?)```", text, re.S)
-    assert len(blocks) == 10, f"expected 10 prompt blocks, got {len(blocks)}"
+    if len(blocks) != 10:
+        raise ValueError(f"expected 10 prompt blocks, got {len(blocks)}")
     return blocks
 
 
@@ -240,49 +283,91 @@ BASELINE = {
 }
 
 
-def run():
-    QA_DIR.mkdir(exist_ok=True)
-    prompts = extract_prompts()
-    report = {}
+def write_evidence(path, data):
+    """独占创建：即使 run_id 碰撞或误复用路径，也不得覆盖历史证据。"""
+    with path.open("x", encoding="utf-8") as stream:
+        json.dump(data, stream, ensure_ascii=False, indent=2)
+
+
+def recorded_call(messages, env):
+    return {
+        "messages": messages,
+        "messages_sha256": sha256(json.dumps(messages, ensure_ascii=False, sort_keys=True)),
+        "result": call_llm(messages, env=env),
+    }
+
+
+def run(*, env=None):
+    if env is None:
+        env = load_env()
+    if not env.get("LLM_API_KEY"):
+        raise ValueError("LLM_API_KEY is required for an explicit live run")
+    # 一次读取源文件，提示词与 hash 必须来自同一份字节快照。
+    kit_bytes = KIT.read_bytes()
+    prompts = extract_prompts(kit_bytes.decode("utf-8").replace("\r\n", "\n"))
+    runner = Path(__file__).resolve()
+    started = utc_now()
+    run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ") + "-" + uuid4().hex
+    run_dir = QA_DIR / run_id
+    run_dir.mkdir(parents=True, exist_ok=False)
+    metadata = {
+        "run_id": run_id, "started_at_utc": started, "model": env.get("LLM_MODEL", DEFAULT_MODEL),
+        "source_files": {
+            "kit": {"path": str(KIT), "sha256": sha256(kit_bytes)},
+            "runner": {"path": str(runner), "sha256": sha256(runner.read_bytes())},
+        },
+        "limits": {"max_attempts_per_call": MAX_ATTEMPTS, "token_hard_limit": TOKEN_HARD_LIMIT},
+        "temperature": 0.3,
+        "manual_review_status": "pending",
+    }
+    write_evidence(run_dir / "manifest.json", metadata)
+    entries = []
+    failures = 0
     for idx in sorted(SCENARIOS):
         sc = SCENARIOS[idx]
         prompt = prompts[idx - 1]
         print(f"[{idx:02d}] {sc['name']} ...", flush=True)
-
-        messages = [
-            {"role": "user", "content": f"{prompt}\n\n---\n\n{sc['input']}"},
-        ]
-        out1 = call_llm(messages)
-        convo = messages + [{"role": "assistant", "content": out1}]
-
-        # 需要第二轮确认的（05 数据确认 / 07 脊柱确认）
-        if sc["followup"]:
-            out2 = call_llm(convo + [{"role": "user", "content": sc["followup"]}])
-            final = out2
-        else:
-            out2 = None
-            final = out1
-
-        entry = {"name": sc["name"], "final_output": final, "round1": out1, "round2": out2,
-                 "manual_checks": sc["checks"]}
-        report[idx] = entry
-
-        # 对照组（裸模型）——只跑 01/02，用于验证"核查层"价值
+        entry = {
+            "run_id": run_id, "model": metadata["model"], "started_at_utc": utc_now(),
+            "workflow": idx, "name": sc["name"], "prompt": prompt, "input": sc["input"],
+            "prompt_sha256": sha256(prompt), "input_sha256": sha256(sc["input"]),
+            "followup": sc["followup"],
+            "followup_sha256": sha256(sc["followup"]) if sc["followup"] else None,
+            "manual_checks": sc["checks"], "manual_review_status": "pending",
+        }
+        messages = [{"role": "user", "content": f"{prompt}\n\n---\n\n{sc['input']}"}]
+        first = recorded_call(messages, env)
+        entry["rounds"] = [first]
+        final = first["result"]
+        if sc["followup"] and final["status"] == "completed":
+            followup = messages + [
+                {"role": "assistant", "content": final["output"]},
+                {"role": "user", "content": sc["followup"]},
+            ]
+            second = recorded_call(followup, env)
+            entry["rounds"].append(second)
+            final = second["result"]
+        entry["execution_status"] = final["status"]
+        entry["final_output"] = final["output"]
+        calls = list(entry["rounds"])
         if idx in BASELINE:
-            base_out = call_llm([{"role": "user", "content": BASELINE[idx].format(input=sc["input"])}])
-            entry["baseline_output"] = base_out
+            entry["baseline"] = recorded_call(
+                [{"role": "user", "content": BASELINE[idx].format(input=sc["input"])}], env
+            )
+            calls.append(entry["baseline"])
+        failures += sum(call["result"]["status"] == "failed" for call in calls)
+        entry["completed_at_utc"] = utc_now()
+        filename = f"run-{idx:02d}.json"
+        write_evidence(run_dir / filename, entry)
+        entries.append({"workflow": idx, "evidence_file": filename, "execution_status": final["status"],
+                        "manual_review_status": "pending"})
 
-        (QA_DIR / f"run-{idx:02d}-{sc['name']}.md").write_text(
-            f"# 实测 {idx:02d} {sc['name']}\n\n## 人工核对点\n"
-            + "\n".join(f"- [ ] {c}" for c in sc["checks"])
-            + f"\n\n## 工作流输出（最终轮）\n\n```\n{final}\n```\n"
-            + (f"\n## 第一轮输出\n\n```\n{out1}\n```\n" if out2 else "")
-            + (f"\n## 裸模型对照组（无工作流提示词）\n\n```\n{entry.get('baseline_output','')}\n```\n" if entry.get("baseline_output") else ""),
-            encoding="utf-8",
-        )
-
-    (QA_DIR / "summary.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    print("DONE. outputs ->", QA_DIR)
+    write_evidence(run_dir / "summary.json", {
+        **metadata, "completed_at_utc": utc_now(), "entries": entries, "failed_calls": failures,
+        "note": "API 调用完成不代表质检通过；所有工作流均待人工判定。",
+    })
+    print("输出已保存，待人工判定 ->", run_dir)
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # tools — 本线脚本说明
 
-> 三个脚本都只做“取证与复算”，不做发布、不做登录、不估算收入。
+> 前三个脚本做“取证与复算”，新增练习素材脚本只在本地绘制几何PNG。所有脚本都不发布、不代登录、不估算收入。
 > 运行环境：Python 3.13+；采集脚本依赖 `capabilities/xhs_crawler` 的已保存 PC Cookie 与 Node 依赖。
 
 ## 一览
@@ -11,7 +11,11 @@
 | `summarize_direction_research.py` | 合并去重、校验标签覆盖、算方向×排序中位数 | 上面的 JSON＋`direction_content_labels_20261028.csv` | `data/direction_summary_20261028.json` / `.csv`（含输入 SHA-256） | 否 |
 | `export_native_comparison.py` | 把手工观测的原生模板样本导出为对比表 | `data/native_template_samples_20261028.json`（`batch == "user_six_links"`，断言 6 条） | `data/native_template_comparison_20261028.csv` | 否 |
 
-## 复现步骤
+## 今晚练习素材（不需要用户运行代码）
+
+`prepare_first_template_practice.py`使用Pillow离线绘制8张几何PNG和来源清单，打包到`practice_20261029/first_template_practice.zip`。目录非空即拒绝覆盖；不使用照片、音乐或字体，不产生剪映工程，不替用户剪辑。现有素材已生成，直接按[今晚操作卡](../今晚第一条_剪映Windows一对一操作_20261029.md)使用即可。
+
+## 复现步骤（仅前三个研究脚本）
 
 ```bash
 cd ventures/jianying_templates

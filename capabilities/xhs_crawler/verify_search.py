@@ -3,8 +3,8 @@
 BOSS 观察待验证：① 剪映模板私卖供给密集；② 婚礼模板 20-200 元/份；
 ③ 整片制作报价 200+。本脚本用 PC 端搜索 API 采集真实笔记数据。
 
-用法：python scripts/verify_xhs_jianying.py
-输出：data/xhs_jianying_verify.json + 终端摘要
+用法：python capabilities/xhs_crawler/verify_search.py（显式采集才联网）
+输出：案例data/xhs_jianying_verify_时间戳.json；不覆盖历史证据，不保存临时认证参数
 """
 import contextlib
 import json
@@ -12,20 +12,16 @@ import re
 import sys
 import time
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
+from statistics import median
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]      # 仓库根（.env/.cache 所在）
 CAP_DIR = Path(__file__).resolve().parent               # capabilities/xhs_crawler
-sys.path.insert(0, str(CAP_DIR / "vendor"))             # spider_xhs 所在
-sys.path.insert(0, str(CAP_DIR))
-if str(PROJECT_ROOT / "capabilities") not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT / "capabilities"))
 
-from _shared.note_schema import NoteRecord  # noqa: E402
-from spider_xhs import XHS_Apis  # noqa: E402
-from xhs_auth_helper import get_pc_auth  # noqa: E402
-
-OUT = PROJECT_ROOT / "ventures" / "jianying_templates" / "data" / "xhs_jianying_verify.json"
+# vendor/认证模块只在显式运行 main 时导入，数字解析可纯离线导入。
+OUT = (PROJECT_ROOT / "ventures" / "jianying_templates" / "data"
+       / f"xhs_jianying_verify_{datetime.now():%Y%m%d_%H%M%S_%f}.json")
 
 # (query, sort_type_choice, note_type, require_num)
 # sort: 0综合 1最新 2最多点赞 | type: 0不限 1视频 2图文
@@ -41,10 +37,41 @@ PRICE_RE = re.compile(
 )
 
 
+def to_int(value) -> int | None:
+    """解析非负互动数（万/w/k/千、千分位、末尾 +）；未知与布尔均为 None。
+
+    + 保留展示数值，不能据此推断精确计数；不能解释成整数的值不截断为 0。
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    if not isinstance(value, (str, int, float, Decimal)):
+        return None
+    match = re.fullmatch(
+        r"([0-9]{1,3}(?:[,，][0-9]{3})+(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?)\s*([万wWkK千]?)\+?",
+        str(value).strip(),
+    )
+    if not match:
+        return None
+    number, unit = match.groups()
+    multiplier = {"万": 10000, "w": 10000, "k": 1000, "千": 1000}.get(unit.lower(), 1)
+    count = Decimal(number.replace(",", "").replace("，", "")) * multiplier
+    return int(count) if count == count.to_integral_value() else None
+
+
+def interaction_count(inter: dict, *keys: str) -> int | None:
+    """优先 *_count；liked/collected 可能只是当前用户的布尔状态。"""
+    for key in keys:
+        count = to_int(inter.get(key))
+        if count is not None:
+            return count
+    return None
+
+
 def parse_search_item(note: dict) -> dict:
-    """从搜索结果条目提取可拿到的字段（防御式：扁平/嵌套两种结构都试）。"""
+    """从搜索结果条目提取可拿到的字段，缺失/布尔互动数不回填为零。"""
     card = note.get("note_card") or note
-    inter = card.get("interact_info") or {}
+    inter = card.get("interact_info")
+    inter = inter if isinstance(inter, dict) else {}
     user = card.get("user") or {}
     ts = card.get("time") or note.get("time")
     return {
@@ -53,29 +80,65 @@ def parse_search_item(note: dict) -> dict:
         "title": card.get("display_title") or "",
         "user": user.get("nickname") or user.get("nick_name") or "",
         "type": card.get("type") or note.get("type") or "",
-        "likes": inter.get("liked") or inter.get("liked_count") or "0",
-        "collects": inter.get("collected") or "0",
-        "comments": inter.get("comment") or inter.get("comment_count") or "0",
+        "likes": interaction_count(inter, "liked_count", "liked"),
+        "collects": interaction_count(inter, "collected_count", "collected"),
+        "comments": interaction_count(inter, "comment_count", "comment"),
         "ts": ts,
         "title_price_signal": bool(PRICE_RE.search(card.get("display_title") or "")),
     }
 
 
-def to_int(v):
-    try:
-        return int(str(v).replace("万", "0000").replace("+", "").strip() or 0)
-    except Exception:
-        return 0
+def parse_detail_metrics(detail) -> dict:
+    """直接解析原始详情，避免共享 NoteRecord 的缺失值→0 行为污染研究统计。"""
+    data = detail.get("data", detail) if isinstance(detail, dict) else {}
+    data = data if isinstance(data, dict) else {}
+    items = data.get("items")
+    item = items[0] if isinstance(items, list) and items else data
+    card = item.get("note_card", item) if isinstance(item, dict) else {}
+    card = card if isinstance(card, dict) else {}
+    counts = parse_search_item({"note_card": card})
+    tags = card.get("tag_list") or []
+    return {
+        "detail_likes": counts["likes"],
+        "detail_collects": counts["collects"],
+        "detail_comments": counts["comments"],
+        "tags": [t["name"] for t in tags if isinstance(t, dict) and t.get("name")][:8],
+    }
+
+
+def like_sort_key(item):
+    count = to_int(item.get("likes"))
+    return (count is not None, count if count is not None else -1)
+
+
+def likes_summary(items):
+    counts = [to_int(item.get("likes")) for item in items]
+    known = [count for count in counts if count is not None]
+    return {
+        "likes_known": len(known), "likes_unknown": len(counts) - len(known),
+        "likes_max": max(known) if known else None,
+        "likes_median": median(known) if known else None,
+    }
+
+
+def format_count(value):
+    count = to_int(value)
+    return str(count) if count is not None else "未知"
 
 
 def main():
-    # Windows GBK 终端打不出 ASCII 二维码：patch 成存 PNG 并自动打开（同 xhs_auth_helper 手法）
+    if OUT.exists():
+        raise FileExistsError("Refusing to overwrite research evidence")
+    sys.path.insert(0, str(CAP_DIR / "vendor"))
+    sys.path.insert(0, str(CAP_DIR))
     import os
 
-    # 劫持 qrcode.QRCode：add_data 抓链接，print_ascii 时用 box_size=12 重绘大图
-    # （登录代码自带 box_size=1，35px 小图手机扫不动），存 PNG 并自动打开
     import qrcode as _qrcode_mod
+    from spider_xhs import XHS_Apis
+    from xhs_auth_helper import get_pc_auth
 
+    # Windows GBK 终端的 ASCII 二维码改存 PNG；仅显式实测时安装此补丁。
+    # add_data 抓链接，print_ascii 时用 box_size=12 重绘（登录代码自带的图过小）。
     _qr_url_holder = {}
 
     def _add_data_spy(self, data, *args, **kwargs):
@@ -112,16 +175,16 @@ def main():
             query=query, require_num=num, sort_type_choice=sort_by, note_type=note_type
         )
         if not success:
-            print(f"搜索失败: {msg}")
-            report["queries"].append({"query": query, "sort": sort_name, "error": msg})
+            print("搜索失败；原始错误响应不写日志或证据，避免携带认证参数")
+            report["queries"].append({"query": query, "sort": sort_name, "error": "search_failed"})
             time.sleep(5)
             continue
 
         items = [parse_search_item(n) for n in notes if n.get("model_type") == "note"]
         items = [i for i in items if i["id"]]
 
-        # 取互动最高的 3 条抓详情（正文里找价格证据）
-        ranked = sorted(items, key=lambda i: to_int(i["likes"]), reverse=True)
+        # 取互动最高的 3 条抓详情（正文里找价格证据），未知值排在已知零之后。
+        ranked = sorted(items, key=like_sort_key, reverse=True)
         for top in ranked[:3]:
             time.sleep(3)
             url = f"https://www.xiaohongshu.com/explore/{top['id']}"
@@ -129,14 +192,7 @@ def main():
                 url += f"?xsec_token={top['xsec_token']}"
             ok, m2, detail = api.get_note_info(url)
             if ok:
-                try:
-                    rec = NoteRecord.from_api_detail(detail, note_id=top["id"], url=url)
-                    top["detail_likes"] = rec.likes
-                    top["detail_collects"] = rec.collects
-                    top["detail_comments"] = rec.comments
-                    top["tags"] = rec.tags[:8]
-                except Exception:
-                    pass
+                top.update(parse_detail_metrics(detail))
                 desc = ""
 
                 def _find_desc(o, depth=0):
@@ -166,29 +222,29 @@ def main():
                     re.search(r"私信|评论区|扣[一1]|微信|接单|定制|代做|闲鱼", desc)
                 )
             else:
-                top["detail_error"] = m2
+                top["detail_error"] = "detail_failed"
 
-        likes = [to_int(i["likes"]) for i in items]
         q_entry = {
             "query": query,
             "sort": sort_name,
             "n_notes": len(items),
-            "likes_max": max(likes) if likes else 0,
-            "likes_median": sorted(likes)[len(likes) // 2] if likes else 0,
+            **likes_summary(items),
             "title_price_signal_rate": (
                 round(sum(1 for i in items if i["title_price_signal"]) / len(items), 2)
-                if items else 0
+                if items else None
             ),
-            "items": items,
+            "items": [{k: value for k, value in item.items() if k != "xsec_token"} for item in items],
         }
         report["queries"].append(q_entry)
         print(f"  有效笔记 {len(items)} 条 | 点赞中位 {q_entry['likes_median']} | "
-              f"最高 {q_entry['likes_max']} | 标题带转化信号比例 {q_entry['title_price_signal_rate']}")
+              f"最高 {q_entry['likes_max']} | 点赞未知 {q_entry['likes_unknown']} 条 | "
+              f"标题带转化信号比例 {q_entry['title_price_signal_rate']}")
         for i in ranked[:5]:
-            print(f"    [{to_int(i['likes']):>6}赞] {i['title'][:36]} @{i['user'][:12]}")
+            print(f"    [{format_count(i['likes']):>6}赞] {i['title'][:36]} @{i['user'][:12]}")
         time.sleep(5)
 
-    OUT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    with OUT.open("x", encoding="utf-8") as handle:
+        handle.write(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(f"\n完整数据 -> {OUT}")
 
 

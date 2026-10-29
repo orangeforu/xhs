@@ -13,25 +13,27 @@
     python products/build_pdfs.py            # 构建全部
     python products/build_pdfs.py --cn       # 只构建中文版
 
-依赖: pymupdf（已装）、markdown2（已装）、字体 assets/fonts/NotoSansSC-{Regular,Bold}.ttf
+    python products/build_pdfs.py --check    # 仅检查路径，不导入渲染器、不生成文件
+
+依赖: pymupdf、markdown2、共享字体 capabilities/_shared/fonts/NotoSansSC-{Regular,Bold}.ttf
 """
 
+import argparse
 import sys
 import zipfile
 from pathlib import Path
+from string import Template
 
-import markdown2
-import pymupdf as fitz
+CASE = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[3]
+KIT_DIR = CASE / "products" / "ai-office-workflows"
+DIST_DIR = CASE / "products" / "dist"
+FONT_REG = REPO / "capabilities" / "_shared" / "fonts" / "NotoSansSC-Regular.ttf"
+FONT_BOLD = FONT_REG.with_name("NotoSansSC-Bold.ttf")
 
-PROJECT_ROOT = Path(__file__).parent.parent
-KIT_DIR = PROJECT_ROOT / "products" / "ai-office-workflows"
-DIST_DIR = PROJECT_ROOT / "products" / "dist"
-FONT_REG = PROJECT_ROOT / "assets" / "fonts" / "NotoSansSC-Regular.ttf"
-FONT_BOLD = PROJECT_ROOT / "assets" / "fonts" / "NotoSansSC-Bold.ttf"
-
-CSS = """
-@font-face { font-family: noto; src: url(%s); }
-@font-face { font-family: noto; src: url(%s); font-weight: bold; }
+CSS = Template("""
+@font-face { font-family: noto; src: url("$font_regular"); }
+@font-face { font-family: noto; src: url("$font_bold"); font-weight: bold; }
 body { font-family: noto; font-size: 10.5pt; line-height: 1.55; color: #1a1a1a; }
 h1 { font-size: 22pt; color: #1a1a1a; margin-bottom: 4pt; }
 h2 { font-size: 15pt; color: #c0392b; margin-top: 14pt; }
@@ -47,10 +49,21 @@ hr { color: #cccccc; }
 .cover-title { font-size: 34pt; font-weight: bold; color: #1a1a1a; }
 .cover-sub   { font-size: 15pt; color: #c0392b; }
 .cover-meta  { font-size: 10pt; color: #666666; }
-""" % (FONT_REG.as_posix(), FONT_BOLD.as_posix())
+""").substitute(font_regular=FONT_REG.as_posix(), font_bold=FONT_BOLD.as_posix())
+
+
+def check_paths() -> None:
+    """只检查本地路径，失败时必须早于任何输出文件创建。"""
+    missing = [str(font) for font in (FONT_REG, FONT_BOLD) if not font.is_file()]
+    if not KIT_DIR.is_dir():
+        missing.append(str(KIT_DIR))
+    if missing:
+        raise FileNotFoundError("缺少构建路径: " + "; ".join(missing))
 
 
 def md_to_html(md_path: Path) -> str:
+    import markdown2
+
     text = md_path.read_text(encoding="utf-8")
     return markdown2.markdown(text, extras=["tables", "fenced-code-blocks", "strike"])
 
@@ -64,7 +77,10 @@ def cover(title: str, sub: str, meta: str) -> str:
 
 
 def render_pdf(html: str, out_path: Path) -> None:
-    story = fitz.Story(html=html, user_css=CSS, archive=fitz.Archive(str(PROJECT_ROOT)))
+    check_paths()
+    import pymupdf as fitz
+
+    story = fitz.Story(html=html, user_css=CSS, archive=fitz.Archive(str(REPO)))
     writer = fitz.DocumentWriter(str(out_path))
     mediabox = fitz.paper_rect("a4")
     where = mediabox + (42, 42, -42, -42)
@@ -137,18 +153,36 @@ def build_en() -> None:
 def build_cn() -> None:
     html = cover(
         "打工人 AI 提效工作流包",
-        "AI 编的不是内容，是因果。",
-        "10 个工作流 + 通用防坑五条 · v1.0 · 2026 · 个人授权",
+        "整理材料，也核对事实、责任与时间。",
+        "10 个工作流 + 人工核查 · v1.1 待复测稿 · 2026 · 非已验收交付",
     ) + md_to_html(KIT_DIR / "kit-cn-打工人AI提效工作流包.md")
     render_pdf(html, DIST_DIR / "dagongren-ai-kit-cn.pdf")
     print("OK  dist/dagongren-ai-kit-cn.pdf")
 
 
-if __name__ == "__main__":
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--cn", action="store_true", help="只构建中文版")
+    parser.add_argument("--check", action="store_true", help="仅检查路径，不生成交付文件")
+    args = parser.parse_args(argv)
+    try:
+        check_paths()
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    if args.check:
+        for path in (KIT_DIR, FONT_REG, FONT_BOLD):
+            print(f"OK  {path}")
+        return 0
     DIST_DIR.mkdir(parents=True, exist_ok=True)
     build_cn()
-    if "--cn" not in sys.argv:
+    if not args.cn:
         build_en()
     # 体积报告
     for f in sorted(DIST_DIR.iterdir()):
         print(f"    {f.name:42s} {f.stat().st_size / 1024:8.0f} KB")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

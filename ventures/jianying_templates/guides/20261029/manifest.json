@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-10-29T18:13:05+08:00",
+  "note": "原创流程示意图，不是剪映界面截图；不含平台素材、真人照片、音乐或字体文件。",
+  "images": [
+    {
+      "file": "01_publish_route.png",
+      "purpose": "九步发布路线与两个平台门槛",
+      "width": 1600,
+      "height": 1180,
+      "sha256": "b1709b444fc5aef37e7258a1ec65779b578c68e5c154c3be4cc1230b4198cc90"
+    },
+    {
+      "file": "02_timeline_14s.png",
+      "purpose": "正式卡A的14秒时间线与六个替换槽",
+      "width": 1800,
+      "height": 760,
+      "sha256": "e4a5f3f127393bedfd843de4ce3b1f1e69633f49f836e396bc8c00b1fa3c8d17"
+    },
+    {
+      "file": "03_layer_stack.png",
+      "purpose": "背景、照片、装饰、文字、网格与音频分层",
+      "width": 1600,
+      "height": 980,
+      "sha256": "783df2d583b3271eec2a1e4a0d8957ac3fc9203a2c4c9213ed0f6aae00e0f380"
+    },
+    {
+      "file": "04_slot_config_mock.png",
+      "purpose": "模板配置页应只开放P1—P6六个照片槽",
+      "width": 1600,
+      "height": 1000,
+      "sha256": "1e387700c01913d7a849650fa057ce291da942e2a5db9c2ac14b39c2e4821600"
+    },
+    {
+      "file": "05_five_inputs.png",
+      "purpose": "五输入验收的输入、观察点与失败处理",
+      "width": 1800,
+      "height": 800,
+      "sha256": "016727b23e17791eb1f3227bd1e2d2a8e7b6f26cae6c35eb990f6baffce6c10d"
+    },
+    {
+      "file": "06_review_loop.png",
+      "purpose": "提交、审核、驳回修正与公开判定",
+      "width": 1800,
+      "height": 900,
+      "sha256": "0fb4ab713525cf663154e347356a4f09d8912d83e16da163d04a339ed0570528"
+    }
+  ]
+}

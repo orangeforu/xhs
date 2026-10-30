@@ -2,6 +2,7 @@ action_id,venture,status,owner,opened_on,due_on,next_action,evidence,decision_sc
 KIT-CHANNEL,ai_workflow_kit,blocked,BOSS,2026-10-09,,确认面包多购买链接及闲鱼是否在售并提供遮敏截图或明确未完成,ventures/ai_workflow_kit/venture.md,L2：只核验；不自动发布或改变价格
 KIT-REVIEW,ai_workflow_kit,pending,AI,2026-10-29,2026-10-27,整理渠道有效上线日与成交证据；缺失则报未验证并请BOSS决定继续或暂停而非宣判需求失败,ventures/ai_workflow_kit/venture.md,L3：原10-27复盘节点已逾期；不得自动转线
 KIT-REGRESSION,ai_workflow_kit,blocked,BOSS,2026-10-29,,确认中文v1.1的目标模型与API复测授权后由AI生成新证据；未通过不替换店铺交付版本,ventures/ai_workflow_kit/products/ai-office-workflows/qa/QA-REPORT.md,本轮仅文本修订及离线测试；不自动花费API额度或发布
+KIT-DELIVERY,ai_workflow_kit,pending,AI,2026-10-30,,生成仅审核用的中文v1.1预览并核对dist旧件；未复测前不售卖不替换店铺文件,ventures/ai_workflow_kit/products/ai-office-workflows/qa/QA-REPORT.md,L2：仅本地核对；不发布不覆盖既有承诺
 JY-ACCESS,jianying_templates,blocked,BOSS,2026-10-28,2026-11-09,按执行手册步骤一回报七项准入；AI核对截图与申请条件,ventures/jianying_templates/执行手册_从今天开始_20261028.md,M1核验；到期未通过停止制作增量并报BOSS
 JY-FIRST-DRAFT,jianying_templates,pending,BOSS,2026-10-29,2026-10-29,按Windows一对一操作卡完成A0工程与本地导出并记录换图结果；AI按检查点截图继续指导,ventures/jianying_templates/今晚第一条_剪映Windows一对一操作_20261029.md,用户要求今晚推进；只制作一个练习样片不等于原生模板或公开发布
 JY-G1,jianying_templates,blocked,BOSS,2026-10-28,,本人向平台提交G1问题并回传书面回复；未核实前套装不开卖,ventures/jianying_templates/周岁纪念套装_最小交付规格_20261028.md,合规硬门槛；AI可整理问题与解读回复

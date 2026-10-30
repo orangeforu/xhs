@@ -118,17 +118,32 @@ def render_pdf(html: str, out_path: Path) -> None:
         raise RuntimeError(f"无法替换 {out_path}（文件被占用，请关闭 PDF 阅读器后重跑）")
 
 
+def delivery_sources() -> list[Path]:
+    """返回允许进入商品包的产品源稿；上架、推广、QA 草稿一律排除。"""
+    workflows = []
+    for i in range(1, 11):
+        matches = sorted(KIT_DIR.glob(f"workflow-{i:02d}-*.md"))
+        if len(matches) != 1 or not matches[0].is_file():
+            raise ValueError(f"workflow {i:02d}: expected exactly one source file")
+        workflows.append(matches[0])
+    cheat_sheet = KIT_DIR / "anti-bs-cheat-sheet.md"
+    if not cheat_sheet.is_file():
+        raise FileNotFoundError(cheat_sheet)
+    return [*workflows, cheat_sheet]
+
+
 def build_en() -> None:
+    # 只交付明确的产品源文件，禁止把内部上架、推广、QA草稿打进商品包。
+    sources = delivery_sources()
+    workflow_files = sources[:10]
+
     # 全套：封面 + 01-10 + 速查表
     parts = [cover(
         "The 9-to-5 AI Workflow Kit",
         "Prompts are free. Knowing when the AI is lying to you isn't.",
         "10 workflows + the Anti-BS Cheat Sheet · v1.0 · 2026 · Personal license",
     )]
-    for i in range(1, 11):
-        f = next(KIT_DIR.glob(f"workflow-{i:02d}-*.md"))
-        parts.append(md_to_html(f))
-    parts.append(md_to_html(KIT_DIR / "anti-bs-cheat-sheet.md"))
+    parts.extend(md_to_html(f) for f in sources)
     render_pdf("".join(parts), DIST_DIR / "9to5-ai-workflow-kit-en.pdf")
     print("OK  dist/9to5-ai-workflow-kit-en.pdf")
 
@@ -137,15 +152,15 @@ def build_en() -> None:
         "The 9-to-5 AI Workflow Kit — Free Sample",
         "Workflow 01: The weekly update that writes itself",
         "Full kit: 10 workflows + cheat sheet — link at the end of this PDF",
-    ) + md_to_html(KIT_DIR / "workflow-01-weekly-report.md")
+    ) + md_to_html(workflow_files[0])
     render_pdf(sample, DIST_DIR / "workflow-01-free-sample-en.pdf")
     print("OK  dist/workflow-01-free-sample-en.pdf")
 
-    # 交付包：PDF + md 源文件（Gumroad 上传单文件）
+    # 交付包：PDF + 已验证清单中的11份产品源稿（Gumroad 上传单文件）
     zip_path = DIST_DIR / "9to5-kit-en-bundle.zip"
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(DIST_DIR / "9to5-ai-workflow-kit-en.pdf", "9to5-ai-workflow-kit.pdf")
-        for f in sorted(KIT_DIR.glob("*.md")):
+        for f in sources:
             z.write(f, f"markdown/{f.name}")
     print("OK  dist/9to5-kit-en-bundle.zip")
 

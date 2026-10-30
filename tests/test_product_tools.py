@@ -247,6 +247,17 @@ def test_run_id_collision_fails_before_api_or_overwrite(workflow, tmp_path, monk
     assert all(path.read_bytes() == data for path, data in original.items())
 
 
+def test_delivery_sources_exclude_internal_drafts(monkeypatch):
+    module = load_offline(PDFS, monkeypatch)
+    names = [p.name for p in module.delivery_sources()]
+    expected = [sorted(module.KIT_DIR.glob(f"workflow-{i:02d}-*.md"))[0].name for i in range(1, 11)]
+    expected.append("anti-bs-cheat-sheet.md")
+    assert names == expected
+    for forbidden_name in ("README.md", "workflows-outline.md", "listing-mianbaoduo.md",
+                           "listing-xianyu.md", "launch-reddit.md", "launch-xhs-note.md"):
+        assert forbidden_name not in names
+
+
 def test_pdf_check_is_path_only_and_css_preserves_braces(tmp_path, monkeypatch):
     module = load_offline(PDFS, monkeypatch)
     monkeypatch.setattr(module, "DIST_DIR", tmp_path / "must-not-create")
